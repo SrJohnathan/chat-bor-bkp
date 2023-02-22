@@ -6,7 +6,7 @@ use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use crate::chat::send_list_wp;
 use crate::chat::send_list_wp::{Message, SendWP};
-use crate::cofg::API_DEV;
+use crate::cofg::{API_DEV, API_PRODU};
 use crate::http::models::SendMessage;
 
 pub async fn bot(st: &Status) {
@@ -51,7 +51,7 @@ pub async fn bot(st: &Status) {
 
                 println!("{:?}", g);
 
-                let send = SendMessage::new( API_DEV.to_string());
+                let send = SendMessage::new( API_PRODU.to_string());
                 match send.send(g).await {
                     Ok(c) => { println!("{:?}", c) }
                     Err(e) => { println!("{:?}", e.to_string()) }
