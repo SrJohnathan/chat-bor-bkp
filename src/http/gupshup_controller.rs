@@ -2,18 +2,28 @@ use rocket::http::Status;
 use rocket::response::status::{BadRequest, Created};
 use rocket::serde::json::Json;
 use rocket::{post};
+use crate::chat::Chat;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
+use crate::model::mongo::{MongoDb, select_status};
 
 #[post("/whatsapp/chatbot", format = "application/json", data = "<task>")]
-pub async fn web_hook(task: Json<serde_json::Value>)
+pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
     -> Status {
 
     let message = task.0;
     let d = message.get("type");
 
+
+
     match d {
         None => { println!("não encontrou type") }
         Some(c) => {
+
+            println!("{:?}",message);
+
+            let app = message.get("app").unwrap();
+
+
             if c.as_str().unwrap().eq("message-event") {
                 let pl = message.get("payload").unwrap();
                 let ty = pl.get("type").unwrap();
@@ -29,8 +39,13 @@ pub async fn web_hook(task: Json<serde_json::Value>)
                     let msg: ParentMessage<MessageEvent<Read>> = serde_json::from_str(&message.to_string()).unwrap();
                 } else {}
             } else if c.as_str().unwrap().eq("message") {
+
                 let pl = message.get("payload").unwrap();
                 let ty = pl.get("type").unwrap();
+                let number = pl.get("source").unwrap();
+                let chat = Chat::new(number.as_str().unwrap(),app.as_str().unwrap());
+                chat.run(&db).await.expect("TODO: panic message");
+
 
                 if ty.as_str().unwrap().eq(&"text".to_string()) {
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();

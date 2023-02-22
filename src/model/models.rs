@@ -3,8 +3,12 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 use diesel::prelude::{Queryable,Insertable};
+use mongodb::bson::oid::ObjectId;
+use mongodb::options::UpdateModifications;
 use serde_derive::{Serialize,Deserialize};
 use crate::schema::users;
+use rocket_okapi::okapi::schemars::{self, JsonSchema};
+
 
 #[derive(Queryable, PartialEq,Debug)]
 #[diesel(table_name = users)]
@@ -21,5 +25,14 @@ pub struct new_users {
     pub name: String,
     pub email: String,
     pub password: String,
+}
+
+#[derive(Serialize, Deserialize, Clone,Debug)]
+pub struct Status {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    pub st:String,
+    pub number:String,
+    pub app:String
 }
 

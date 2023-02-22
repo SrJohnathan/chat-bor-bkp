@@ -1,6 +1,8 @@
 use std::error::Error;
+use mongodb::Database;
 use rocket::routes;
 use tokio;
+use crate::model::mongo::connection;
 
 //mongo  stw  l1sLXHUz01OACdof
 
@@ -18,25 +20,31 @@ use mongodb::{bson::doc, options::ClientOptions, Client};
         Ok(())
     }
 
-
 */
-
-
 
 mod model;
 pub mod schema;
 mod http;
 pub mod cofg;
+pub mod chat;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main()  {
     let url = "DATABASE_URL";
 
-    let _ = rocket::build()
-        .mount("/",
-               routes![http::gupshup_controller::web_hook])
-        .launch()
-        .await;
+    match connection().await {
+        Ok(c) => {
 
-    Ok(())
+            let _ = rocket::build()
+                .manage(c)
+                .mount("/",
+                       routes![http::gupshup_controller::web_hook])
+                .launch()
+                .await;
+
+        }
+        Err(e) => {  println!("{}",  e.kind.to_string() )}
+    }
+
+
 }
