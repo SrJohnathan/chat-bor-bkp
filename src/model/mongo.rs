@@ -4,7 +4,8 @@ use mongodb::bson::doc;
 use mongodb::options::ClientOptions;
 use rocket::{Request, State};
 use rocket::request::{FromRequest, Outcome};
-use super::models::Status;
+use crate::chat::structs::status::Status;
+
 
 pub async fn connection() -> Result<Database, mongodb::error::Error> {
     let client_options = ClientOptions::parse(

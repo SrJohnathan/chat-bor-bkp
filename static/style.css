@@ -1,0 +1,135 @@
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+.cinza{
+  color: #5b626b;
+}
+
+a {
+  color: #00B7FF;
+}
+
+select {
+  font-size: 18px;
+}
+
+
+.gradient{
+  background: rgb(66, 5, 98);
+  background: linear-gradient(133deg, rgba(66,5,98,1) 0%, rgb(153, 14, 96) 100%);
+}
+
+.hover-card:hover{
+  background: linear-gradient(133deg, rgba(66,5,98,1) 0%, rgba(153,14,96,1) 100%);
+color: white;
+}
+
+.hover-card:hover  .hover-card-item{
+  color: white;
+}
+
+.primaryColor-text{
+  color: rgb(66,5,98);
+}
+
+.mini-stat-icon-color > i {
+
+  font-size: 30px;
+  width: 64px;
+  height: 64px;
+  line-height: 64px;
+  text-align: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  display: inline-block;
+}
+
+
+
+.gradienta{
+  background: rgb(33, 5, 98);
+  background: linear-gradient(133deg, rgb(14, 5, 98) 0%, rgb(14, 90, 153) 100%);
+}
+
+.instagran{
+  background: rgb(102,0,255);
+  background: linear-gradient(90deg, rgba(102,0,255,1) 0%, rgb(195, 0, 163) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.instagran-gradient{
+    background: rgb(102,0,255);
+    background: linear-gradient(90deg, rgba(102,0,255,1) 0%, rgb(195, 0, 163) 100%);
+
+}
+
+
+
+.whatsapp{
+  background: rgb(37, 153, 22);
+  background: linear-gradient(90deg, rgb(189, 255, 0) 0%, rgb(0, 184, 2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.facebook{
+  background: rgb(22, 44, 153);
+  background: linear-gradient(90deg, rgb(24, 58, 183) 0%, rgb(65, 161, 226) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+.telegram{
+  background: rgb(136, 147, 222);
+  background: linear-gradient(90deg, rgb(113, 138, 233) 0%, rgb(3, 54, 88) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.socialmedia{
+  background: rgb(42, 67, 198);
+  background: linear-gradient(90deg, rgb(4, 40, 233) 0%, rgb(0, 0, 0) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.azulgradi{
+    background: rgb(42, 67, 198);
+    background: linear-gradient(90deg, rgb(4, 40, 233) 0%, rgb(6, 168, 255) 100%);
+
+}
+
+.verdegradi{
+
+    background: rgb(104, 253, 0);
+    background: linear-gradient(90deg, rgb(59, 159, 63) 0%, rgb(79, 17, 194) 100%);
+
+}
+
+
+
+.vermelhogradi{
+    background: rgb(255, 0, 0);
+    background: linear-gradient(90deg, rgb(219, 4, 4) 0%, rgb(243, 79, 79) 100%);
+
+}
+
+
+.no-uppercase {
+  text-transform: none;
+}
+
+
+
+.container-partial{
+  position: fixed;
+    top: 70px;
+    left: 280px;
+    right: 0;
+    overflow-y: auto;
+    padding: 24px;
+    bottom: 0;
+}

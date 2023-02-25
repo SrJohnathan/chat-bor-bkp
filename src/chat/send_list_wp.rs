@@ -37,12 +37,66 @@ impl <T:Sized + serde::Serialize>SendWP<T> {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct MessageText {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub text: String,
+
+}
+
+// Button
+
+
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ButtonWP<T> {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub msgid: String,
+    pub content: T, // ContentBT  para botoẽs do tipo texto || ContentMD para midia
+    pub options: Vec<OptionBT>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContentBT {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub header: String,
+    pub text: String,
+    pub caption: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContentMD {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub url: String,
+    pub caption: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptionBT {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub title: String,
+}
+
+
+
+//LIST
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Message {
     #[serde(rename = "type")]
     pub type_field: String,
     pub title: String,
     pub body: String,
-    pub msgid: String,
+    pub msgid: Option<String>,
     pub global_buttons: Vec<GlobalButton>,
     pub items: Vec<Item>,
 }

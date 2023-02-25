@@ -1,0 +1,10 @@
+
+
+{ "index": 0,
+  "type": "text",
+  "app": "WhatsAppSTWpt",
+ "data": {"body" : {
+   "type": "text",
+   "text": "Hi John, how are you?"
+ }}
+}

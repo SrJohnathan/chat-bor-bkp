@@ -1,23 +1,26 @@
 use mongodb::error::Error;
-use crate::model::models::Status;
-use crate::model::mongo::{insert_status, MongoDb, select_status};
+use crate::chat::db_mongo::MongoDb;
+use crate::chat::structs::status::Status;
+
+use crate::model::mongo::{insert_status, select_status};
 
 
 pub mod bot;
 pub mod send_list_wp;
-
+pub mod structs;
+pub mod db_mongo;
 
 
 #[derive(Clone)]
-pub struct Chat {
+pub struct ChatWP {
     number: String,
     app:String
 }
 
 
-impl Chat {
+impl ChatWP {
     pub fn new(number: &str,app:&str) -> Self {
-        Chat { number: number.to_string() ,app:app.to_string()}
+        ChatWP { number: number.to_string() ,app:app.to_string()}
     }
 
     pub async fn run(&self, con: &MongoDb<'_>) -> Result<String, String> {
@@ -26,16 +29,16 @@ impl Chat {
         match res {
             Ok(c) => {
                 if c.len() > 0 {
-                    let st = c.get(0).unwrap();
+                    let st:&Status = c.get(0).unwrap();
 
-
-                    bot::bot(&st).await;
-
-                    Ok(String::from("Error em carregar dados de Status"))
+                   match  bot::bot(&st,con).await {
+                       Ok(c) => {Ok(c)}
+                       Err(e) => {Err(e)}
+                   }
                 } else {
                     let st =  Status{
                         id: None,
-                        st: "0-".to_string(),
+                        st: "1".to_string(),
                         number: self.number.clone(),
                         app: self.app.clone()
                     };
@@ -45,6 +48,11 @@ impl Chat {
                     match insert {
                         Ok(v) => {  if  v == true {
 
+
+                            match bot::bot(&st,con).await {
+                                Ok(c) => { Ok(c) }
+                                Err(e) => { Err(e) }
+                            }.expect("TODO: panic message");
 
                            Ok("OK".to_string())
 

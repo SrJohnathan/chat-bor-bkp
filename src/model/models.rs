@@ -27,12 +27,5 @@ pub struct new_users {
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize, Clone,Debug)]
-pub struct Status {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
-    pub st:String,
-    pub number:String,
-    pub app:String
-}
+
 

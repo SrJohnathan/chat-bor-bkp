@@ -1,5 +1,7 @@
 use std::error::Error;
+use dotenvy::dotenv;
 use mongodb::Database;
+use rocket::fs::{FileServer, relative};
 use rocket::routes;
 use tokio;
 use crate::model::mongo::connection;
@@ -30,7 +32,9 @@ pub mod chat;
 
 #[tokio::main]
 async fn main()  {
+    dotenv().unwrap();
     let url = "DATABASE_URL";
+
 
     match connection().await {
         Ok(c) => {
@@ -38,7 +42,13 @@ async fn main()  {
             let _ = rocket::build()
                 .manage(c)
                 .mount("/",
-                       routes![http::gupshup_controller::web_hook])
+                       routes![
+                            http::gupshup_controller::web_hook,
+                            http::http_controller::get,
+                            http::http_controller::insert
+
+                       ])
+                .mount("/public",FileServer::from(relative!("static")))
                 .launch()
                 .await;
 

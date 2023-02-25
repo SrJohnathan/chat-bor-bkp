@@ -3,13 +3,14 @@ use serde_derive::{Deserialize, Serialize};
 use rocket_okapi::okapi::schemars::{self, JsonSchema};
 use reqwest::{Client, Response, Error, StatusCode};
 use crate::chat::send_list_wp::SendWP;
-use crate::cofg::{HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP};
+use crate::cofg::{get_app_app, HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP};
 
 
 pub enum Channels {
     whatsapp,
     sms,
 }
+
 #[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Clone, JsonSchema)]
 pub struct MessageGupshup {
@@ -25,39 +26,36 @@ pub struct MessageGupshup {
 pub struct SendMessage {
     pub api_key: String,
 
-
 }
 
 
 impl SendMessage {
-    pub fn  new( api_key: String) -> Self {
-        SendMessage{api_key}
+    pub fn new(api_key: String) -> Self {
+        SendMessage { api_key }
     }
-    pub async fn send<T:serde::Serialize>(&self,body: SendWP<T>) -> Result<(StatusCode, String), Error> {
+    pub async fn send<T: serde::Serialize>(&self, vec: Vec<SendWP<T>>)  {
+        for body in vec {
+            let message = body.to_json().await;
 
+            println!("{}", message);
 
-       let message =  body.to_json().await;
+            let params =
+                [("channel", "whatsapp"),
+                    ("source", body.source.as_str()),
+                    ("destination", body.destination.as_str()),
+                    ("message", &message),
+                    ("disablePreview", "false"),
+                    ("src.name", body.src_name.as_str())];
 
-
-        let params =
-            [("channel", "whatsapp"),
-                ("source", body.source.as_str()),
-                ("destination", body.destination.as_str()),
-                ("message", message.as_str() ),
-                ("disablePreview", "false"),
-                ("src.name", body.src_name.as_str() )];
-
-        let req: Client = Client::new();
-        let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
-            .header("apikey", self.api_key.as_str())
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .form(&params)
-            .send().await;
-
-        match response {
-            Ok(c) => Ok((c.status(), c.text().await.unwrap())),
-            Err(e) => Err(e)
+            let req: Client = Client::new();
+            let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
+                .header("apikey", get_app_app(body.src_name.as_str()))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .form(&params)
+                .send().await.unwrap();
         }
+
+
     }
 }
 
@@ -85,6 +83,7 @@ pub struct Sent {
 pub struct Delivered {
     pub ts: i32,
 }
+
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Enqueued {
@@ -95,10 +94,11 @@ pub struct Enqueued {
 
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Failed {
-    pub code: String,
+    pub code: isize,
     pub reason: String,
 
 }
+
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct MessageEvent<T> {
@@ -112,7 +112,8 @@ pub struct MessageEvent<T> {
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct MessageGP<T> {
     pub id: String,
-    pub r#type: String,  // "text"|"image"|"file"|"audio"|"video"|"contact"|"location"|"button_reply"|"list_reply",
+    pub r#type: String,
+    // "text"|"image"|"file"|"audio"|"video"|"contact"|"location"|"button_reply"|"list_reply",
     pub source: String,
     pub payload: T,
     pub sender: Sender,
@@ -127,6 +128,7 @@ pub struct Sender {
     pub dial_code: String,
 
 }
+
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Context {
@@ -138,67 +140,68 @@ pub struct Context {
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Text {
     pub text: String,
-    pub r#type:Option<String>
-
+    pub r#type: Option<String>,
 }
+
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Image {
-   pub caption: String,
-   pub url: String,
-   pub contentType: String,
-   pub urlExpiry: isize
+    pub caption: String,
+    pub url: String,
+    pub contentType: String,
+    pub urlExpiry: isize,
 }
+
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Video {
-   pub caption: String,
-   pub url: String,
-   pub contentType: String,
-   pub urlExpiry: isize
+    pub caption: String,
+    pub url: String,
+    pub contentType: String,
+    pub urlExpiry: isize,
 }
+
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct File {
-   pub caption: String,
-   pub name:String,
-   pub url: String,
-   pub contentType: String,
-   pub urlExpiry: isize
+    pub caption: String,
+    pub name: String,
+    pub url: String,
+    pub contentType: String,
+    pub urlExpiry: isize,
 }
+
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Audio {
-   pub url: String,
-   pub contentType: String,
-   pub urlExpiry: isize
+    pub url: String,
+    pub contentType: String,
+    pub urlExpiry: isize,
 }
 
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct ListReply {
-    pub title:String,
+    pub title: String,
     pub id: String,
-    pub reply:String,
-    pub postbackText:String,
-    pub description: String
+    pub reply: String,
+    pub postbackText: String,
+    pub description: String,
 }
 
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct ButtonReply {
-   pub title: String,
-   pub id: String,
-   pub reply:String
+    pub title: String,
+    pub id: String,
+    pub reply: String,
 }
 
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Location {
     pub longitude: String,
-    pub latitude: String
+    pub latitude: String,
 }
-
-
 
 
 #[derive(Serialize, Deserialize, Clone, JsonSchema)]

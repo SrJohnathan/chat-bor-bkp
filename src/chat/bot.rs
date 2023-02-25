@@ -1,76 +1,225 @@
 use std::future::Future;
+use diesel::row::NamedRow;
 use reqwest::{Error, StatusCode};
 use tokio::fs;
-use crate::model::models::Status;
+
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use serde_json::Value;
+use crate::chat::db_mongo::MongoDb;
 use crate::chat::send_list_wp;
-use crate::chat::send_list_wp::{Message, SendWP};
-use crate::cofg::{API_DEV, API_PRODU};
+use crate::chat::send_list_wp::{ButtonWP, ContentBT, GlobalButton, Item, Message, MessageText, OptionBT, SendWP};
+use crate::chat::structs::{Chat, ChatDataType};
+use crate::chat::structs::list_mongo::{ButtonMenu, Iten, ListMongo, Payload};
+use crate::chat::structs::status::Status;
+use crate::chat::structs::text_buttons::{ContentText, OptionB, TextButtons};
+use crate::chat::structs::text_mongo::{Body, TextMongo};
+use crate::cofg::{API_DEV, API_PRODU, get_number_app};
 use crate::http::models::SendMessage;
 
-pub async fn bot(st: &Status) {
+pub async fn bot(st: &Status, db: &MongoDb<'_>) -> Result<String, String> {
     let tmp: Vec<&str> = st.st.split("-").collect();
     let ar: Vec<String> = tmp.iter().map(|c| c.replace("-", "")).filter(|c| c.as_str() != "").collect();
+    let key = std::env::var("KEY_API").unwrap();
 
-    println!("{:?}", ar);
 
-    let mut body = String::new();
-    let data = json_to_data().await.unwrap();
-    for i in ar {
-        match i.parse().unwrap() {
-            0 => {
-                let bot = data.data.get(0).unwrap();
+    let g = match db.get_chat(&st.st, &st.app).await {
+        Ok(c) => {
+            let i = match c {
+                ChatDataType::Null => {
+                    Err("null".to_string())
+                }
+                ChatDataType::Text(text) => {
+                    let value: SendWP<Value> = SendWP::new(
+                        st.app.as_str(),
+                        st.number.as_str(), get_number_app(st.app.as_str()),
+                        serde_json::to_value(
+                            MessageText { type_field: "text".to_string(), text: text.data.body.text }
+                        ).unwrap());
+                    let mut vec = Vec::new();
+                    vec.push(value);
+                    Ok(vec)
+                }
+                ChatDataType::List(list) => {
+                    let mut vec = Vec::new();
 
-                let message = send_list_wp::Message {
-                    type_field: bot.type_field.to_string(),
-                    title: "Serviços".to_string(),
-                    body: bot.body.to_string(),
-                    msgid: "list1".to_string(),
-                    global_buttons: vec![
+
+                    let bot = list.data;
+
+                    let mut gb: Vec<GlobalButton> = bot.button_menu.iter().map(|c| {
                         send_list_wp::GlobalButton {
                             type_field: "text".to_string(),
-                            title: bot.button_menu.title.to_string(),
-                        }
-                    ],
-                    items: vec![send_list_wp::Item {
-                        title: bot.payload.title.to_string(),
-                        subtitle: bot.payload.title.to_string(),
-                        options: bot.payload.itens.iter().map(|c| send_list_wp::Optio {
-                            type_field: c.type_field.to_string(),
                             title: c.title.to_string(),
-                            description: Default::default(),
-                            postback_text: Default::default(),
-                        }).collect(),
-                    }],
-                };
+                        }
+                    }).collect();
 
-                let g:SendWP<Message> = SendWP::new(
-                    st.app.as_str(),
-                    st.number.as_str(), "917384811114", message);
+                    let mut it: Vec<Item> = bot.payload.iter().map(|v| {
+                        send_list_wp::Item {
+                            title: v.title.to_string(),
+                            subtitle: v.title.to_string(),
+                            options: v.itens.iter().map(|c| send_list_wp::Optio {
+                                type_field: c.type_field.to_string(),
+                                title: c.title.to_string(),
+                                description: Default::default(),
+                                postback_text: Default::default(),
+                            }).collect(),
+                        }
+                    }).collect();
 
-                println!("{:?}", g);
+                    for i in 0..bot.button_menu.len() {
+                        let item: &Item = it.get(i).expect("");
+                        let btn: &GlobalButton = gb.get(i).expect("");
 
-                let send = SendMessage::new( API_PRODU.to_string());
-                match send.send(g).await {
-                    Ok(c) => { println!("{:?}", c) }
-                    Err(e) => { println!("{:?}", e.to_string()) }
+                        let chat = send_list_wp::Message {
+                            type_field: list.type_field.to_string(),
+                            title: "Serviços".to_string(),
+                            body: bot.body.to_string(),
+                            msgid: Option::None,
+                            global_buttons: vec![btn.clone()],
+                            items: vec![item.clone()],
+                        };
+
+                        let value: SendWP<Value> = SendWP::new(
+                            st.app.as_str(),
+                            st.number.as_str(), get_number_app(st.app.as_str()),
+                            serde_json::to_value(
+                                chat
+                            ).unwrap());
+
+                        vec.push(value);
+                    }
+
+                    Ok(vec)
                 }
-            }
-            _ => {}
+                ChatDataType::ButtonMidia(midia) => {
+                    todo!();
+                }
+                ChatDataType::ButtonText(button) => {
+                    let chat: ButtonWP<ContentBT> = ButtonWP {
+                        type_field: button.type_field,
+                        msgid: button.data.msgid,
+                        content: ContentBT {
+                            type_field: button.data.content.type_field,
+                            header: button.data.content.header,
+                            text: button.data.content.text,
+                            caption: button.data.content.caption,
+                        },
+                        options: button.data.options.iter().map(|c: &OptionB| OptionBT { type_field: c.type_field.clone(), title: c.title.clone() }).collect(),
+                    };
+
+                    let value: SendWP<Value> = SendWP::new(
+                        st.app.as_str(),
+                        st.number.as_str(), get_number_app(st.app.as_str()),
+                        serde_json::to_value(
+                            chat
+                        ).unwrap());
+                    let mut vec = Vec::new();
+                    vec.push(value);
+                    Ok(vec)
+                }
+            };
+
+            Ok(i)
         }
-    }
+        Err(e) => { Err(e) }
+    }.unwrap().unwrap();
+
+
+    let send = SendMessage::new(key);
+     send.send(g).await;
+    Ok("OK".to_string())
+
+    /* let data = json_to_data().await;
+     match data {
+         Ok(root) => {
+             let bot = &root.data;
+
+             let mut gb: Vec<GlobalButton> = bot.button_menu.iter().map(|c| {
+                 send_list_wp::GlobalButton {
+                     type_field: "text".to_string(),
+                     title: c.title.to_string(),
+                 }
+             }).collect();
+
+             let mut it: Vec<Item> = bot.payload.iter().map(|v| {
+                 send_list_wp::Item {
+                     title: v.title.to_string(),
+                     subtitle: v.title.to_string(),
+                     options: v.itens.iter().map(|c| send_list_wp::Optio {
+                         type_field: c.type_field.to_string(),
+                         title: c.title.to_string(),
+                         description: Default::default(),
+                         postback_text: Default::default(),
+                     }).collect(),
+                 }
+             }).collect();
+
+
+             for i in 0..bot.button_menu.len() {
+                 let item: &Item = it.get(i).expect("");
+                 let btn: &GlobalButton = gb.get(i).expect("");
+                 if i == 0 {
+                     let message = send_list_wp::Message {
+                         type_field: root.type_field.to_string(),
+                         title: "Serviços".to_string(),
+                         body: bot.body.to_string(),
+                         msgid: Option::None,
+                         global_buttons: vec![btn.clone()],
+                         items: vec![item.clone()],
+                     };
+
+                     let g: SendWP<Message> = SendWP::new(
+                         st.app.as_str(),
+                         st.number.as_str(), "917384811114", message);
+
+
+                     let key = std::env::var("KEY_API").unwrap();
+                     let send = SendMessage::new(key);
+                     match send.send(g).await {
+                         Ok(c) => { println!("{:?}", c); }
+                         Err(e) => {
+                             println!("{:?}", e.to_string());
+                             return Err(e.to_string());
+                         }
+                     }
+                 } else {
+                     let message = send_list_wp::Message {
+                         type_field: root.type_field.to_string(),
+                         title: "Serviços".to_string(),
+                         body: "*Outros Serviços*".to_string(),
+                         msgid: Some(format!("list{}", i).to_string()),
+                         global_buttons: vec![btn.clone()],
+                         items: vec![item.clone()],
+                     };
+
+                     let g: SendWP<Message> = SendWP::new(
+                         st.app.as_str(),
+                         st.number.as_str(), "917384811114", message);
+
+
+
+
+                 }
+             }
+
+
+             Ok("enviados".to_string())
+         }
+         Err(e) => { Err(e) }
+     }  */
 }
 
-
-async fn json_to_data() -> Result<DataJson, String> {
+async fn json_to_data() -> Result<Chat<ListMongo>, String> {
     let data = {
         let d = fs::read_to_string(r"./data.json").await;
 
         match d {
             Ok(v) => {
-                let dat: DataJson = serde_json::from_str(&v).unwrap();
-                Ok(dat)
+                let dat: Result<Chat<ListMongo>, _> = serde_json::from_str(&v);
+                match dat {
+                    Ok(c) => { Ok(c) }
+                    Err(e) => { Err(e.to_string()) }
+                }
             }
             Err(e) => Err(e.kind().to_string())
         }
@@ -80,59 +229,130 @@ async fn json_to_data() -> Result<DataJson, String> {
 }
 
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DataJson {
-    pub bot: Bot,
-    pub data: Vec<Daum>,
-}
+pub async fn deza(val: &Value, db: &MongoDb<'_>) {
+    let d = val.get("value").unwrap();
+    let app = val.get("app").unwrap().as_str().unwrap();
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Bot {
-    #[serde(rename = "0")]
-    pub n0: i64,
-    #[serde(rename = "0-1")]
-    pub n0_1: i64,
-}
+    let mut i = d.get("drawflow").unwrap();
 
-impl Bot {
-    pub fn get(&self, n: i32) -> i64 {
-        match n {
-            0 => self.n0,
-            1 => self.n0_1,
-            _ => 0
+
+    i = i.get("Home").unwrap();
+    i = i.get("data").unwrap();
+
+    let map = i.as_object().unwrap();
+
+    db.delete_chat(app).await.unwrap();
+    for x in map {
+        let v = x.1;
+        let mut datas = v.get("data").unwrap();
+
+        let ty = v.get("html").unwrap().as_str().unwrap();
+
+        println!("{}", ty);
+
+        let typ = {
+            match ty {
+                "nodeOption" | "nodeOption2" | "nodeOption3" => "quick_reply",
+                "NodeText" => "text",
+                _ => { "list" }
+            }
+        };
+
+        let status = datas.get("status").unwrap().as_str().unwrap();
+        let a = datas.get("a").unwrap().as_str().unwrap();
+
+        if typ == "text" {
+            let chat: Chat<TextMongo> = Chat {
+                id: None,
+                index: status.to_string(),
+                app: app.to_string(),
+                data: TextMongo { body: Body { type_field: "text".to_string(), text: a.to_string() } },
+                type_field: typ.to_string(),
+            };
+            db.set_chat(serde_json::to_value(chat).unwrap()).await.unwrap();
+        }
+        if typ == "quick_reply" {
+            let select = match datas.get("select") {
+                None => "text",
+                Some(c) => c.as_str().unwrap()
+            };
+
+
+            let op: &Vec<Value> = datas.get("op").unwrap().as_array().unwrap();
+
+            match select {
+                "text" => {
+                    let chat: Chat<TextButtons<ContentText>> = Chat {
+                        id: None,
+                        index: status.to_string(),
+                        app: app.to_string(),
+                        data: TextButtons {
+                            type_field: "text".to_string(),
+                            msgid: "qlo".to_string(),
+                            content: ContentText {
+                                type_field: "text".to_string(),
+                                header: "Serviços".to_string(),
+                                text: a.to_string(),
+                                caption: "caption".to_string(),
+                            },
+                            options: op.iter().map(|c| {
+                                let ax = datas.get(format!("a-{}", c.as_i64().unwrap())).unwrap().as_str().unwrap();
+
+                                OptionB { type_field: "text".to_string(), title: ax.to_string() }
+                            }).collect(),
+                        },
+                        type_field: typ.to_string(),
+                    };
+                    db.set_chat(serde_json::to_value(chat).unwrap()).await.unwrap();
+                }
+                _ => {}
+            }
+        }
+
+
+        if typ == "list" {
+            let mut it: Vec<Payload> = Vec::new();
+            for ii in 0..3 {
+                let mut c = 0;
+
+                let mut iitens: Vec<Iten> = Vec::new();
+                for ee in c..(c + 10) {
+                    match datas.get(format!("l-{}", ee)) {
+                        None => {}
+                        Some(c) => {
+                            let iten = Iten { type_field: "text".to_string(), title: String::from(c.as_str().unwrap()) };
+                            iitens.push(iten)
+                        }
+                    }
+                }
+
+
+                c = ii * 10;
+                let count = iitens.len();
+                let pay = Payload { title: "Serviços".to_string(), itens: iitens };
+                if count > 0 {
+                    it.push(pay)
+                }
+            }
+
+            let mut bt: Vec<ButtonMenu> = Vec::new();
+            for i in 0..it.len() {
+                let b = ButtonMenu { title: format!("Lista de Serviços {}", i) };
+                bt.push(b)
+            }
+
+            let chat: Chat<ListMongo> = Chat {
+                id: None,
+                index: status.to_string(),
+                app: app.to_string(),
+                data: ListMongo { body: a.to_string(), payload: it, button_menu: bt },
+                type_field: typ.to_string(),
+            };
+            db.set_chat(serde_json::to_value(chat).unwrap()).await.unwrap();
         }
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Daum {
-    #[serde(rename = "type")]
-    pub type_field: String,
-    pub body: String,
-    pub payload: Payload,
-    pub button_menu: ButtonMenu,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Payload {
-    pub title: String,
-    pub itens: Vec<Iten>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Iten {
-    #[serde(rename = "type")]
-    pub type_field: String,
-    pub title: String,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ButtonMenu {
-    pub title: String,
-}
+// Object {"status": String("1"), "doc": Bool(false), "op": Array [], "type": Number(1), "term": Bool(false), "typ": String("text"), "g": Number(0), "a": String(""), "val": Array []}
+// Object {"status": String("1-1"), "doc": Bool(false), "op": Array [Number(1), Number(2)], "type": Number(2), "term": Bool(false), "typ": String("button"), "g": Number(0), "a": String(""), "val": Array []}
+//

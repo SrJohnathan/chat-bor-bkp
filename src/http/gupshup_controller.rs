@@ -2,9 +2,10 @@ use rocket::http::Status;
 use rocket::response::status::{BadRequest, Created};
 use rocket::serde::json::Json;
 use rocket::{post};
-use crate::chat::Chat;
+use crate::chat::{ ChatWP};
+use crate::chat::db_mongo::MongoDb;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
-use crate::model::mongo::{MongoDb, select_status};
+use crate::model::mongo::{ select_status};
 
 #[post("/whatsapp/chatbot", format = "application/json", data = "<task>")]
 pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
@@ -43,11 +44,16 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                 let pl = message.get("payload").unwrap();
                 let ty = pl.get("type").unwrap();
                 let number = pl.get("source").unwrap();
-                let chat = Chat::new(number.as_str().unwrap(),app.as_str().unwrap());
-                chat.run(&db).await.expect("TODO: panic message");
+                let chat = ChatWP::new(number.as_str().unwrap(),app.as_str().unwrap());
 
 
                 if ty.as_str().unwrap().eq(&"text".to_string()) {
+
+                    match  chat.run(&db).await {
+                        Ok(c) => {println!("{}",c) }
+                        Err(e) => { println!("erro {}",e)}
+                    }
+
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
                 } else if ty.as_str().unwrap().eq(&"image".to_string()) {
                     let msg: ParentMessage<MessageGP<Image>> = serde_json::from_str(&message.to_string()).unwrap();
@@ -64,6 +70,9 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                 } else if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
                 } else {}
+
+
+
             }else {}
         }
     }

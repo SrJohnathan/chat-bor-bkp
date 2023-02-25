@@ -1,45 +1,56 @@
-{
-  "bot": {"0":0,"0-1": 3},
-  "data": [{
-    "type": "list",
-    "body": "Olá, Ventura Tamba \nSeja bem-vindo(a) à STW \uD83D\uDE04\n\nQueira por favor indicar qual é o seu interesse!",
-    "payload": {
-      "title": "Serviços",
-      "itens": [{
-        "type": "text",
-        "title": "Estudar no Exterior"
-      },{
-        "type": "text",
-        "title": "Vistos"
-      },{
-        "type": "text",
-        "title": "Alojamentos"
-      },{
-        "type": "text",
-        "title": "Transporte"
-      },{
-        "type": "text",
-        "title": "Viagens"
-      },{
-        "type": "text",
-        "title": "Documentos"
-      },{
-        "type": "text",
-        "title": "Integração"
-      },{
-        "type": "text",
-        "title": "Bolsas"
-      },{
-        "type": "text",
-        "title": "Ajuda"
-      },{
-        "type": "text",
-        "title": "Suporte"
-      }]
 
-    },
-    "buttonMenu": {
-      "title": "Nossos Serviços"
-    }
+
+{ "index": 0,
+  "type": "list",
+  "app": "WhatsAppSTWpt",
+ "data": {
+  "body": "Olá, *Ventura Tamba* \nSeja bem-vindo(a) à STW \uD83D\uDE04\n\n*Queira por favor indicar qual é o seu interesse!*",
+  "payload": [{
+    "title": "Serviços",
+    "itens": [{
+      "type": "text",
+      "title": "Estudar no Exterior"
+    },{
+      "type": "text",
+      "title": "Vistos"
+    },{
+      "type": "text",
+      "title": "Alojamentos"
+    },{
+      "type": "text",
+      "title": "Transporte"
+    },{
+      "type": "text",
+      "title": "Viagens"
+    },{
+      "type": "text",
+      "title": "Documentos"
+    },{
+      "type": "text",
+      "title": "Integração"
+    },{
+      "type": "text",
+      "title": "Bolsas"
+    }]
+
+  },{
+    "title": "Mais Informações",
+    "itens": [{
+      "type": "text",
+      "title": "+InFo da STW"
+    },{
+      "type": "text",
+      "title": "Ajuda"
+    },{
+      "type": "text",
+      "title": "Suporte"
+    }]
+
+  }],
+  "buttonMenu": [{
+    "title": "Nossos Serviços"
+  },{
+    "title": "Mais Informações"
   }]
+}
 }

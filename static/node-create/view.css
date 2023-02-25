@@ -1,0 +1,366 @@
+.parent-drawflow {
+    display: flex;
+    overflow: hidden;
+    touch-action: none;
+    outline:none;
+}
+
+.drawflow {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    user-select: none;
+
+}
+
+.box {
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow:    ellipsis;
+}
+
+.drawflow .parent-node {
+    position: relative;
+
+}
+
+.drawflow .drawflow-node {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    max-width: 500px;
+    width: 500px;
+    z-index: 2;
+}
+
+.drawflow .drawflow-node.selected   {
+
+}
+.drawflow .drawflow-node:hover {
+    cursor: move;
+}
+
+.drawflow .drawflow-node .inputs, .drawflow .drawflow-node .outputs {
+    width: 0px;
+}
+
+.drawflow .drawflow-node .drawflow_content_node {
+    width: 100%;
+    display: block;
+}
+
+.drawflow .drawflow-node .input {
+
+    position: relative;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 20%;
+    border: 1px solid black;
+    cursor: crosshair;
+    z-index: 1;
+    padding-right: 40px; !important;
+    margin-bottom: 5px;
+}
+
+
+ .drawflow .drawflow-node .output {
+
+    position: relative;
+    width: 40px;
+    height: 20px;
+    border: 1px solid black;
+    cursor: crosshair;
+    z-index: 1;
+    margin-left: 22px;
+    margin-bottom: 5px;
+}
+
+
+
+.drawflow .drawflow-node .input {
+    left: -60px;
+    top: 2px;
+}
+.drawflow .drawflow-node .output {
+    right: -3px;
+    top: 2px;
+}
+
+.drawflow svg {
+    z-index: 0;
+    position: absolute;
+    overflow: visible !important;
+}
+.drawflow .connection {
+    position: absolute;
+    transform: translate(9999px, 9999px);
+}
+.drawflow .connection .main-path {
+    fill: none;
+    stroke-width: 8px;
+    stroke: steelblue;
+    transform: translate(-9999px, -9999px);
+}
+
+.drawflow .connection .main-path:hover {
+    stroke: #1266ab;
+    cursor: pointer;
+}
+
+
+.drawflow .connection .main-path.selected {
+    stroke: #78072f;
+}
+
+
+
+.drawflow .connection .main-path0 {stroke: #4CAF50;}
+.drawflow .connection .main-path1 {stroke: #1e4695;}
+.drawflow .connection .main-path2 {stroke: #b3144c;}
+.drawflow .connection .main-path3 {stroke: #cd4e14;}
+.drawflow .connection .main-path4 {stroke: #ead517;}
+.drawflow .connection .main-path5 {stroke: #f30909;}
+.drawflow .connection .main-path6 {stroke: #51a309;}
+.drawflow .connection .main-path7 {stroke: #1839e7;}
+.drawflow .connection .main-path8 {stroke: #ad22b8;}
+.drawflow .connection .main-path9 {stroke: #ff06d6;}
+.drawflow .connection .main-path10 {stroke: #ffa707;}
+.drawflow .connection .main-path11 {stroke: #17efc2;}
+
+
+
+
+
+.drawflow .connection .point {
+    cursor: move;
+    stroke: black;
+    stroke-width: 2;
+    fill: white;
+    transform: translate(-9999px, -9999px);
+}
+
+.drawflow .connection .point.selected, .drawflow .connection .point:hover {
+    fill: #1266ab;
+}
+
+.drawflow .main-path {
+    fill: none;
+    stroke-width: 5px;
+    stroke: steelblue;
+}
+.drawflow .selectbox {
+    z-index: 3;
+    position: absolute;
+    transform: translate(9999px, 9999px);
+}
+.drawflow .selectbox rect {
+    fill: blue;
+    opacity: 0.5;
+    stroke: yellow;
+    stroke-width: 5;
+    stroke-opacity: 0.5;
+    transform: translate(-9999px, -9999px);
+}
+
+.drawflow-delete {
+    position: absolute;
+    display: block;
+    width: 30px;
+    height: 30px;
+    background: #cccccc;
+    color: white;
+    z-index: 4;
+    border: 2px solid white;
+    line-height: 30px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 50%;
+    font-family: monospace;
+    cursor: pointer;
+}
+.drawflow > .drawflow-delete {
+    margin-left: -15px;
+    margin-top: 15px;
+}
+
+.parent-node .drawflow-delete {
+    right: -15px;
+    top: -15px;
+}
+
+
+
+body{
+    color: #d4d4d4;
+}
+.node:before{
+    content:attr(title) " ";
+    display: block;
+    border-top-left-radius:.75em;
+    border-top-right-radius:.75em;
+    background-color:#6e6e6e;
+    padding:0.1em .3em 0em;
+    margin:-.1em -.3em 0.2em;
+}
+.node{
+    background-color: #4e4e4e;
+    border-radius: .75em;
+    display: inline-block;
+    padding:0.1em .3em .25em;
+    position:absolute;
+}
+.output,
+.connection:after{
+    position:absolute;
+    border:solid 1px #dedede;
+    background-color:#2e2e2e;
+    width:0.5em;
+    height:0.5em;
+    border-radius:0.5em;
+}
+.node.connected > .output,
+.connection.filled:after{
+    border:solid 1px transparent;
+    background-color:#aeaeae;
+}
+.node > .output:hover,
+.connection:hover:after{
+    border-color:red;
+}
+.output{
+    left: -.5em;
+    top:1em;
+    cursor: pointer;
+}
+.connection{
+    width:100%;
+    position:relative;
+    padding-right:0.5em;
+    cursor:pointer;
+}
+.connection:after{
+    content:"";
+    right:0em;
+    top:0.25em;
+}
+svg{
+    position:absolute;
+    top:0px;
+    left:0px;
+    z-index:-100;
+    width:100%;
+    height:100%;
+}
+
+
+
+#view {
+    height: 100%;
+    width: 100%;
+
+}
+
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.nodeI{
+
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    outline: none;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.nodeB {
+
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+}
+
+.nodeB:hover {
+    background-color: #45a049;
+}
+
+
+.buttonZoom {
+
+    background-color: #1266ab;
+    color: white;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    outline: none;
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+
+}
+
+.namecli {
+
+    background-color: #ffffff;
+    color: rgb(109, 7, 139);
+    padding: 14px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    outline: none;
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+
+}
+
+
+button.buttonZoom:active {
+    background-color: #cccccc;
+    color: black;
+}
+
+.buttonZoom:hover {
+    background-color: #1e4695;
+}
+
+.eli {
+    width: 100px;
+    overflow: hidden;
+    white-space: nowrap;
+    display: block;
+    text-overflow: ellipsis;
+}
+.animation-line{
+    stroke-dasharray: 10;
+    animation: dash 8s linear infinite;
+}
+
+@keyframes dash {
+    from {
+        stroke-dashoffset: 500;
+    }
+}

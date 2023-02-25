@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+<link rel='stylesheet' href='/public/style.css'/>
+<link rel='stylesheet' href='/public/node-create/context-menu.css'/>
+<link rel='stylesheet' href='/public/node-create/view.css'/>
+<link rel='stylesheet' href='/public/chat.css'/>
+
+
+<style>
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #f3f2f3;
+    }
+
+    .cempl {
+        position: fixed;
+        left: 0;
+        width: 250px;
+        padding: 0;
+        bottom: 0;
+        float: left;
+        height: calc(100vh - 70px);
+        background-color: #ffffff;
+
+    }
+
+    .cempr {
+        position: fixed;
+        right: 0;
+        float: right;
+        width: 250px;
+        padding: 0;
+        bottom: 0;
+        height: calc(100vh - 70px);
+        background-color: #ffffff;
+
+    }
+
+    .cempc {
+        position: fixed;
+        right: 250px;
+        left: 250px;
+
+        padding: 0;
+        bottom: 0;
+        height: calc(100vh - 70px);
+        background-image: url("/public/node-create/grid_20.png");
+
+    }
+
+    .no-uppercase {
+        text-transform: none;
+    }
+
+
+    #litbit > li {
+        padding: 5px;
+    }
+
+</style>
+
+<div class="navb">
+    <div class="navbar-fixed">
+        <nav class=" white z-depth-0 ">
+
+            <div class="nav-wrapper ">
+
+                <a href="#" style="padding-left: 10px;color: #041b33;font-size: 13pt;" class="brand-logo poppins">
+                    <b>STW</b> Construção de conversas</a>
+
+                <ul class="right hide-on-med-and-down">
+
+                    <li>
+                        <span style="font-size: 15pt" id="blockselect" class="poppins black-text  "><b></b></span>
+                    </li>
+
+                    <li>
+                        <a id="deleteconstruction" class="waves-effect waves-light btn red no-uppercase disabled ">Apagar
+                            Conversa <i
+                                    class="material-icons right">delete</i></a>
+                    </li>
+
+                    <li>
+                        <a id="saveconstruction" class="waves-effect waves-light btn z-depth-0 gradient no-uppercase ">Salvar
+                            Conversa <i
+                                    class="material-icons right">save</i></a>
+                    </li>
+                </ul>
+
+            </div>
+        </nav>
+    </div>
+</div>
+<div class="row">
+
+
+    <div class=" cempl">
+        <div style="position: relative" class="row">
+
+            <center><h6 style="margin-top: 0;padding: 15px"
+                        class="btnani2"><b>Lista de Conversas</b></h6>
+            </center>
+
+            <center>
+                <div style="margin-top: 0;padding: 15px;background-color:#F7F9F9;">
+                    <a data-target="newwhatsapp-model"
+                       class="waves-effect  modal-trigger z-depth-0  waves-light btn gradient no-uppercase "><b>Nova
+                        Conversa</b> <i
+                            class="material-icons right">add</i></a>
+
+                </div>
+
+            </center>
+
+            <div style="position: fixed;overflow-y: scroll;bottom: 0;top: 195px;width: 250px">
+
+
+                <center>
+
+                    <ul class="" id="myservicees">
+
+                        <li>
+                            <div class="center-align"
+                                 style="margin: 5px;border-radius: 20px ;padding: 5px;background-color:#F7F9F9;">
+                                <label class="black-text"><b>meu primeira arvore</b></label><a
+                                    class="btn z-depth-0 transparent"><i class="material-icons btnani">
+                                launch
+                            </i></a>
+                            </div>
+
+                        </li>
+
+                    </ul>
+                </center>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class=" cempc">
+        <div id="view"></div>
+    </div>
+
+    <div class=" cempr">
+        <div class="row">
+
+            <center><h6 style="margin-top: 0;padding: 15px"
+                        class="btnani2"><b>Construtores</b></h6>
+            </center>
+
+
+            <center>
+                <ul id="litbit">
+
+                    <li id="nt">
+
+                        <div class=" waves-effect"
+                             style="margin: 5px;border-radius: 20px ;padding: 15px;background-color:#F7F9F9;">
+<span class="material-icons btnani">
+text_fields
+</span>
+                            <h6
+                                    class="black-text">Bloco de Texto</h6>
+                            <label class=""> Realize perguntas sem opções</label></div>
+
+                    </li>
+                    <li id="ml">
+
+                        <div class=" waves-effect"
+                             style="margin: 5px;border-radius: 20px ;padding: 15px;background-color:#F7F9F9;">
+<span class="material-icons btnani">
+text_fields
+</span>
+                            <h6
+                                    class="black-text">Bloco de Lista</h6>
+                            <label class=""> Realize perguntas interativaas</label></div>
+
+                    </li>
+                    <li  id="no">
+
+                        <div class=" waves-effect"
+                             style="margin: 5px;border-radius: 20px ;padding: 15px;background-color:#F7F9F9;">
+
+                            <span class="material-icons   btnani">list</span>
+                            <h6 class="black-text">Bloco de Opções</h6>
+                            <label class="">Realize perguntas com opções</label></div>
+
+                    </li>
+
+                    <li id="nr">
+
+                        <div class=" waves-effect"
+                             style="margin: 5px;border-radius: 20px ;padding: 15px;background-color:#F7F9F9;">
+                            <span class="material-icons btnani">
+social_distance
+</span><h6
+                                class="black-text">Redirecionamento</h6>
+                            <label class="">Redirecione para outros blocos</label></div>
+
+                    </li>
+
+                    <li id="nf">
+
+                        <div class=" waves-effect"
+                             style="margin: 5px;border-radius: 20px ;padding: 15px;background-color:#F7F9F9;">
+                            <span class="material-icons btnani">
+attach_file
+</span><h6
+                                class="black-text">Envio de arquivo e fotos</h6>
+                            <label class="">Envio de mídia para clientes</label></div>
+
+                    </li>
+
+                </ul>
+            </center>
+
+
+        </div>
+
+    </div>
+
+
+    <!--  <div class="col s12 m8 ">
+          <div class="row">
+              <h6 style="margin-left: 20px" class="black-text">Arvore selecionada</h6>
+              <br>
+              <span style="margin-left: 20px" class="large green-text">Apelido da arvore</span>
+              <label style="margin-right: 20px" class="black-text right">Blocos de Conversas</label>
+
+          </div>
+
+          <div style="background-color: whitesmoke" class="card-panel ">
+
+          </div>
+
+      </div> -->
+
+</div>
+
+<div style="border-radius: 25px" id="newwhatsapp-model" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <a href="#!" class="close modal-close">&times;</a>
+        <h6 class="grey-text">Apelido do serviço</h6>
+        <input id="ape" class="ttx" type="text" required>
+        <button id="click-new-whatsapp" class="btn gradient waves-effect no-uppercase right-align ">Criar novo</button>
+    </div>
+
+</div>
+<div style="border-radius: 25px" id="perguntamodal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <a href="#!" class="close modal-close">&times;</a>
+        <h6 class="grey-text"> Quantidade de Opções </h6>
+        <label> maximo até 3 opçoes </label>
+        <input onchange="chargeNumber(this)" id="numop" class="ttx" type="text" maxlength="1"  required>
+        <button  onclick="newPerguntaOp()" class="btn gradient z-depth-0 waves-effect no-uppercase right-align">Criar
+            novo bloco
+        </button>
+    </div>
+</div>
+
+<div style="border-radius: 25px" id="perguntamodallista" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <a href="#!" class="close modal-close">&times;</a>
+        <h6 class="grey-text"> Quantidade de Opções </h6>
+        <label> maximo até 15 opçoes </label>
+        <input  id="numopl" class="ttx" type="number"   required>
+        <button  onclick="newPerguntaOpLista()" class="btn gradient z-depth-0 waves-effect no-uppercase right-align">Criar
+            novo bloco
+        </button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="/public/node-create/context-menu.js"></script>
+<script src="/public/node-create/componentes.js"></script>
+<script src="/public/node-create/liveview.js"></script>
+
+
+<script>
+   // new NodeText(editor, 1, {})
+
+ //   new NodeText(editor, 1, {})
+</script>
+
+<script src="/public/build.js"></script>
+
+
+</body>
+</html>
