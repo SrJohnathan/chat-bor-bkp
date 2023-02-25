@@ -34,10 +34,11 @@ impl SendMessage {
         SendMessage { api_key }
     }
     pub async fn send<T: serde::Serialize>(&self, vec: Vec<SendWP<T>>)  {
+        let req: Client = Client::new();
         for body in vec {
             let message = body.to_json().await;
 
-            println!("{}", message);
+
 
             let params =
                 [("channel", "whatsapp"),
@@ -47,12 +48,17 @@ impl SendMessage {
                     ("disablePreview", "false"),
                     ("src.name", body.src_name.as_str())];
 
-            let req: Client = Client::new();
+
             let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
                 .header("apikey", get_app_app(body.src_name.as_str()))
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .form(&params)
-                .send().await.unwrap();
+                .send().await;
+
+            match  response {
+                Ok(x) => { println!("{:?}",x.text().await.unwrap())}
+                Err(e) => {println!("{:?}",e.to_string())}
+            }
         }
 
 

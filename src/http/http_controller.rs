@@ -10,6 +10,7 @@ use crate::chat::db_mongo::MongoDb;
 
 #[post("/whatsapp/bot/insert", format = "application/json", data = "<task>")]
 pub async fn insert(db:MongoDb<'_>,task: Json<Value>) -> Result<status::Created<String>,status::BadRequest<String>> {
+
     match  db.set_bot(task.0.clone()).await {
         Ok(c) => {
 

@@ -22,43 +22,41 @@ pub async fn connection() -> Result<Database, mongodb::error::Error> {
     Ok(database)
 }
 
-pub struct MongoDb<'r>(pub  &'r Database);
+pub struct MongoDb<'r>(pub &'r Database);
 
 #[rocket::async_trait]
-impl<'r> FromRequest<'r> for MongoDb<'r>  {
+impl<'r> FromRequest<'r> for MongoDb<'r> {
     type Error = ();
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, ()> {
-        let res =  request.guard::<&State<Database>>().await;
+        let res = request.guard::<&State<Database>>().await;
         res.map(|c| MongoDb(c))
-
     }
 }
 
-impl <'r>MongoDb<'r> {
-
-    pub async fn get_status(&self,number:&String,app:&String) -> Result<Status, String> {
+impl<'r> MongoDb<'r> {
+    pub async fn get_status(&self, number: &String, app: &String) -> Result<Status, String> {
         let filter = doc! { "number": number.as_str() , "app": app.as_str() };
         let typed_collection = self.0.collection::<Status>("status");
-        let  f = typed_collection.find_one(filter, None).await.unwrap();
+        let f = typed_collection.find_one(filter, None).await.unwrap();
         match f {
-            None => {  Err("Status Vazio".to_string()) }
+            None => { Err("Status Vazio".to_string()) }
             Some(s) => { Ok(s) }
         }
-
-
     }
 
-    pub async fn get_chat(&self,number:&String,app:&String) -> Result<ChatDataType, String> {
+    pub async fn get_chat(&self, number: &String, app: &String) -> Result<ChatDataType, String> {
         let filter = doc! { "index": number.as_str(),"app": app.as_str()};
 
-        println!("inde é {}  e o app  {}", number , app);
+        println!("inde é {}  e o app  {}", number, app);
 
         let typed_collection = self.0.collection::<Chat<Value>>("chat");
         let f = typed_collection.find_one(filter, None).await.unwrap();
         match f {
             None => { Err("Status Vazio".to_string()) }
             Some(s) => {
+                println!("inde é {:?}  ", s);
+
                 match s.type_field.as_str() {
                     "text" => {
                         let value: TextMongo = serde_json::from_value(s.data).unwrap();
@@ -69,7 +67,7 @@ impl <'r>MongoDb<'r> {
                             data: value,
                             type_field: s.type_field,
                         };
-                      Ok(  ChatDataType::Text(c) )
+                        Ok(ChatDataType::Text(c))
                     }
                     "list" => {
                         let value: ListMongo = serde_json::from_value(s.data).unwrap();
@@ -80,7 +78,7 @@ impl <'r>MongoDb<'r> {
                             data: value,
                             type_field: s.type_field,
                         };
-                      Ok(  ChatDataType::List(c) )
+                        Ok(ChatDataType::List(c))
                     }
                     "quick_reply" => {
                         let value = s.data.get("type").unwrap();
@@ -94,7 +92,7 @@ impl <'r>MongoDb<'r> {
                                 data: value,
                                 type_field: s.type_field,
                             };
-                          Ok(  ChatDataType::ButtonText(c) )
+                            Ok(ChatDataType::ButtonText(c))
                         } else {
                             let value: TextButtons<ContentMedia> = serde_json::from_value(s.data).unwrap();
                             let c: Chat<TextButtons<ContentMedia>> = Chat {
@@ -104,13 +102,11 @@ impl <'r>MongoDb<'r> {
                                 data: value,
                                 type_field: s.type_field,
                             };
-                           Ok( ChatDataType::ButtonMidia(c) )
+                            Ok(ChatDataType::ButtonMidia(c))
                         }
-
-
                     }
 
-                    _ => {  Ok(ChatDataType::Null) }
+                    _ => { Ok(ChatDataType::Null) }
                 }
             }
         }
@@ -123,67 +119,80 @@ impl <'r>MongoDb<'r> {
             bots.push(dob);
         }
 
-       Ok( bots)
+        Ok(bots)
     }
-    pub async fn set_bot(&self, st:Value) -> Result<bool, String> {
+    pub async fn set_bot(&self, st: Value) -> Result<bool, String> {
+
+
 
         let bso = bson::to_bson(&st).unwrap();
         let b = bso.as_document().unwrap();
 
         let filter = doc! {  "app": st.get("app").unwrap().as_str().unwrap() };
+
+        self.delete_bot(st.get("app").unwrap().as_str().unwrap()).await.unwrap();
+
         let typed_collection = self.0.collection::<Value>("bot");
-        let f = typed_collection.update_one(filter,doc! {"$set" : b }, None).await;
+        typed_collection.insert_one(st, None).await.unwrap();
 
-
-        match f {
-            Ok(v) => {
-
-                if v.modified_count == 0 {
-                    typed_collection.insert_one(st,None).await.unwrap();
-                }
-                Ok(true)
-
-            },
-            Err(err) => Err("".to_string())
-        }
+        Ok(true)
     }
-    pub async fn set_chat(&self, st:Value) -> Result<bool, String> {
-
+    pub async fn set_chat(&self, st: Value) -> Result<bool, String> {
         let bso = bson::to_bson(&st).unwrap();
         let b = bso.as_document().unwrap();
 
         let filter = doc! {  "app": st.get("app").unwrap().as_str().unwrap() };
         let typed_collection = self.0.collection::<Value>("chat");
 
-        match   typed_collection.insert_one(st,None).await {
+        match typed_collection.insert_one(st, None).await {
             Ok(x) => { Ok(true) }
-            Err(e) => {  Err("error ao inserir".to_string()) }
+            Err(e) => { Err("error ao inserir".to_string()) }
         }
 
-      /*  let f = typed_collection.insert_one(filter,doc! {"$set" : b }, None).await;
-        match f {
-            Ok(v) => {
+        /*  let f = typed_collection.insert_one(filter,doc! {"$set" : b }, None).await;
+          match f {
+              Ok(v) => {
 
-                if v.modified_count == 0 {
-                    typed_collection.insert_one(st,None).await.unwrap();
-                }
-                Ok(true)
+                  if v.modified_count == 0 {
+                      typed_collection.insert_one(st,None).await.unwrap();
+                  }
+                  Ok(true)
 
-            },
-            Err(err) => Err("".to_string())
-        } */
+              },
+              Err(err) => Err("".to_string())
+          } */
     }
-    pub async fn delete_chat(&self, app:&str) -> Result<bool, String> {
-
-
-
+    pub async fn delete_chat(&self, app: &str) -> Result<bool, String> {
         let filter = doc! {  "app": app };
         let typed_collection = self.0.collection::<Value>("chat");
 
 
-        match   typed_collection.delete_many(filter,None).await {
+        match typed_collection.delete_many(filter, None).await {
             Ok(x) => { Ok(true) }
-            Err(e) => {  Err("error ao inserir".to_string()) }
+            Err(e) => { Err("error ao inserir".to_string()) }
+        }
+
+        /*  let f = typed_collection.insert_one(filter,doc! {"$set" : b }, None).await;
+          match f {
+              Ok(v) => {
+
+                  if v.modified_count == 0 {
+                      typed_collection.insert_one(st,None).await.unwrap();
+                  }
+                  Ok(true)
+
+              },
+              Err(err) => Err("".to_string())
+          } */
+    }
+    pub async fn delete_bot(&self, app: &str) -> Result<bool, String> {
+        let filter = doc! {  "app": app };
+        let typed_collection = self.0.collection::<Value>("bot");
+
+
+        match typed_collection.delete_many(filter, None).await {
+            Ok(x) => { Ok(true) }
+            Err(e) => { Err("error ao inserir".to_string()) }
         }
 
         /*  let f = typed_collection.insert_one(filter,doc! {"$set" : b }, None).await;

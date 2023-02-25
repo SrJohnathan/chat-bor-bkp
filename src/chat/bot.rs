@@ -45,6 +45,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>) -> Result<String, String> {
 
 
                     let bot = list.data;
+                    println!("tamanho {:?}",bot);
 
                     let mut gb: Vec<GlobalButton> = bot.button_menu.iter().map(|c| {
                         send_list_wp::GlobalButton {
@@ -65,6 +66,8 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>) -> Result<String, String> {
                             }).collect(),
                         }
                     }).collect();
+
+
 
                     for i in 0..bot.button_menu.len() {
                         let item: &Item = it.get(i).expect("");
@@ -119,12 +122,13 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>) -> Result<String, String> {
                 }
             };
 
-            Ok(i)
+            Ok(i.unwrap())
         }
         Err(e) => { Err(e) }
-    }.unwrap().unwrap();
+    }.unwrap();
 
 
+    println!("{} len",g.len());
     let send = SendMessage::new(key);
      send.send(g).await;
     Ok("OK".to_string())
@@ -209,24 +213,6 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>) -> Result<String, String> {
      }  */
 }
 
-async fn json_to_data() -> Result<Chat<ListMongo>, String> {
-    let data = {
-        let d = fs::read_to_string(r"./data.json").await;
-
-        match d {
-            Ok(v) => {
-                let dat: Result<Chat<ListMongo>, _> = serde_json::from_str(&v);
-                match dat {
-                    Ok(c) => { Ok(c) }
-                    Err(e) => { Err(e.to_string()) }
-                }
-            }
-            Err(e) => Err(e.kind().to_string())
-        }
-    };
-
-    data
-}
 
 
 pub async fn deza(val: &Value, db: &MongoDb<'_>) {
@@ -313,7 +299,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
         if typ == "list" {
             let mut it: Vec<Payload> = Vec::new();
             for ii in 0..3 {
-                let mut c = 0;
+                let mut c = ii * 10;
 
                 let mut iitens: Vec<Iten> = Vec::new();
                 for ee in c..(c + 10) {
@@ -327,12 +313,14 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
                 }
 
 
-                c = ii * 10;
+
                 let count = iitens.len();
                 let pay = Payload { title: "Serviços".to_string(), itens: iitens };
                 if count > 0 {
                     it.push(pay)
                 }
+
+
             }
 
             let mut bt: Vec<ButtonMenu> = Vec::new();

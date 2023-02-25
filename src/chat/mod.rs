@@ -54,7 +54,7 @@ impl ChatWP {
                                 Err(e) => { Err(e) }
                             }.expect("TODO: panic message");
 
-                           Ok("OK".to_string())
+                           Ok("ok".to_string())
 
 
 
