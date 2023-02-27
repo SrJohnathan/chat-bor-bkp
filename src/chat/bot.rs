@@ -58,11 +58,11 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>) -> Result<String, String> {
                         send_list_wp::Item {
                             title: v.title.to_string(),
                             subtitle: v.title.to_string(),
-                            options: v.itens.iter().map(|c| send_list_wp::Optio {
+                            options: v.itens.iter().enumerate().map(|(i,c)| send_list_wp::Optio {
                                 type_field: c.type_field.to_string(),
                                 title: c.title.to_string(),
                                 description: Default::default(),
-                                postback_text: Default::default(),
+                                postback_text: Some(i.to_string()) ,
                             }).collect(),
                         }
                     }).collect();

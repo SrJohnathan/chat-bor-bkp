@@ -89,10 +89,10 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                 } else if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
 
-                    let my_str = msg.payload.payload.title.trim();
-                    let digits = my_str.chars().last().unwrap().to_digit(10).unwrap();
-
-                    match  chat.run_list(&digits.to_string(),&db).await {
+                    let my_str = msg.payload.payload.postbackText.parse::<i32>().unwrap();
+                   // let digits:char = my_str.chars().last().unwrap();
+                 //   let digito = digits.to_digit(10).unwrap();
+                    match  chat.run_list(&(my_str +1).to_string(),&db).await {
                         Ok(c) => {println!("{}",c) }
                         Err(e) => { println!("erro {}",e)}
                     }
