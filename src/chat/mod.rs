@@ -32,9 +32,9 @@ impl ChatWP {
                 if c.len() > 0 {
                     let st:&Status = c.get(0).unwrap();
 
-                    println!("{}",st.st.len());
+                    println!("  fgdjhgdbgbfdhgjbfldhgb hjfbdglibfdhgb gdfilgnbdf  {}",st.st.len()  );
 
-                    if st.st.len() >= 4 {
+                    if st.st.len() >= 5 {
 
                         let new_status = Status{
                             id: st.id,
@@ -43,7 +43,10 @@ impl ChatWP {
                             app: st.app.clone()
                         };
 
-                        update_status(&new_status, con.0).await.unwrap();
+                      match con.update_status(&new_status).await {
+                          Ok(x) => {println!("atualizou o status")}
+                          Err(e) => { println!("{:?}",e) }
+                      };
 
                     }
 

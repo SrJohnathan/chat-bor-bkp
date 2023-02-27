@@ -1,3 +1,4 @@
+
 use futures::TryStreamExt;
 use mongodb::{bson, Client, Database};
 use mongodb::bson::doc;
@@ -42,6 +43,19 @@ impl<'r> MongoDb<'r> {
         match f {
             None => { Err("Status Vazio".to_string()) }
             Some(s) => { Ok(s) }
+        }
+    }
+
+    pub async fn update_status(&self, st:&Status) -> Result<bool,mongodb::error::Error> {
+        let filter = doc! { "number": st.number.as_str() , "app": st.app.as_str() };
+        let bso = bson::to_bson(st).unwrap();
+        let b = bso.as_document().unwrap();
+
+        let typed_collection = self.0.collection::<Status>("status");
+        let f = typed_collection.update_one(filter, doc! {"$set": b}, None).await;
+        match f {
+            Ok(v) => Ok(v.modified_count > 0),
+            Err(err) => Err(err)
         }
     }
 
