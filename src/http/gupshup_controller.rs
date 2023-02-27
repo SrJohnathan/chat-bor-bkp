@@ -47,14 +47,20 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                 let chat = ChatWP::new(number.as_str().unwrap(),app.as_str().unwrap());
 
 
+
+
+
+
                 if ty.as_str().unwrap().eq(&"text".to_string()) {
+
+                    let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
+
 
                     match  chat.run(&db).await {
                         Ok(c) => {println!("{}",c) }
                         Err(e) => { println!("erro {}",e)}
                     }
 
-                    let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
                 } else if ty.as_str().unwrap().eq(&"image".to_string()) {
                     let msg: ParentMessage<MessageGP<Image>> = serde_json::from_str(&message.to_string()).unwrap();
                 } else if ty.as_str().unwrap().eq(&"file".to_string()) {
@@ -67,8 +73,26 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                     let msg: ParentMessage<MessageGP<Location>> = serde_json::from_str(&message.to_string()).unwrap();
                 } else if ty.as_str().unwrap().eq(&"button_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ButtonReply>> = serde_json::from_str(&message.to_string()).unwrap();
+
+
+                    println!("{:?}",msg.payload.payload.title);
+
+                    match  chat.run_button(&msg.payload.payload.title,&db).await {
+                        Ok(c) => {println!("{}",c) }
+                        Err(e) => { println!("erro {}",e)}
+                    }
+
+
                 } else if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
+
+                    let my_str: String = msg.payload.payload.title;
+                    let digits: String = my_str.chars().filter(|char| char.is_digit(10)).collect();
+                    match  chat.run_list(&digits,&db).await {
+                        Ok(c) => {println!("{}",c) }
+                        Err(e) => { println!("erro {}",e)}
+                    }
+
                 } else {}
 
 
