@@ -42,7 +42,7 @@ impl ChatWP {
                             app: st.app.clone()
                         };
 
-                      match con.update_status(&new_status).await {
+                      match con.delele_status(&new_status).await {
                           Ok(x) => {println!("atualizou o status")}
                           Err(e) => { println!("{:?}",e) }
                       };

@@ -59,6 +59,20 @@ impl<'r> MongoDb<'r> {
         }
     }
 
+
+    pub async fn delele_status(&self, st:&Status) -> Result<bool,mongodb::error::Error> {
+        let filter = doc! { "number": st.number.as_str() , "app": st.app.as_str() };
+        let bso = bson::to_bson(st).unwrap();
+        let b = bso.as_document().unwrap();
+
+        let typed_collection = self.0.collection::<Status>("status");
+        let f = typed_collection.delete_many(filter, None).await;
+        match f {
+            Ok(v) => Ok(v.deleted_count > 0),
+            Err(err) => Err(err)
+        }
+    }
+
     pub async fn get_chat(&self, number: &String, app: &String) -> Result<ChatDataType, String> {
         let filter = doc! { "index": number.as_str(),"app": app.as_str()};
 
