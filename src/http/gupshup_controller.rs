@@ -87,7 +87,8 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
 
                     let my_str: String = msg.payload.payload.title;
-                    let digits: String = my_str.chars().filter(|char| char.is_digit(10)).collect();
+                    let digits:String = my_str.chars().last().unwrap().to_string();
+
                     match  chat.run_list(&digits,&db).await {
                         Ok(c) => {println!("{}",c) }
                         Err(e) => { println!("erro {}",e)}
