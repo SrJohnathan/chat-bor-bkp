@@ -94,7 +94,7 @@ impl ChatWP {
                     let st:&Status = c.get(0).unwrap();
 
 
-                   let   newStatus  = Status{
+                   let new_status = Status{
                        id: st.id,
                        st: format!("{}-{}",st.st,text),
                        number: st.number.clone(),
@@ -106,7 +106,7 @@ impl ChatWP {
                         Err(e) => { println!("{:?}",e) }
                     };
 
-                    match  bot::bot(&newStatus,con).await {
+                    match  bot::bot(&new_status, con).await {
                         Ok(c) => {Ok(c)}
                         Err(e) => {Err(e)}
                     }
