@@ -101,7 +101,10 @@ impl ChatWP {
                        app: st.app.clone()
                    };
 
-                    update_status(&newStatus,con.0).await.unwrap();
+                    match con.update_status(&new_status).await {
+                        Ok(x) => {println!("atualizou o status")}
+                        Err(e) => { println!("{:?}",e) }
+                    };
 
                     match  bot::bot(&newStatus,con).await {
                         Ok(c) => {Ok(c)}
@@ -174,8 +177,10 @@ impl ChatWP {
                         app: st.app.clone()
                     };
 
-                    update_status(&new_status, con.0).await.unwrap();
-
+                    match con.update_status(&new_status).await {
+                        Ok(x) => {println!("atualizou o status")}
+                        Err(e) => { println!("{:?}",e) }
+                    };
                     match  bot::bot(&new_status, con).await {
                         Ok(c) => { Ok(c) }
                         Err(e) => { Err(e) }
