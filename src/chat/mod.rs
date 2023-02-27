@@ -32,7 +32,6 @@ impl ChatWP {
                 if c.len() > 0 {
                     let st:&Status = c.get(0).unwrap();
 
-                    println!("  fgdjhgdbgbfdhgjbfldhgb hjfbdglibfdhgb gdfilgnbdf  {}",st.st.len()  );
 
                     if st.st.len() >= 5 {
 
@@ -47,13 +46,18 @@ impl ChatWP {
                           Ok(x) => {println!("atualizou o status")}
                           Err(e) => { println!("{:?}",e) }
                       };
-
+                        match  bot::bot(&new_status,con).await {
+                            Ok(c) => {Ok(c)}
+                            Err(e) => {Err(e)}
+                        }
+                    }else {
+                        match  bot::bot(&st,con).await {
+                            Ok(c) => {Ok(c)}
+                            Err(e) => {Err(e)}
+                        }
                     }
 
-                   match  bot::bot(&st,con).await {
-                       Ok(c) => {Ok(c)}
-                       Err(e) => {Err(e)}
-                   }
+
                 } else {
                     let st =  Status{
                         id: None,

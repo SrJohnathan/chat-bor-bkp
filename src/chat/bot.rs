@@ -125,12 +125,21 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>) -> Result<String, String> {
             Ok(i.unwrap())
         }
         Err(e) => { Err(e) }
-    }.unwrap();
+    };
+
+    match g {
+        Ok(v) => {
+            let send = SendMessage::new(key);
+            send.send(v).await;
+        }
+        Err(e) => {
+
+            println!("{}",e);
+        }
+    }
 
 
-    println!("{} len",g.len());
-    let send = SendMessage::new(key);
-     send.send(g).await;
+
     Ok("OK".to_string())
 
     /* let data = json_to_data().await;
