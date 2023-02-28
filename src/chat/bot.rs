@@ -32,20 +32,13 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                 }
                 ChatDataType::Text(text) => {
 
-                    let mut text_final =  if map.contains_key("voltar"){
-                        "*Queira por favor indicar qual é o seu interesse*👇".to_string()
-                    }else {
-                        text.data.body.text.replace("nodedouser",map.get("omedouser").unwrap().as_str())
-                    };
-
-
 
 
                     let value: SendWP<Value> = SendWP::new(
                         st.app.as_str(),
                         st.number.as_str(), get_number_app(st.app.as_str()),
                         serde_json::to_value(
-                            MessageText { type_field: "text".to_string(), text: text_final }
+                            MessageText { type_field: "text".to_string(), text: text.data.body.text }
                         ).unwrap());
                     let mut vec = Vec::new();
                     vec.push(value);
@@ -84,10 +77,16 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                         let item: &Item = it.get(i).expect("");
                         let btn: &GlobalButton = gb.get(i).expect("");
 
+                        let mut text_final =  if map.contains_key("voltar"){
+                            "*Queira por favor indicar qual é o seu interesse*👇".to_string()
+                        }else {
+                            bot.body.replace("nodedouser",map.get("nodedouser").unwrap().as_str())
+                        };
+
                         let chat = send_list_wp::Message {
                             type_field: list.type_field.to_string(),
                             title: "Serviços".to_string(),
-                            body: bot.body.to_string(),
+                            body: text_final,
                             msgid: Option::None,
                             global_buttons: vec![btn.clone()],
                             items: vec![item.clone()],

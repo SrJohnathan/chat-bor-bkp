@@ -1,4 +1,4 @@
-
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 pub const HOST_API_GUPSHUP:&str = "https://api.gupshup.io";
 pub const MESSAGE_PATH_GUPSHUP:&str ="/sm/api/v1/msg";
@@ -21,5 +21,11 @@ pub fn get_app_app(app:&str) -> &str {
         "WhatsAppSTWpt" => API_PRODU,
         _ => API_DEV,
     }
+
+}
+
+pub async fn aviso_whts(){
+
+    let (sender, receiver): (Sender<bool>, Receiver<bool>) = channel();
 
 }
