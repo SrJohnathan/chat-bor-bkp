@@ -142,7 +142,7 @@ impl ChatWP {
             Err(e) => { Err(String::from(e.kind.to_string())) }
         }
     }
-    pub async fn run_button(&self, text: &String, con: &MongoDb<'_>) -> Result<String, String> {
+    pub async fn run_button(&mut self, text: &String, con: &MongoDb<'_>) -> Result<String, String> {
         let res = select_status(self.number.clone(), self.app.clone(), con.0).await;
 
         match res {
@@ -156,6 +156,7 @@ impl ChatWP {
                             let mut s = String::from(st.st.clone());
                             let len = s.len();
                             let (e, new_len) = s.split_at(len - 2);
+                            self.map.insert("voltar".to_string(),"true".to_string());
                             format!("{}", e)
                         }
 

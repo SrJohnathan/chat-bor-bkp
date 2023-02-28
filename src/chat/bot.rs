@@ -32,7 +32,13 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                 }
                 ChatDataType::Text(text) => {
 
-                    let mut text_final = text.data.body.text.replace("nodedouser",map.get("omedouser").unwrap().as_str());
+                    let mut text_final =  if map.contains_key("voltar"){
+                        "*Queira por favor indicar qual é o seu interesse*👇".to_string()
+                    }else {
+                        text.data.body.text.replace("nodedouser",map.get("omedouser").unwrap().as_str())
+                    };
+
+
 
 
                     let value: SendWP<Value> = SendWP::new(
