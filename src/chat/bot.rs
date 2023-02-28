@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::future::Future;
 use diesel::row::NamedRow;
 use reqwest::{Error, StatusCode};
@@ -17,7 +18,7 @@ use crate::chat::structs::text_mongo::{Body, TextMongo};
 use crate::cofg::{API_DEV, API_PRODU, get_number_app};
 use crate::http::models::SendMessage;
 
-pub async fn bot(st: &Status, db: &MongoDb<'_>) -> Result<String, String> {
+pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> Result<String, String> {
     let tmp: Vec<&str> = st.st.split("-").collect();
     let ar: Vec<String> = tmp.iter().map(|c| c.replace("-", "")).filter(|c| c.as_str() != "").collect();
     let key = std::env::var("KEY_API").unwrap();
@@ -30,11 +31,15 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>) -> Result<String, String> {
                     Err("null".to_string())
                 }
                 ChatDataType::Text(text) => {
+
+                    let mut text_final = text.data.body.text.replace("nomedouser",map.get("omedouser").unwrap().as_str());
+
+
                     let value: SendWP<Value> = SendWP::new(
                         st.app.as_str(),
                         st.number.as_str(), get_number_app(st.app.as_str()),
                         serde_json::to_value(
-                            MessageText { type_field: "text".to_string(), text: text.data.body.text }
+                            MessageText { type_field: "text".to_string(), text: text_final }
                         ).unwrap());
                     let mut vec = Vec::new();
                     vec.push(value);

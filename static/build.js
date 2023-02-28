@@ -297,7 +297,7 @@ function newPerguntaOp() {
 
 
         const op = parseInt(document.getElementById("numop").value)
-        nodesContrution.push(new NodeOption(editor, 1, {}, key, op))
+        nodesContrution.push(new NodeOption(editor, 1, {"status": "1","a-1":"+ Informação","a-2":"Contratar","a-3":"Voltar"}, key, op))
         document.getElementById("numop").value = ""
         closeModal();
 

@@ -47,7 +47,7 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                 let pl = message.get("payload").unwrap();
                 let ty = pl.get("type").unwrap();
                 let number = pl.get("source").unwrap();
-                let chat = ChatWP::new(number.as_str().unwrap(),app.as_str().unwrap());
+                let mut chat = ChatWP::new(number.as_str().unwrap(),app.as_str().unwrap());
 
 
 
@@ -58,6 +58,9 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
 
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
 
+
+
+                    chat.add_props(String::from("nomedouser"),msg.payload.sender.name);
 
                     match  chat.run(&db).await {
                         Ok(c) => {println!("{}",c) }
@@ -90,8 +93,7 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
 
                     let my_str = msg.payload.payload.postbackText.parse::<i32>().unwrap();
-                   // let digits:char = my_str.chars().last().unwrap();
-                 //   let digito = digits.to_digit(10).unwrap();
+
                     match  chat.run_list(&(my_str +1).to_string(),&db).await {
                         Ok(c) => {println!("{}",c) }
                         Err(e) => { println!("erro {}",e)}

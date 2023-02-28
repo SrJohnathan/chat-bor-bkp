@@ -135,7 +135,7 @@ class NodeOption extends NodeUI {
             this.op.push(i)
         }
 
-        const id = editor.addNode('github', entrada, saida, 500, 50, 'github', {"status": "1"}, "nodeOption"+saida, true);
+        const id = editor.addNode('github', entrada, saida, 500, 50, 'github', data, "nodeOption"+saida, true);
         this.id = id
         this.typ = "quick_reply"
         this.ty = TYPE_MESSAGE.NUMBER
