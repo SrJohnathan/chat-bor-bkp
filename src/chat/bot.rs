@@ -32,7 +32,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                 }
                 ChatDataType::Text(text) => {
 
-                    let mut text_final = text.data.body.text.replace("nomedouser",map.get("omedouser").unwrap().as_str());
+                    let mut text_final = text.data.body.text.replace("nodedouser",map.get("omedouser").unwrap().as_str());
 
 
                     let value: SendWP<Value> = SendWP::new(
@@ -339,7 +339,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
 
             let mut bt: Vec<ButtonMenu> = Vec::new();
             for i in 0..it.len() {
-                let b = ButtonMenu { title: format!("Lista de Serviços {}", i) };
+                let b = ButtonMenu { title: format!("Selecione aqui") };
                 bt.push(b)
             }
 

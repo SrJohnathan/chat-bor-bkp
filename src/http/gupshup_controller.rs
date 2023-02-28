@@ -60,7 +60,7 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
 
 
 
-                    chat.add_props(String::from("nomedouser"),msg.payload.sender.name);
+                    chat.add_props(String::from("nodedouser"),msg.payload.sender.name);
 
                     match  chat.run(&db).await {
                         Ok(c) => {println!("{}",c) }
