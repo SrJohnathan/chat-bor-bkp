@@ -1,11 +1,12 @@
-
 use futures::TryStreamExt;
 use mongodb::{bson, Client, Database};
 use mongodb::bson::doc;
 use mongodb::options::ClientOptions;
+use regex::Regex;
 use rocket::{Request, State};
 use rocket::request::{FromRequest, Outcome};
 use serde_json::Value;
+
 use crate::chat::structs::{Chat, ChatDataType};
 use crate::chat::structs::list_mongo::ListMongo;
 use crate::chat::structs::status::Status;
@@ -46,7 +47,7 @@ impl<'r> MongoDb<'r> {
         }
     }
 
-    pub async fn update_status(&self, st:&Status) -> Result<bool,mongodb::error::Error> {
+    pub async fn update_status(&self, st: &Status) -> Result<bool, mongodb::error::Error> {
         let filter = doc! { "number": st.number.as_str() , "app": st.app.as_str() };
         let bso = bson::to_bson(st).unwrap();
         let b = bso.as_document().unwrap();
@@ -60,7 +61,7 @@ impl<'r> MongoDb<'r> {
     }
 
 
-    pub async fn delele_status(&self, st:&Status) -> Result<bool,mongodb::error::Error> {
+    pub async fn delele_status(&self, st: &Status) -> Result<bool, mongodb::error::Error> {
         let filter = doc! { "number": st.number.as_str() , "app": st.app.as_str() };
         let bso = bson::to_bson(st).unwrap();
         let b = bso.as_document().unwrap();
@@ -76,17 +77,19 @@ impl<'r> MongoDb<'r> {
     pub async fn get_chat(&self, number: &String, app: &String) -> Result<ChatDataType, String> {
         let filter = doc! { "index": number.as_str(),"app": app.as_str()};
 
-        println!("inde é {}  e o app  {}", number, app);
 
         let typed_collection = self.0.collection::<Chat<Value>>("chat");
         let f = typed_collection.find_one(filter, None).await.unwrap();
         match f {
             None => { Err("Status Vazio".to_string()) }
             Some(s) => {
-                println!("inde é {:?}  ", s);
+
 
                 match s.type_field.as_str() {
                     "text" => {
+
+                        let mut  vec = Vec::new();
+
                         let value: TextMongo = serde_json::from_value(s.data).unwrap();
                         let c: Chat<TextMongo> = Chat {
                             id: s.id,
@@ -94,19 +97,83 @@ impl<'r> MongoDb<'r> {
                             app: s.app,
                             data: value,
                             type_field: s.type_field,
+                            midia: false,
                         };
-                        Ok(ChatDataType::Text(c))
+
+                        vec.push(c);
+                        Ok(ChatDataType::Text(vec))
                     }
                     "list" => {
-                        let value: ListMongo = serde_json::from_value(s.data).unwrap();
-                        let c: Chat<ListMongo> = Chat {
-                            id: s.id,
-                            index: s.index,
-                            app: s.app,
-                            data: value,
-                            type_field: s.type_field,
-                        };
-                        Ok(ChatDataType::List(c))
+
+                        let mut  vec = Vec::new();
+
+                        let mut value: ListMongo = serde_json::from_value(s.data).unwrap();
+
+
+                        let tmp: Vec<&str> = value.body.split("{|}").collect();
+
+                        for v in tmp {
+                            let mut v1 = v.replace("{|}", "");
+
+
+
+                            let mut mi = false;
+                            let mut show_list = false;
+                            let mut url = String::from("list");
+                            let re = Regex::new(r"\{\{(.*?)\}\}").unwrap();
+                            let result = re.replace_all(v1.as_str(), |caps: &regex::Captures| {
+                                let name = &caps[1];
+                                match name {
+                                    "name" => "joão",
+
+
+                                    "list" => {
+                                       show_list = true;
+
+                                        ""
+                                    }
+
+                                    _ => {
+
+                                        let mut g: Vec<&str> = name.split("::").collect();
+                                        let qg: Vec<String> = g.iter().map(|x| x.replace("::", "")).collect();
+                                        mi = if qg[0] == "image".to_string() { true } else { false };
+                                        url  = qg[1].clone();
+
+
+                                        ""
+
+                                    },
+                                }
+                            });
+
+                            let vel = ListMongo{
+                                body: result.to_string(),
+                                payload: value.payload.clone(),
+                                button_menu: value.button_menu.clone(),
+                                show: Some(show_list)
+                            };
+
+
+
+                            let c: Chat<ListMongo> = Chat {
+                                id: s.id,
+                                index: s.index.clone(),
+                                app: s.app.clone(),
+                                data: vel,
+                                type_field: url,
+                                midia: mi,
+                            };
+
+
+                            vec.push(c)
+                        }
+
+
+
+                        Ok(ChatDataType::List(vec))
+
+
                     }
                     "quick_reply" => {
                         let value = s.data.get("type").unwrap();
@@ -119,8 +186,13 @@ impl<'r> MongoDb<'r> {
                                 app: s.app,
                                 data: value,
                                 type_field: s.type_field,
+                                midia: false,
                             };
-                            Ok(ChatDataType::ButtonText(c))
+
+
+                            let mut  vec = Vec::new();
+                            vec.push(c);
+                            Ok(ChatDataType::ButtonText(vec))
                         } else {
                             let value: TextButtons<ContentMedia> = serde_json::from_value(s.data).unwrap();
                             let c: Chat<TextButtons<ContentMedia>> = Chat {
@@ -129,8 +201,11 @@ impl<'r> MongoDb<'r> {
                                 app: s.app,
                                 data: value,
                                 type_field: s.type_field,
+                                midia: false,
                             };
-                            Ok(ChatDataType::ButtonMidia(c))
+                            let mut  vec = Vec::new();
+                            vec.push(c);
+                            Ok(ChatDataType::ButtonMidia(vec))
                         }
                     }
 
@@ -150,9 +225,6 @@ impl<'r> MongoDb<'r> {
         Ok(bots)
     }
     pub async fn set_bot(&self, st: Value) -> Result<bool, String> {
-
-
-
         let bso = bson::to_bson(&st).unwrap();
         let b = bso.as_document().unwrap();
 

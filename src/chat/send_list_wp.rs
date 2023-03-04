@@ -35,6 +35,8 @@ impl <T:Sized + serde::Serialize>SendWP<T> {
 }
 
 
+//TEXT
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MessageText {
@@ -44,9 +46,32 @@ pub struct MessageText {
 
 }
 
+
+// MIDIA IMAGE
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageMidia {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub original_url: String,
+    pub preview_url: String,
+    pub caption: String,
+}
+
+//VIDEO - DOCUMENT - AUDIO
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MidiaType {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub url: String,
+    pub filename: String,
+}
+
+
 // Button
-
-
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

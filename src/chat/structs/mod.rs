@@ -24,14 +24,15 @@ pub struct Chat<T> {
     pub data: T,
     #[serde(rename = "type")]
     pub type_field: String,
+    pub midia:bool
 }
 
 pub enum ChatDataType {
     Null ,
-    Text(Chat<TextMongo>),
-    List(Chat<ListMongo>),
-    ButtonMidia(Chat<TextButtons<ContentMedia>>),
-    ButtonText(Chat<TextButtons<ContentText>>)
+    Text(Vec<Chat<TextMongo>>),
+    List(Vec<Chat<ListMongo>>),
+    ButtonMidia(Vec<Chat<TextButtons<ContentMedia>>>),
+    ButtonText(Vec<Chat<TextButtons<ContentText>>>)
 
 
 }

@@ -353,6 +353,7 @@ dependencies = [
  "futures",
  "mongodb",
  "multipart",
+ "regex",
  "reqwest",
  "rocket",
  "rocket_okapi",

@@ -1,9 +1,15 @@
 use std::error::Error;
 use dotenvy::dotenv;
+
 use mongodb::Database;
 use rocket::fs::{FileServer, relative};
 use rocket::routes;
 use tokio;
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::{Sender,Receiver};
+
+use crate::cofg::JobWP;
+
 use crate::model::mongo::connection;
 
 //mongo  stw  l1sLXHUz01OACdof
@@ -36,25 +42,38 @@ async fn main()  {
     let url = "DATABASE_URL";
 
 
-    match connection().await {
-        Ok(c) => {
+    let mut channel:( Sender<String>,Receiver<String>) = mpsc::channel(100);
 
-            let _ = rocket::build()
-                .manage(c)
-                .mount("/",
-                       routes![
+    tokio::spawn(async move {
+
+        match channel.1.recv().await {
+            Some(v) => println!("got = {:?}", v),
+            None => println!("the sender dropped"),
+        }
+    });
+
+        tokio::spawn(async move {
+            match connection().await {
+                Ok(c) => {
+                    let _ = rocket::build()
+                        .manage(c)
+                        .manage(channel.0)
+                        .mount("/",
+                               routes![
                             http::gupshup_controller::web_hook,
                             http::http_controller::get,
                             http::http_controller::insert
 
                        ])
-                //.mount("/public",FileServer::from(relative!("static")))
-                .launch()
-                .await;
+                      //  .mount("/public", FileServer::from(relative!("static")))
+                        .launch()
+                        .await;
+                }
+                Err(e) => { println!("{}", e.kind.to_string()) }
+            }
+        }).await.expect("TODO: panic message");
 
-        }
-        Err(e) => {  println!("{}",  e.kind.to_string() )}
-    }
+
 
 
 }

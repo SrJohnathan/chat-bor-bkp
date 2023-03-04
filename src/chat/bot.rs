@@ -9,7 +9,7 @@ use serde_derive::Serialize;
 use serde_json::Value;
 use crate::chat::db_mongo::MongoDb;
 use crate::chat::send_list_wp;
-use crate::chat::send_list_wp::{ButtonWP, ContentBT, GlobalButton, Item, Message, MessageText, OptionBT, SendWP};
+use crate::chat::send_list_wp::{ButtonWP, ContentBT, GlobalButton, ImageMidia, Item, Message, MessageText, OptionBT, SendWP};
 use crate::chat::structs::{Chat, ChatDataType};
 use crate::chat::structs::list_mongo::{ButtonMenu, Iten, ListMongo, Payload};
 use crate::chat::structs::status::Status;
@@ -31,65 +31,138 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                     Err("null".to_string())
                 }
                 ChatDataType::Text(text) => {
-
-
-
-                    let value: SendWP<Value> = SendWP::new(
-                        st.app.as_str(),
-                        st.number.as_str(), get_number_app(st.app.as_str()),
-                        serde_json::to_value(
-                            MessageText { type_field: "text".to_string(), text: text.data.body.text }
-                        ).unwrap());
                     let mut vec = Vec::new();
-                    vec.push(value);
+                    for tex in text {
+
+                        let value: SendWP<Value> = SendWP::new(
+                            st.app.as_str(),
+                            st.number.as_str(), get_number_app(st.app.as_str()),
+                            serde_json::to_value(
+                                MessageText { type_field: "text".to_string(), text: tex.data.body.text }
+                            ).unwrap());
+
+                        vec.push(value);
+                    }
+
+
                     Ok(vec)
                 }
                 ChatDataType::List(list) => {
+
                     let mut vec = Vec::new();
 
+                    for  bo in list {
 
-                    let bot = list.data;
-                    println!("tamanho {:?}",bot);
+                        let bot = bo.data;
 
-                    let mut gb: Vec<GlobalButton> = bot.button_menu.iter().map(|c| {
-                        send_list_wp::GlobalButton {
-                            type_field: "text".to_string(),
-                            title: c.title.to_string(),
-                        }
-                    }).collect();
 
-                    let mut it: Vec<Item> = bot.payload.iter().map(|v| {
-                        send_list_wp::Item {
-                            title: v.title.to_string(),
-                            subtitle: v.title.to_string(),
-                            options: v.itens.iter().enumerate().map(|(i,c)| send_list_wp::Optio {
-                                type_field: c.type_field.to_string(),
+                        let mut gb: Vec<GlobalButton> = bot.button_menu.iter().map(|c| {
+                            send_list_wp::GlobalButton {
+                                type_field: "text".to_string(),
                                 title: c.title.to_string(),
-                                description: Default::default(),
-                                postback_text: Some(i.to_string()) ,
-                            }).collect(),
+                            }
+                        }).collect();
+
+                        let mut it: Vec<Item> = bot.payload.iter().map(|v| {
+                            send_list_wp::Item {
+                                title: v.title.to_string(),
+                                subtitle: v.title.to_string(),
+                                options: v.itens.iter().enumerate().map(|(i,c)| send_list_wp::Optio {
+                                    type_field: c.type_field.to_string(),
+                                    title: c.title.to_string(),
+                                    description: Default::default(),
+                                    postback_text: Some(i.to_string()) ,
+                                }).collect(),
+                            }
+                        }).collect();
+
+                        for i in 0..bot.button_menu.len() {
+                            let item: &Item = it.get(i).expect("");
+                            let btn: &GlobalButton = gb.get(i).expect("");
+
+                            let mut text_final =  if map.contains_key("voltar"){
+                                "*Queira por favor indicar qual é o seu interesse*👇".to_string()
+                            }else {
+                                bot.body.replace("nodedouser",map.get("nodedouser").unwrap().as_str())
+                            };
+
+                            let dat = {
+
+                               if bot.show.unwrap() {
+
+                                   serde_json::to_value( send_list_wp::Message {
+                                       type_field: bo.type_field.to_string(),
+                                       title: "Serviços".to_string(),
+                                       body: text_final,
+                                       msgid: Option::None,
+                                       global_buttons: vec![btn.clone()],
+                                       items: vec![item.clone()],
+                                   }).unwrap()
+
+
+
+                               }else {
+
+
+                                   if bo.midia {
+                                       println!("image aqui");
+                                       serde_json::to_value(
+
+                                           ImageMidia{
+                                               type_field: "image".to_string(),
+                                               original_url: bo.type_field.to_string(),
+                                               preview_url: bo.type_field.to_string(),
+                                               caption: text_final
+                                           }
+
+                                       ).unwrap()
+
+                                   }else {
+                                       println!("image texto");
+                                       serde_json::to_value(
+                                           MessageText { type_field: "text".to_string(), text: text_final }
+                                       ).unwrap()
+                                   }
+
+
+
+                               }
+
+
+                            };
+
+
+
+                            let value: SendWP<Value> = SendWP::new(
+                                st.app.as_str(),
+                                st.number.as_str(), get_number_app(st.app.as_str()),
+                                dat);
+
+                            vec.push(value);
                         }
-                    }).collect();
+                    }
 
+                    Ok(vec)
+                }
+                ChatDataType::ButtonMidia(midia) => {
+                    todo!();
+                }
+                ChatDataType::ButtonText(butto) => {
 
+                    let mut vec = Vec::new();
 
-                    for i in 0..bot.button_menu.len() {
-                        let item: &Item = it.get(i).expect("");
-                        let btn: &GlobalButton = gb.get(i).expect("");
+                    for button in butto {
 
-                        let mut text_final =  if map.contains_key("voltar"){
-                            "*Queira por favor indicar qual é o seu interesse*👇".to_string()
-                        }else {
-                            bot.body.replace("nodedouser",map.get("nodedouser").unwrap().as_str())
-                        };
-
-                        let chat = send_list_wp::Message {
-                            type_field: list.type_field.to_string(),
-                            title: "Serviços".to_string(),
-                            body: text_final,
-                            msgid: Option::None,
-                            global_buttons: vec![btn.clone()],
-                            items: vec![item.clone()],
+                        let chat: ButtonWP<ContentBT> = ButtonWP {
+                            type_field: button.type_field,
+                            msgid: button.data.msgid,
+                            content: ContentBT {
+                                type_field: button.data.content.type_field,
+                                header: button.data.content.header,
+                                text: button.data.content.text,
+                                caption: button.data.content.caption,
+                            },
+                            options: button.data.options.iter().map(|c: &OptionB| OptionBT { type_field: c.type_field.clone(), title: c.title.clone() }).collect(),
                         };
 
                         let value: SendWP<Value> = SendWP::new(
@@ -102,32 +175,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                         vec.push(value);
                     }
 
-                    Ok(vec)
-                }
-                ChatDataType::ButtonMidia(midia) => {
-                    todo!();
-                }
-                ChatDataType::ButtonText(button) => {
-                    let chat: ButtonWP<ContentBT> = ButtonWP {
-                        type_field: button.type_field,
-                        msgid: button.data.msgid,
-                        content: ContentBT {
-                            type_field: button.data.content.type_field,
-                            header: button.data.content.header,
-                            text: button.data.content.text,
-                            caption: button.data.content.caption,
-                        },
-                        options: button.data.options.iter().map(|c: &OptionB| OptionBT { type_field: c.type_field.clone(), title: c.title.clone() }).collect(),
-                    };
 
-                    let value: SendWP<Value> = SendWP::new(
-                        st.app.as_str(),
-                        st.number.as_str(), get_number_app(st.app.as_str()),
-                        serde_json::to_value(
-                            chat
-                        ).unwrap());
-                    let mut vec = Vec::new();
-                    vec.push(value);
                     Ok(vec)
                 }
             };
@@ -273,6 +321,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
                 app: app.to_string(),
                 data: TextMongo { body: Body { type_field: "text".to_string(), text: a.to_string() } },
                 type_field: typ.to_string(),
+                midia:false
             };
             db.set_chat(serde_json::to_value(chat).unwrap()).await.unwrap();
         }
@@ -291,6 +340,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
                         id: None,
                         index: status.to_string(),
                         app: app.to_string(),
+                        midia:false,
                         data: TextButtons {
                             type_field: "text".to_string(),
                             msgid: "qlo".to_string(),
@@ -352,8 +402,9 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
                 id: None,
                 index: status.to_string(),
                 app: app.to_string(),
-                data: ListMongo { body: a.to_string(), payload: it, button_menu: bt },
+                data: ListMongo { show: Some(false),body:   a.to_string()   , payload: it, button_menu: bt },
                 type_field: typ.to_string(),
+                midia:false
             };
             db.set_chat(serde_json::to_value(chat).unwrap()).await.unwrap();
         }

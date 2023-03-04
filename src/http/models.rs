@@ -56,7 +56,8 @@ impl SendMessage {
                 .send().await;
 
             match  response {
-                Ok(x) => { println!("{:?}",x.text().await.unwrap())}
+                Ok(x) => {  println!("{:?}",x.text().await.unwrap())
+                }
                 Err(e) => {println!("{:?}",e.to_string())}
             }
         }

@@ -11,6 +11,7 @@ pub struct ListMongo {
     pub body: String,
     pub payload: Vec<Payload>,
     pub button_menu: Vec<ButtonMenu>,
+     pub show: Option<bool>
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
