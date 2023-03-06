@@ -35,6 +35,9 @@ impl SendMessage {
     }
     pub async fn send<T: serde::Serialize>(&self, vec: Vec<SendWP<T>>)  {
         let req: Client = Client::new();
+
+        tokio::spawn( async move {
+
         for body in vec {
             let message = body.to_json().await;
 
@@ -62,6 +65,8 @@ impl SendMessage {
             }
         }
 
+            tokio::time::sleep(tokio::time::Duration::from_secs(7))
+        });
 
     }
 }
