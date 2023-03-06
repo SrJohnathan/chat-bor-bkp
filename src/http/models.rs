@@ -63,7 +63,7 @@ impl SendMessage {
                     }
                     Err(e) => {println!("{:?}",e.to_string())}
                 }
-                tokio::time::sleep(tokio::time::Duration::from_secs(6)).await;
+                tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
             }
 
 
