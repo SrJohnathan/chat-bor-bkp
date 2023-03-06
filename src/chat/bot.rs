@@ -92,7 +92,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
 
                                    serde_json::to_value( send_list_wp::Message {
                                        type_field: bo.type_field.to_string(),
-                                       title: "Serviços".to_string(),
+                                       title: "".to_string(),
                                        body: text_final,
                                        msgid: Option::None,
                                        global_buttons: vec![btn.clone()],
@@ -105,7 +105,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
 
 
                                    if bo.midia {
-                                       println!("image aqui");
+
                                        serde_json::to_value(
 
                                            ImageMidia{
@@ -118,7 +118,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                                        ).unwrap()
 
                                    }else {
-                                       println!("image texto");
+
                                        serde_json::to_value(
                                            MessageText { type_field: "text".to_string(), text: text_final }
                                        ).unwrap()
