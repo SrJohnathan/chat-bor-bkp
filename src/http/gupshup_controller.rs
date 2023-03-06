@@ -65,7 +65,23 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
                     chat.add_props(String::from("nodedouser"),msg.payload.sender.name);
 
                     match  chat.run(&db).await {
-                        Ok(c) => {println!("{}",c) }
+                        Ok(c) => {
+
+
+                            let e = NewJob{
+                                number: c.number.clone(),
+                                etapa: c.st.clone(),
+                                time: 0,
+                                app: c.app.clone()
+                            };
+
+                            match   job.send(serde_json::to_string(&e).unwrap()).await {
+                                Ok(x) => {}
+                                Err(e) => { println!("{}",e.0) }
+                            }
+
+
+                        }
                         Err(e) => { println!("erro {}",e)}
                     }
 
@@ -100,10 +116,13 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
                         Ok(c) => {
 
 
+
+
                             let e = NewJob{
                                 number: c.number.clone(),
                                 etapa: c.st.clone(),
-                                time: 0
+                                time: 0,
+                                app: c.app.clone()
                             };
 
                             match   job.send(serde_json::to_string(&e).unwrap()).await {

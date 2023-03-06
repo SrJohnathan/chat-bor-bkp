@@ -1,14 +1,20 @@
+use std::collections::HashMap;
 use std::error::Error;
+
 use dotenvy::dotenv;
 
 use mongodb::Database;
 use rocket::fs::{FileServer, relative};
 use rocket::routes;
+use serde_json::Value;
 use tokio;
 use tokio::sync::mpsc;
-use tokio::sync::mpsc::{Sender,Receiver};
+use tokio::sync::mpsc::{Sender, Receiver};
+use tokio::task::JoinHandle;
+use crate::chat::send_list_wp::{MessageText, SendWP};
 
-use crate::cofg::{JobWP, NewJob};
+use crate::cofg::{get_number_app, JobWP, NewJob};
+use crate::http::models::SendMessage;
 
 use crate::model::mongo::connection;
 
@@ -37,62 +43,72 @@ pub mod cofg;
 pub mod chat;
 
 #[tokio::main]
-async fn main()  {
+async fn main() {
     dotenv().unwrap();
     let url = "DATABASE_URL";
 
 
-    let mut channel:( Sender<String>,Receiver<String>) = mpsc::channel(100);
+    let mut channel: (Sender<String>, Receiver<String>) = mpsc::channel(100);
 
     tokio::spawn(async move {
+        let mut threads_number: HashMap<String, JoinHandle<_>> = HashMap::new();
 
-        match channel.1.recv().await {
-            Some(v) => {
-
-                let new_job :NewJob = serde_json::from_str(&v).unwrap();
-
-                tokio::spawn(async move {
+        while let Some(v) = channel.1.recv().await {
 
 
-                    tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
+            let new_job: NewJob = serde_json::from_str(&v).unwrap();
 
 
+            println!("{:?}",threads_number.contains_key(new_job.number.as_str()   ));
+            if  threads_number.contains_key(new_job.number.as_str()   ) {
 
+                println!("aborto");
+                let thread = threads_number.remove(new_job.number.as_str()).unwrap();
+                thread.abort();
 
-                    println!("{:?}",new_job);
+            }else {
 
-
-
-                });
-
-
+                println!("{:?}",threads_number);
             }
-            None => { println!("the sender dropped"); }
+
+            threads_number.insert(new_job.number.clone(), tokio::spawn(async move {
+                tokio::time::sleep(tokio::time::Duration::from_secs(60 * 5)).await;
+                let key = std::env::var("KEY_API").unwrap();
+                let message = SendMessage::new(key);
+
+                let value: SendWP<Value> = SendWP::new(
+                    new_job.app.as_str(),
+                    new_job.number.as_str(), get_number_app(new_job.app.as_str()),
+                    serde_json::to_value(
+                        MessageText { type_field: "text".to_string(), text: "por falta de resposta, estamos encerrando nosso atendimento.".to_string() }
+                    ).unwrap());
+
+                let mut vec = Vec::new();
+                vec.push(value);
+                message.send(vec).await;
+            }));
         }
+
     });
 
-        tokio::spawn(async move {
-            match connection().await {
-                Ok(c) => {
-                    let _ = rocket::build()
-                        .manage(c)
-                        .manage(channel.0)
-                        .mount("/",
-                               routes![
+    tokio::spawn(async move {
+        match connection().await {
+            Ok(c) => {
+                let _ = rocket::build()
+                    .manage(c)
+                    .manage(channel.0)
+                    .mount("/",
+                           routes![
                             http::gupshup_controller::web_hook,
                             http::http_controller::get,
                             http::http_controller::insert
 
                        ])
-                      //  .mount("/public", FileServer::from(relative!("static")))
-                        .launch()
-                        .await;
-                }
-                Err(e) => { println!("{}", e.kind.to_string()) }
+                    //  .mount("/public", FileServer::from(relative!("static")))
+                    .launch()
+                    .await;
             }
-        }).await.expect("TODO: panic message");
-
-
-
-
+            Err(e) => { println!("{}", e.kind.to_string()) }
+        }
+    }).await.expect("TODO: panic message");
 }

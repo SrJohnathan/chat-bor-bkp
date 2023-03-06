@@ -37,7 +37,8 @@ pub fn get_app_app(app:&str) -> &str {
 pub struct NewJob{
    pub number:String,
    pub etapa:String,
-   pub time: i32
+   pub time: i32,
+   pub  app:String
 }
 
 

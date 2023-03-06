@@ -30,7 +30,7 @@ impl ChatWP {
         self.map.insert(key, value  );
     }
 
-    pub async fn run(&self, con: &MongoDb<'_>) -> Result<String, String> {
+    pub async fn run(&self, con: &MongoDb<'_>) -> Result<Status, String> {
         let res = select_status(self.number.clone(), self.app.clone(), con.0).await;
 
         match res {
@@ -52,12 +52,12 @@ impl ChatWP {
                             Err(e) => { println!("{:?}", e) }
                         };
                         match bot::bot(&new_status, con, &self.map).await {
-                            Ok(c) => { Ok(c) }
+                            Ok(c) => { Ok(new_status) }
                             Err(e) => { Err(e) }
                         }
                     } else {
                         match bot::bot(&st, con,&self.map).await {
-                            Ok(c) => { Ok(c) }
+                            Ok(c) => { Ok(st.clone()) }
                             Err(e) => { Err(e) }
                         }
                     }
@@ -79,7 +79,7 @@ impl ChatWP {
                                     Err(e) => { Err(e) }
                                 }.expect("TODO: panic message");
 
-                                Ok("ok".to_string())
+                                Ok(st)
                             } else { Err(String::from("error ao inserir dados")) }
                         }
                         Err(e) => Err(e)
