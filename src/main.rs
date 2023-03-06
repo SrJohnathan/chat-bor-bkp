@@ -8,7 +8,7 @@ use tokio;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::{Sender,Receiver};
 
-use crate::cofg::JobWP;
+use crate::cofg::{JobWP, NewJob};
 
 use crate::model::mongo::connection;
 
@@ -47,8 +47,27 @@ async fn main()  {
     tokio::spawn(async move {
 
         match channel.1.recv().await {
-            Some(v) => println!("got = {:?}", v),
-            None => println!("the sender dropped"),
+            Some(v) => {
+
+                let new_job :NewJob = serde_json::from_str(&v).unwrap();
+
+                tokio::spawn(async move {
+
+
+                    tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
+
+
+
+
+                    println!("{:?}",new_job);
+
+
+
+                });
+
+
+            }
+            None => { println!("the sender dropped"); }
         }
     });
 

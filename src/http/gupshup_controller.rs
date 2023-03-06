@@ -1,14 +1,16 @@
 use rocket::http::Status;
 use rocket::response::status::{BadRequest, Created};
 use rocket::serde::json::Json;
-use rocket::{post};
+use rocket::{post, State};
+use tokio::sync::mpsc::Sender;
 use crate::chat::{ ChatWP};
 use crate::chat::db_mongo::MongoDb;
+use crate::cofg::NewJob;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
 use crate::model::mongo::{ select_status};
 
 #[post("/whatsapp/chatbot", format = "application/json", data = "<task>")]
-pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
+pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serde_json::Value>)
     -> Status {
 
     let message = task.0;
@@ -81,7 +83,7 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                     let msg: ParentMessage<MessageGP<ButtonReply>> = serde_json::from_str(&message.to_string()).unwrap();
 
 
-                    println!("{:?}",msg.payload.payload.title);
+
 
                     match  chat.run_button(&msg.payload.payload.title,&db).await {
                         Ok(c) => {println!("{}",c) }
@@ -95,7 +97,21 @@ pub async fn web_hook(db:MongoDb<'_>,task: Json<serde_json::Value>)
                     let my_str = msg.payload.payload.postbackText.parse::<i32>().unwrap();
 
                     match  chat.run_list(&(my_str +1).to_string(),&db).await {
-                        Ok(c) => {println!("{}",c) }
+                        Ok(c) => {
+
+
+                            let e = NewJob{
+                                number: c.number.clone(),
+                                etapa: c.st.clone(),
+                                time: 0
+                            };
+
+                            match   job.send(serde_json::to_string(&e).unwrap()).await {
+                                Ok(x) => {}
+                                Err(e) => { println!("{}",e.0) }
+                            }
+
+                        }
                         Err(e) => { println!("erro {}",e)}
                     }
 

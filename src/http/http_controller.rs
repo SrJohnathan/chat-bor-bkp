@@ -28,14 +28,11 @@ pub async fn insert(db:MongoDb<'_>,task: Json<Value>) -> Result<status::Created<
 
 
 #[get("/whatsapp/bot/get")]
-pub async fn get(db:MongoDb<'_>, job:&State<Sender<String>>) -> Result<status::Accepted<Json<Vec<Value>>>,status::BadRequest<String>> {
+pub async fn get(db:MongoDb<'_>) -> Result<status::Accepted<Json<Vec<Value>>>,status::BadRequest<String>> {
 
     let f =db.get_bot().await.unwrap();
 
-    match   job.send("gjfhgfdjghlfdjgd".to_string()).await {
-        Ok(x) => {}
-        Err(e) => { println!("{}",e.0) }
-    }
+
 
        Ok(status::Accepted(Some(Json(f))))
 

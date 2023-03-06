@@ -2,7 +2,7 @@ use std::ops::Deref;
 use std::sync::mpsc::{channel, SendError};
 
 use std::time::Duration;
-
+use serde_derive::{Deserialize, Serialize};
 use rocket::{Request, State};
 use rocket::request::{FromRequest, Outcome};
 use tokio::sync::{mpsc, oneshot::{Receiver, Sender}, oneshot};
@@ -31,6 +31,13 @@ pub fn get_app_app(app:&str) -> &str {
         _ => API_DEV,
     }
 
+}
+
+#[derive(Serialize, Deserialize, Clone,Debug)]
+pub struct NewJob{
+   pub number:String,
+   pub etapa:String,
+   pub time: i32
 }
 
 

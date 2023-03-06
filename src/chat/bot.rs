@@ -405,7 +405,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
 
 
                 let count = iitens.len();
-                let pay = Payload { title: "Serviços".to_string(), itens: iitens };
+                let pay = Payload { title: "".to_string(), itens: iitens };
                 if count > 0 {
                     it.push(pay)
                 }
@@ -415,7 +415,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
 
             let mut bt: Vec<ButtonMenu> = Vec::new();
             for i in 0..it.len() {
-                let b = ButtonMenu { title: format!("Selecione aqui") };
+                let b = ButtonMenu { title: format!("Escolhe uma opção") };
                 bt.push(b)
             }
 
