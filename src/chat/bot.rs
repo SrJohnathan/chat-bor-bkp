@@ -18,6 +18,27 @@ use crate::chat::structs::text_mongo::{Body, TextMongo};
 use crate::cofg::{API_DEV, API_PRODU, get_number_app};
 use crate::http::models::SendMessage;
 
+fn  description_list_1 (i:i32) -> Option<String> {
+
+   let  e =  match i  {
+        0 =>  "Tenha sua matrícula numa univercidade no exterior a sua escolha",
+        1 =>  "Qualquer tipo do visto para qualquer parte do mundo ",
+        2 =>  "Documentos e alojamento para residir no exterior antes mesmo de chegar",
+        3 =>  "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
+        4 =>  "Consideráveis descontos nas nossas ofertas ",
+        5 =>  "Todos os documentos para residir legalmente no exterior",
+        6 =>  "Cursos e atividades de integração",
+        7 =>  "Nossa e outras bolsas de estudo",
+        8 =>  "Tudo sobre a nossa empresa",
+        9 =>  "Todas as dúvidas esclarecidas e solicitações",
+        _ => Default::default(),
+    };
+
+   Some(e.to_string())
+}
+
+
+
 pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> Result<String, String> {
     let tmp: Vec<&str> = st.st.split("-").collect();
     let ar: Vec<String> = tmp.iter().map(|c| c.replace("-", "")).filter(|c| c.as_str() != "").collect();
@@ -63,14 +84,14 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                             }
                         }).collect();
 
-                        let mut it: Vec<Item> = bot.payload.iter().map(|v| {
+                        let mut it: Vec<Item> = bot.payload.iter().enumerate().map(|(i,v)| {
                             send_list_wp::Item {
                                 title: v.title.to_string(),
                                 subtitle: v.title.to_string(),
-                                options: v.itens.iter().enumerate().map(|(i,c)| send_list_wp::Optio {
+                                options: v.itens.iter().enumerate().map(|(e,c)| send_list_wp::Optio {
                                     type_field: c.type_field.to_string(),
                                     title: c.title.to_string(),
-                                    description: Default::default(),
+                                    description: description_list_1(e as i32),
                                     postback_text: Some(i.to_string()) ,
                                 }).collect(),
                             }
