@@ -26,7 +26,7 @@ impl <T:Sized + serde::Serialize>SendWP<T> {
             message: msg,
         }
     }
-    pub async fn to_json(&self) -> String {
+    pub  fn to_json(&self) -> String {
         serde_json::to_string(&self.message).unwrap()
     }
     pub fn urlencoded(&self) -> String {

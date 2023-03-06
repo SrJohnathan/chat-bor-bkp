@@ -33,39 +33,40 @@ impl SendMessage {
     pub fn new(api_key: String) -> Self {
         SendMessage { api_key }
     }
-    pub async fn send<T: serde::Serialize>(&self, vec: Vec<SendWP<T>>)  {
+    pub async fn send<T: serde::Serialize + Send + 'static >(&self, vec: Vec<SendWP<T>>)  {
         let req: Client = Client::new();
 
         tokio::spawn( async move {
 
-        for body in vec {
-            let message = body.to_json().await;
+            for body in vec {
+                let message = body.to_json();
 
 
 
-            let params =
-                [("channel", "whatsapp"),
-                    ("source", body.source.as_str()),
-                    ("destination", body.destination.as_str()),
-                    ("message", &message),
-                    ("disablePreview", "false"),
-                    ("src.name", body.src_name.as_str())];
+                let params =
+                    [("channel", "whatsapp"),
+                        ("source", body.source.as_str()),
+                        ("destination", body.destination.as_str()),
+                        ("message", &message),
+                        ("disablePreview", "false"),
+                        ("src.name", body.src_name.as_str())];
 
 
-            let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
-                .header("apikey", get_app_app(body.src_name.as_str()))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .form(&params)
-                .send().await;
+                let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
+                    .header("apikey", get_app_app(body.src_name.as_str()))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .form(&params)
+                    .send().await;
 
-            match  response {
-                Ok(x) => {  println!("{:?}",x.text().await.unwrap())
+                match  response {
+                    Ok(x) => {  println!("{:?}",x.text().await.unwrap())
+                    }
+                    Err(e) => {println!("{:?}",e.to_string())}
                 }
-                Err(e) => {println!("{:?}",e.to_string())}
             }
-        }
 
-            tokio::time::sleep(tokio::time::Duration::from_secs(7))
+            tokio::time::sleep(tokio::time::Duration::from_secs(7)).await;
+
         });
 
     }
