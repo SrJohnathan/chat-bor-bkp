@@ -6,6 +6,7 @@ use regex::Regex;
 use rocket::{Request, State};
 use rocket::request::{FromRequest, Outcome};
 use serde_json::Value;
+use crate::chat::factory_msg_send_text::{factory_text, TypeMidia};
 
 use crate::chat::structs::{Chat, ChatDataType};
 use crate::chat::structs::list_mongo::ListMongo;
@@ -83,12 +84,9 @@ impl<'r> MongoDb<'r> {
         match f {
             None => { Err("Status Vazio".to_string()) }
             Some(s) => {
-
-
                 match s.type_field.as_str() {
                     "text" => {
-
-                        let mut  vec = Vec::new();
+                        let mut vec = Vec::new();
 
                         let value: TextMongo = serde_json::from_value(s.data).unwrap();
                         let c: Chat<TextMongo> = Chat {
@@ -98,14 +96,14 @@ impl<'r> MongoDb<'r> {
                             data: value,
                             type_field: s.type_field,
                             midia: false,
+                            type_midia: TypeMidia::NULL,
                         };
 
                         vec.push(c);
                         Ok(ChatDataType::Text(vec))
                     }
                     "list" => {
-
-                        let mut  vec = Vec::new();
+                        let mut vec = Vec::new();
 
                         let mut value: ListMongo = serde_json::from_value(s.data).unwrap();
 
@@ -114,7 +112,6 @@ impl<'r> MongoDb<'r> {
 
                         for v in tmp {
                             let mut v1 = v.replace("{|}", "");
-
 
 
                             let mut mi = false;
@@ -126,34 +123,30 @@ impl<'r> MongoDb<'r> {
                                 match name {
                                     "name" => "joão",
 
-
                                     "list" => {
-                                       show_list = true;
+                                        show_list = true;
 
                                         ""
                                     }
 
                                     _ => {
-
                                         let mut g: Vec<&str> = name.split("::").collect();
                                         let qg: Vec<String> = g.iter().map(|x| x.replace("::", "")).collect();
                                         mi = if qg[0] == "image".to_string() { true } else { false };
-                                        url  = qg[1].clone();
+                                        url = qg[1].clone();
 
 
                                         ""
-
-                                    },
+                                    }
                                 }
                             });
 
-                            let vel = ListMongo{
+                            let vel = ListMongo {
                                 body: result.to_string(),
                                 payload: value.payload.clone(),
                                 button_menu: value.button_menu.clone(),
-                                show: Some(show_list)
+                                show: Some(show_list),
                             };
-
 
 
                             let c: Chat<ListMongo> = Chat {
@@ -163,6 +156,7 @@ impl<'r> MongoDb<'r> {
                                 data: vel,
                                 type_field: url,
                                 midia: mi,
+                                type_midia: TypeMidia::NULL,
                             };
 
 
@@ -170,28 +164,47 @@ impl<'r> MongoDb<'r> {
                         }
 
 
-
                         Ok(ChatDataType::List(vec))
-
-
                     }
                     "quick_reply" => {
+                        let mut vec = Vec::new();
                         let value = s.data.get("type").unwrap();
 
                         if value.as_str().unwrap() == "text" {
                             let value: TextButtons<ContentText> = serde_json::from_value(s.data).unwrap();
-                            let c: Chat<TextButtons<ContentText>> = Chat {
-                                id: s.id,
-                                index: s.index,
-                                app: s.app,
-                                data: value,
-                                type_field: s.type_field,
-                                midia: false,
-                            };
+
+                            let tmp: Vec<&str> = value.content.text.split("{|}").collect();
+
+                            for v in tmp {
+                                let mut v1 = v.replace("{|}", "");
 
 
-                            let mut  vec = Vec::new();
-                            vec.push(c);
+                                let res = factory_text(v1);
+
+                                let c: Chat<TextButtons<ContentText>> = Chat {
+                                    id: s.id,
+                                    index: s.index.clone(),
+                                    app: s.app.clone(),
+                                    data: TextButtons {
+                                        type_field: "text".to_string(),
+                                        msgid: "4343".to_string(),
+                                        content: ContentText {
+                                            type_field: "text".to_string(),
+                                            header: "".to_string(),
+                                            text: res.0,
+                                            caption: "".to_string(),
+                                        },
+                                        options: value.options.clone(),
+                                        show: Some(res.4),
+                                    },
+                                    type_field: if res.1 { res.2 } else { "quick_reply".to_string() },
+                                    midia: res.1,
+                                    type_midia: res.3,
+                                };
+
+                                vec.push(c);
+                            }
+
                             Ok(ChatDataType::ButtonText(vec))
                         } else {
                             let value: TextButtons<ContentMedia> = serde_json::from_value(s.data).unwrap();
@@ -202,8 +215,9 @@ impl<'r> MongoDb<'r> {
                                 data: value,
                                 type_field: s.type_field,
                                 midia: false,
+                                type_midia: TypeMidia::NULL,
                             };
-                            let mut  vec = Vec::new();
+                            let mut vec = Vec::new();
                             vec.push(c);
                             Ok(ChatDataType::ButtonMidia(vec))
                         }

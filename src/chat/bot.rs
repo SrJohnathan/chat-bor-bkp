@@ -8,8 +8,9 @@ use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use serde_json::Value;
 use crate::chat::db_mongo::MongoDb;
+use crate::chat::factory_msg_send_text::TypeMidia;
 use crate::chat::send_list_wp;
-use crate::chat::send_list_wp::{ButtonWP, ContentBT, GlobalButton, ImageMidia, Item, Message, MessageText, OptionBT, SendWP};
+use crate::chat::send_list_wp::{ButtonWP, ContentBT, ContentMD, GlobalButton, ImageMidia, Item, Message, MessageText, OptionBT, SendWP};
 use crate::chat::structs::{Chat, ChatDataType};
 use crate::chat::structs::list_mongo::{ButtonMenu, Iten, ListMongo, Payload};
 use crate::chat::structs::status::Status;
@@ -18,28 +19,26 @@ use crate::chat::structs::text_mongo::{Body, TextMongo};
 use crate::cofg::{API_DEV, API_PRODU, get_number_app};
 use crate::http::models::SendMessage;
 
-fn  description_list_1 (i:i32) -> Option<String> {
-
-   let  e =  match i  {
-        0 =>  "Tenha sua matrícula numa univercidade no exterior a sua escolha",
-        1 =>  "Qualquer tipo do visto para qualquer parte do mundo ",
-        2 =>  "Documentos e alojamento para residir no exterior antes mesmo de chegar",
-        3 =>  "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
-        4 =>  "Consideráveis descontos nas nossas ofertas ",
-        5 =>  "Todos os documentos para residir legalmente no exterior",
-        6 =>  "Cursos e atividades de integração",
-        7 =>  "Nossa e outras bolsas de estudo",
-        8 =>  "Tudo sobre a nossa empresa",
-        9 =>  "Todas as dúvidas esclarecidas e solicitações",
+fn description_list_1(i: i32) -> Option<String> {
+    let e = match i {
+        0 => "Tenha sua matrícula numa univercidade no exterior a sua escolha",
+        1 => "Qualquer tipo do visto para qualquer parte do mundo ",
+        2 => "Documentos e alojamento para residir no exterior antes mesmo de chegar",
+        3 => "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
+        4 => "Consideráveis descontos nas nossas ofertas ",
+        5 => "Todos os documentos para residir legalmente no exterior",
+        6 => "Cursos e atividades de integração",
+        7 => "Nossa e outras bolsas de estudo",
+        8 => "Tudo sobre a nossa empresa",
+        9 => "Todas as dúvidas esclarecidas e solicitações",
         _ => Default::default(),
     };
 
-   Some(e.to_string())
+    Some(e.to_string())
 }
 
 
-
-pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> Result<String, String> {
+pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -> Result<String, String> {
     let tmp: Vec<&str> = st.st.split("-").collect();
     let ar: Vec<String> = tmp.iter().map(|c| c.replace("-", "")).filter(|c| c.as_str() != "").collect();
     let key = std::env::var("KEY_API").unwrap();
@@ -54,7 +53,6 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                 ChatDataType::Text(text) => {
                     let mut vec = Vec::new();
                     for tex in text {
-
                         let value: SendWP<Value> = SendWP::new(
                             st.app.as_str(),
                             st.number.as_str(), get_number_app(st.app.as_str()),
@@ -69,11 +67,9 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                     Ok(vec)
                 }
                 ChatDataType::List(list) => {
-
                     let mut vec = Vec::new();
 
-                    for  bo in list {
-
+                    for bo in list {
                         let bot = bo.data;
 
 
@@ -84,83 +80,65 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                             }
                         }).collect();
 
-                        let mut it: Vec<Item> = bot.payload.iter().enumerate().map(|(i,v)| {
+                        let mut it: Vec<Item> = bot.payload.iter().enumerate().map(|(i, v)| {
                             send_list_wp::Item {
                                 title: v.title.to_string(),
                                 subtitle: v.title.to_string(),
-                                options: v.itens.iter().enumerate().map(|(e,c)| send_list_wp::Optio {
+                                options: v.itens.iter().enumerate().map(|(e, c)| send_list_wp::Optio {
                                     type_field: c.type_field.to_string(),
                                     title: c.title.to_string(),
                                     description: description_list_1(e as i32),
-                                    postback_text: Some(i.to_string()) ,
+                                    postback_text: Some(i.to_string()),
                                 }).collect(),
                             }
                         }).collect();
 
-                        for i in 0..bot.button_menu.len() {
+                     /*   for i in 0..bot.button_menu.len() {
                             let item: &Item = it.get(i).expect("");
                             let btn: &GlobalButton = gb.get(i).expect("");
+                        } */
 
-                            let mut text_final =  if map.contains_key("voltar"){
-                                "*Queira por favor indicar qual é o seu interesse*👇".to_string()
-                            }else {
-                                bot.body.replace("nodedouser",map.get("nodedouser").unwrap().as_str())
-                            };
+                        let mut text_final = if map.contains_key("voltar") {
+                            "*Queira por favor indicar qual é o seu interesse*👇".to_string()
+                        } else {
+                            bot.body.replace("nodedouser", map.get("nodedouser").unwrap().as_str())
+                        };
 
-                            let dat = {
-
-                               if bot.show.unwrap() {
-
-                                   serde_json::to_value( send_list_wp::Message {
-                                       type_field: bo.type_field.to_string(),
-                                       title: "".to_string(),
-                                       body: text_final,
-                                       msgid: Option::None,
-                                       global_buttons: vec![btn.clone()],
-                                       items: vec![item.clone()],
-                                   }).unwrap()
-
-
-
-                               }else {
-
-
-                                   if bo.midia {
-
-                                       serde_json::to_value(
-
-                                           ImageMidia{
-                                               type_field: "image".to_string(),
-                                               original_url: bo.type_field.to_string(),
-                                               preview_url: bo.type_field.to_string(),
-                                               caption: text_final
-                                           }
-
-                                       ).unwrap()
-
-                                   }else {
-
-                                       serde_json::to_value(
-                                           MessageText { type_field: "text".to_string(), text: text_final }
-                                       ).unwrap()
-                                   }
+                        let dat = {
+                            if bot.show.unwrap() {
+                                serde_json::to_value(send_list_wp::Message {
+                                    type_field: bo.type_field.to_string(),
+                                    title: "".to_string(),
+                                    body: text_final,
+                                    msgid: Option::None,
+                                    global_buttons: gb.clone(),
+                                    items: it.clone(),
+                                }).unwrap()
+                            } else {
+                                if bo.midia {
+                                    serde_json::to_value(
+                                        ImageMidia {
+                                            type_field: "image".to_string(),
+                                            original_url: bo.type_field.to_string(),
+                                            preview_url: bo.type_field.to_string(),
+                                            caption: text_final,
+                                        }
+                                    ).unwrap()
+                                } else {
+                                    serde_json::to_value(
+                                        MessageText { type_field: "text".to_string(), text: text_final }
+                                    ).unwrap()
+                                }
+                            }
+                        };
 
 
+                        let value: SendWP<Value> = SendWP::new(
+                            st.app.as_str(),
+                            st.number.as_str(), get_number_app(st.app.as_str()),
+                            dat);
 
-                               }
-
-
-                            };
-
-
-
-                            let value: SendWP<Value> = SendWP::new(
-                                st.app.as_str(),
-                                st.number.as_str(), get_number_app(st.app.as_str()),
-                                dat);
-
-                            vec.push(value);
-                        }
+                        vec.push(value);
                     }
 
                     Ok(vec)
@@ -169,29 +147,62 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
                     todo!();
                 }
                 ChatDataType::ButtonText(butto) => {
-
                     let mut vec = Vec::new();
 
                     for button in butto {
+                        let dat = {
+                            if button.data.show.unwrap() {
+                                let chat: ButtonWP<ContentBT> = ButtonWP {
+                                    type_field: button.type_field,
+                                    msgid: button.data.msgid,
+                                    content: ContentBT {
+                                        type_field: button.data.content.type_field,
+                                        header: button.data.content.header,
+                                        text: button.data.content.text,
+                                        caption: button.data.content.caption,
+                                    },
+                                    options: button.data.options.iter().map(|c: &OptionB| OptionBT { type_field: c.type_field.clone(), title: c.title.clone() }).collect(),
+                                };
 
-                        let chat: ButtonWP<ContentBT> = ButtonWP {
-                            type_field: button.type_field,
-                            msgid: button.data.msgid,
-                            content: ContentBT {
-                                type_field: button.data.content.type_field,
-                                header: button.data.content.header,
-                                text: button.data.content.text,
-                                caption: button.data.content.caption,
-                            },
-                            options: button.data.options.iter().map(|c: &OptionB| OptionBT { type_field: c.type_field.clone(), title: c.title.clone() }).collect(),
+                                serde_json::to_value(&chat).unwrap()
+                            } else {
+                                if button.midia {
+                                    match button.type_midia {
+                                        TypeMidia::NULL => { todo!() }
+                                        TypeMidia::IMAGE => {
+                                            serde_json::to_value(
+                                                ImageMidia {
+                                                    type_field: "image".to_string(),
+                                                    original_url: button.type_field.clone(),
+                                                    preview_url: button.type_field,
+                                                    caption: button.data.content.text,
+                                                }
+                                            ).unwrap()
+                                        }
+                                        TypeMidia::DOCUMENT => { todo!() }
+                                        TypeMidia::VIDEO => {
+                                            serde_json::to_value(
+                                                ContentMD {
+                                                    type_field: "video".to_string(),
+                                                    url: button.type_field,
+                                                    caption: "".to_string(),
+                                                }
+                                            ).unwrap()
+                                        }
+                                    }
+                                } else {
+                                    serde_json::to_value(
+                                        MessageText { type_field: "text".to_string(), text: button.data.content.text }
+                                    ).unwrap()
+                                }
+                            }
                         };
+
 
                         let value: SendWP<Value> = SendWP::new(
                             st.app.as_str(),
                             st.number.as_str(), get_number_app(st.app.as_str()),
-                            serde_json::to_value(
-                                chat
-                            ).unwrap());
+                            dat);
 
                         vec.push(value);
                     }
@@ -212,11 +223,9 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
             send.send(v).await;
         }
         Err(e) => {
-
-            println!("{}",e);
+            println!("{}", e);
         }
     }
-
 
 
     Ok("OK".to_string())
@@ -302,7 +311,6 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>,map:&HashMap<String,String>) -> R
 }
 
 
-
 pub async fn deza(val: &Value, db: &MongoDb<'_>) {
     let d = val.get("value").unwrap();
     let app = val.get("app").unwrap().as_str().unwrap();
@@ -342,7 +350,8 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
                 app: app.to_string(),
                 data: TextMongo { body: Body { type_field: "text".to_string(), text: a.to_string() } },
                 type_field: typ.to_string(),
-                midia:false
+                midia: false,
+                type_midia: TypeMidia::NULL,
             };
             db.set_chat(serde_json::to_value(chat).unwrap()).await.unwrap();
         }
@@ -361,7 +370,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
                         id: None,
                         index: status.to_string(),
                         app: app.to_string(),
-                        midia:false,
+                        midia: false,
                         data: TextButtons {
                             type_field: "text".to_string(),
                             msgid: "qlo".to_string(),
@@ -376,8 +385,10 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
 
                                 OptionB { type_field: "text".to_string(), title: ax.to_string() }
                             }).collect(),
+                            show: None,
                         },
                         type_field: typ.to_string(),
+                        type_midia: TypeMidia::NULL,
                     };
                     db.set_chat(serde_json::to_value(chat).unwrap()).await.unwrap();
                 }
@@ -403,14 +414,11 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
                 }
 
 
-
                 let count = iitens.len();
                 let pay = Payload { title: "".to_string(), itens: iitens };
                 if count > 0 {
                     it.push(pay)
                 }
-
-
             }
 
             let mut bt: Vec<ButtonMenu> = Vec::new();
@@ -423,9 +431,10 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
                 id: None,
                 index: status.to_string(),
                 app: app.to_string(),
-                data: ListMongo { show: Some(false),body:   a.to_string()   , payload: it, button_menu: bt },
+                data: ListMongo { show: Some(false), body: a.to_string(), payload: it, button_menu: bt },
                 type_field: typ.to_string(),
-                midia:false
+                midia: false,
+                type_midia: TypeMidia::NULL
             };
             db.set_chat(serde_json::to_value(chat).unwrap()).await.unwrap();
         }

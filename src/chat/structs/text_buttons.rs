@@ -10,6 +10,7 @@ pub struct TextButtons<T> {
     pub msgid: String,
     pub content: T,
     pub options: Vec<OptionB>,
+    pub show:Option<bool>
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
