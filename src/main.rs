@@ -71,8 +71,8 @@ async fn main() {
 
             }
 
-            if  threads_number_speed.contains_key(new_job.number.as_str()   ) {
-                let thread = threads_number_speed.remove(new_job.number.as_str()).unwrap();
+            if  threads_number_speed.contains_key(new_job_sp.number.as_str()   ) {
+                let thread = threads_number_speed.remove(new_job_sp.number.as_str()).unwrap();
                 thread.abort();
 
             }
@@ -86,7 +86,7 @@ async fn main() {
                     new_job.app.as_str(),
                     new_job.number.as_str(), get_number_app(new_job.app.as_str()),
                     serde_json::to_value(
-                        MessageText { type_field: "text".to_string(), text: "por falta de resposta, estamos encerrando nosso atendimento.".to_string() }
+                        MessageText { type_field: "text".to_string(), text: "Por falta de resposta, estamos encerrando nosso atendimento.".to_string() }
                     ).unwrap());
 
                 let mut vec = Vec::new();
