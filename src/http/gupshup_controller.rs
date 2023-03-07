@@ -37,6 +37,9 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
                     let msg: ParentMessage<MessageEvent<Enqueued>> = serde_json::from_str(&message.to_string()).unwrap();
                 } else if ty.as_str().unwrap().eq(&"failed".to_string()) {
                     let msg: ParentMessage<MessageEvent<Failed>> = serde_json::from_str(&message.to_string()).unwrap();
+
+                    println!("{:?}",msg);
+
                 } else if ty.as_str().unwrap().eq(&"sent".to_string()) {
                     let msg: ParentMessage<MessageEvent<Sent>> = serde_json::from_str(&message.to_string()).unwrap();
                 } else if ty.as_str().unwrap().eq(&"delivered".to_string()) {
