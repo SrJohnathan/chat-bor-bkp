@@ -113,39 +113,13 @@ impl<'r> MongoDb<'r> {
                         for v in tmp {
                             let mut v1 = v.replace("{|}", "");
 
-
-                            let mut mi = false;
-                            let mut show_list = false;
-                            let mut url = String::from("list");
-                            let re = Regex::new(r"\{\{(.*?)\}\}").unwrap();
-                            let result = re.replace_all(v1.as_str(), |caps: &regex::Captures| {
-                                let name = &caps[1];
-                                match name {
-                                    "name" => "joão",
-
-                                    "list" => {
-                                        show_list = true;
-
-                                        ""
-                                    }
-
-                                    _ => {
-                                        let mut g: Vec<&str> = name.split("::").collect();
-                                        let qg: Vec<String> = g.iter().map(|x| x.replace("::", "")).collect();
-                                        mi = if qg[0] == "image".to_string() { true } else { false };
-                                        url = qg[1].clone();
-
-
-                                        ""
-                                    }
-                                }
-                            });
+                            let res = factory_text(v1);
 
                             let vel = ListMongo {
-                                body: result.to_string(),
+                                body: res.0,
                                 payload: value.payload.clone(),
                                 button_menu: value.button_menu.clone(),
-                                show: Some(show_list),
+                                show: Some(res.4),
                             };
 
 
@@ -154,9 +128,9 @@ impl<'r> MongoDb<'r> {
                                 index: s.index.clone(),
                                 app: s.app.clone(),
                                 data: vel,
-                                type_field: url,
-                                midia: mi,
-                                type_midia: TypeMidia::NULL,
+                                type_field: if res.1 { res.2 } else { "list".to_string() },
+                                midia: res.1,
+                                type_midia: res.3,
                             };
 
 
