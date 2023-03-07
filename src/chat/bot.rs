@@ -40,8 +40,8 @@ fn description_list_1(i: i32,st:&str) -> Option<String> {
 
      "1-1" =>{
          match i {
-             0 => "Escolha esta opção para receber o link da nossa página com mais informações sobre o serviço.",
-             1 => "Escolha esta opção para receber o link do formulário de contratação deste serviço",
+             0 => "Você receberá o link da nossa página com informações sobre o serviço.",
+             1 => "Você receberá o link do formulário de contratação deste serviço",
              2 => "Escolha esta opção para voltar para o menu principal",
              _ => Default::default(),
          }
