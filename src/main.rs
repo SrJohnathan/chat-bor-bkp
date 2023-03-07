@@ -78,7 +78,7 @@ async fn main() {
             }
 
             threads_number.insert(new_job.number.clone(), tokio::spawn(async move {
-                tokio::time::sleep(tokio::time::Duration::from_secs(60 * 5)).await;
+                tokio::time::sleep(tokio::time::Duration::from_secs(120)).await;
                 let key = std::env::var("KEY_API").unwrap();
                 let message = SendMessage::new(key);
 
