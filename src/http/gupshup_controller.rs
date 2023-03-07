@@ -112,6 +112,9 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
 
                     let my_str = msg.payload.payload.postbackText.parse::<i32>().unwrap();
 
+                    chat.add_props(String::from("nodedouser"),msg.payload.sender.name);
+
+
                     match  chat.run_list(&(my_str +1).to_string(),&db).await {
                         Ok(c) => {
 
