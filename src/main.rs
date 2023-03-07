@@ -36,11 +36,16 @@ use mongodb::{bson::doc, options::ClientOptions, Client};
 
 */
 
+
+
+
+
 mod model;
 pub mod schema;
 mod http;
 pub mod cofg;
 pub mod chat;
+
 
 #[tokio::main]
 async fn main() {
@@ -52,23 +57,24 @@ async fn main() {
 
     tokio::spawn(async move {
         let mut threads_number: HashMap<String, JoinHandle<_>> = HashMap::new();
+        let mut threads_number_speed: HashMap<String, JoinHandle<_>> = HashMap::new();
 
         while let Some(v) = channel.1.recv().await {
 
 
             let new_job: NewJob = serde_json::from_str(&v).unwrap();
+            let new_job_sp: NewJob = serde_json::from_str(&v).unwrap();
 
-
-            println!("{:?}",threads_number.contains_key(new_job.number.as_str()   ));
             if  threads_number.contains_key(new_job.number.as_str()   ) {
-
-                println!("aborto");
                 let thread = threads_number.remove(new_job.number.as_str()).unwrap();
                 thread.abort();
 
-            }else {
+            }
 
-                println!("{:?}",threads_number);
+            if  threads_number_speed.contains_key(new_job.number.as_str()   ) {
+                let thread = threads_number_speed.remove(new_job.number.as_str()).unwrap();
+                thread.abort();
+
             }
 
             threads_number.insert(new_job.number.clone(), tokio::spawn(async move {
@@ -87,6 +93,24 @@ async fn main() {
                 vec.push(value);
                 message.send(vec).await;
             }));
+
+            threads_number_speed.insert(new_job_sp.number.clone(), tokio::spawn(async move {
+                tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
+                let key = std::env::var("KEY_API").unwrap();
+                let message = SendMessage::new(key);
+
+                let value: SendWP<Value> = SendWP::new(
+                    new_job_sp.app.as_str(),
+                    new_job_sp.number.as_str(), get_number_app(new_job_sp.app.as_str()),
+                    serde_json::to_value(
+                        MessageText { type_field: "text".to_string(), text: "escolha uma opção por favor.".to_string() }
+                    ).unwrap());
+
+                let mut vec = Vec::new();
+                vec.push(value);
+                message.send(vec).await;
+            }));
+
         }
 
     });
