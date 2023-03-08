@@ -106,7 +106,34 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
 
 
                     match  chat.run_button(&msg.payload.payload.title,&db).await {
-                        Ok(c) => {println!("{}",c) }
+                        Ok(c) => {
+
+                            let e =  if c.st.as_str() == "exit" {
+
+                                NewJob{
+                                    number: c.number.clone(),
+                                    etapa: "exit".to_string(),
+                                    time: 0,
+                                    app: c.app.clone()
+                                }
+
+                            } else {
+
+                                NewJob{
+                                    number: c.number.clone(),
+                                    etapa: c.st.clone(),
+                                    time: 0,
+                                    app: c.app.clone()
+                                }
+
+                            };
+
+                            match   job.send(serde_json::to_string(&e).unwrap()).await {
+                                Ok(x) => {}
+                                Err(e) => { println!("{}",e.0) }
+                            }
+
+                        }
                         Err(e) => { println!("erro {}",e)}
                     }
 

@@ -39,28 +39,9 @@ impl ChatWP {
                 if c.len() > 0 {
                     let st: &Status = c.get(0).unwrap();
 
-
-                    if st.st.len() >= 5 {
-                        let new_status = Status {
-                            id: st.id,
-                            st: "1".to_string(),
-                            number: st.number.clone(),
-                            app: st.app.clone(),
-                        };
-
-                        match con.delele_status(&new_status).await {
-                            Ok(x) => { println!("atualizou o status") }
-                            Err(e) => { println!("{:?}", e) }
-                        };
-                        match bot::bot(&new_status, con, &self.map).await {
-                            Ok(c) => { Ok(new_status) }
-                            Err(e) => { Err(e) }
-                        }
-                    } else {
-                        match bot::bot(&st, con, &self.map).await {
-                            Ok(c) => { Ok(st.clone()) }
-                            Err(e) => { Err(e) }
-                        }
+                    match bot::bot(&st, con, &self.map).await {
+                        Ok(c) => { Ok(st.clone()) }
+                        Err(e) => { Err(e) }
                     }
                 } else {
                     let st = Status {
@@ -145,7 +126,7 @@ impl ChatWP {
             Err(e) => { Err(String::from(e.kind.to_string())) }
         }
     }
-    pub async fn run_button(&mut self, text: &String, con: &MongoDb<'_>) -> Result<String, String> {
+    pub async fn run_button(&mut self, text: &String, con: &MongoDb<'_>) -> Result<Status, String> {
         let res = select_status(self.number.clone(), self.app.clone(), con.0).await;
 
         match res {
@@ -154,6 +135,7 @@ impl ChatWP {
                     let st: &Status = c.get(0).unwrap();
 
 
+                    let mut is_button_exit = false;
                     let newst = match text.as_str() {
                         "Voltar" => {
                             let mut s = String::from(st.st.clone());
@@ -167,6 +149,16 @@ impl ChatWP {
                             format!("{}-{}", st.st, 1)
                         }
 
+                        "Menu principal" => {
+                            self.map.insert("voltar".to_string(), "true".to_string());
+                            "1".to_string()
+                        }
+
+                        "Encerrar conversa" => {
+                            is_button_exit = true;
+                            format!("{}-{}", st.st, 2)
+                        }
+
                         "Contratar" => {
                             format!("{}-{}", st.st, 2)
                         }
@@ -174,21 +166,30 @@ impl ChatWP {
                             "1".to_string()
                         }
                     };
-                    let new_status = Status {
-                        id: st.id,
-                        st: newst,
-                        number: st.number.clone(),
-                        app: st.app.clone(),
-                    };
 
-                    match con.update_status(&new_status).await {
-                        Ok(x) => { println!("atualizou o status") }
-                        Err(e) => { println!("{:?}", e) }
-                    };
-                    match bot::bot(&new_status, con, &self.map).await {
-                        Ok(c) => { Ok(c) }
-                        Err(e) => { Err(e) }
-                    }
+
+                        let new_status = Status {
+                            id: st.id,
+                            st: newst,
+                            number: st.number.clone(),
+                            app: st.app.clone(),
+                        };
+                        match con.update_status(&new_status).await {
+                            Ok(x) => { println!("atualizou o status") }
+                            Err(e) => { println!("{:?}", e) }
+                        };
+                        match bot::bot(&new_status, con, &self.map).await {
+                            Ok(c) => {
+                                if is_button_exit {Ok( Status{
+                                    id: new_status.id,
+                                    st: "exit".to_string(),
+                                    number: new_status.number,
+                                    app: new_status.app
+                                }  ) } else { Ok(new_status) }
+                            }
+                            Err(e) => { Err(e) }
+                        }
+
                 } else {
                     let st = Status {
                         id: None,
@@ -207,7 +208,7 @@ impl ChatWP {
                                     Err(e) => { Err(e) }
                                 }.expect("TODO: panic message");
 
-                                Ok("ok".to_string())
+                                Ok(st)
                             } else { Err(String::from("error ao inserir dados")) }
                         }
                         Err(e) => Err(e)
@@ -241,17 +242,14 @@ impl ChatWP {
 
                     match con.update_status(&new_status).await {
                         Ok(x) => {
-
-
-                              match bot::bot(&new_status, con, &self.map).await {
+                            match bot::bot(&new_status, con, &self.map).await {
                                 Ok(c) => { Ok(true) }
                                 Err(e) => { Err(1) }
                             }
-
                         }
                         Err(e) => { Err(0) }
                     }
-                }else {
+                } else {
                     Err(1)
                 }
             }

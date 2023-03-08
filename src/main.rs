@@ -77,40 +77,42 @@ async fn main() {
 
             }
 
-            threads_number.insert(new_job.number.clone(), tokio::spawn(async move {
-                tokio::time::sleep(tokio::time::Duration::from_secs(120)).await;
-                let key = std::env::var("KEY_API").unwrap();
-                let message = SendMessage::new(key);
+            if new_job.etapa.as_str() != "exit" {
+                threads_number.insert(new_job.number.clone(), tokio::spawn(async move {
+                    tokio::time::sleep(tokio::time::Duration::from_secs(120)).await;
+                    let key = std::env::var("KEY_API").unwrap();
+                    let message = SendMessage::new(key);
 
-                let value: SendWP<Value> = SendWP::new(
-                    new_job.app.as_str(),
-                    new_job.number.as_str(), get_number_app(new_job.app.as_str()),
-                    serde_json::to_value(
-                        MessageText { type_field: "text".to_string(), text: "Por falta de resposta, estamos encerrando nosso atendimento.".to_string() }
-                    ).unwrap());
+                    let value: SendWP<Value> = SendWP::new(
+                        new_job.app.as_str(),
+                        new_job.number.as_str(), get_number_app(new_job.app.as_str()),
+                        serde_json::to_value(
+                            MessageText { type_field: "text".to_string(), text: "Por falta de resposta, estamos encerrando nosso atendimento.".to_string() }
+                        ).unwrap());
 
-                let mut vec = Vec::new();
-                vec.push(value);
-                message.send(vec).await;
-            }));
+                    let mut vec = Vec::new();
+                    vec.push(value);
+                    message.send(vec).await;
+                }));
+            }
+            if new_job_sp.etapa.as_str() != "exit" {
+                threads_number_speed.insert(new_job_sp.number.clone(), tokio::spawn(async move {
+                    tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
+                    let key = std::env::var("KEY_API").unwrap();
+                    let message = SendMessage::new(key);
 
-            threads_number_speed.insert(new_job_sp.number.clone(), tokio::spawn(async move {
-                tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
-                let key = std::env::var("KEY_API").unwrap();
-                let message = SendMessage::new(key);
+                    let value: SendWP<Value> = SendWP::new(
+                        new_job_sp.app.as_str(),
+                        new_job_sp.number.as_str(), get_number_app(new_job_sp.app.as_str()),
+                        serde_json::to_value(
+                            MessageText { type_field: "text".to_string(), text: "Escolha uma opção por favor.".to_string() }
+                        ).unwrap());
 
-                let value: SendWP<Value> = SendWP::new(
-                    new_job_sp.app.as_str(),
-                    new_job_sp.number.as_str(), get_number_app(new_job_sp.app.as_str()),
-                    serde_json::to_value(
-                        MessageText { type_field: "text".to_string(), text: "Escolha uma opção por favor.".to_string() }
-                    ).unwrap());
-
-                let mut vec = Vec::new();
-                vec.push(value);
-                message.send(vec).await;
-            }));
-
+                    let mut vec = Vec::new();
+                    vec.push(value);
+                    message.send(vec).await;
+                }));
+            }
         }
 
     });
