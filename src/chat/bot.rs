@@ -118,11 +118,20 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
 
                         let mut text_final = if map.contains_key("voltar") {
                             "*Queira por favor indicar qual é o seu interesse*👇".to_string()
+
+
+
                         } else {
                             match   map.get("nodedouser") {
                                 None => { bot.body }
                                 Some(x) => {  bot.body.replace("nodedouser", x.as_str()) }
                             }
+
+
+
+
+
+
                         };
 
                         let dat = {
@@ -175,7 +184,13 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                             st.number.as_str(), get_number_app(st.app.as_str()),
                             dat);
 
-                        vec.push(value);
+                        if map.contains_key("voltar") {
+                            vec.clear();
+                            vec.push(value);
+                        }else {
+                            vec.push(value);
+                        }
+
                     }
 
                     Ok(vec)

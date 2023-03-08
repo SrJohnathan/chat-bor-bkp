@@ -27,8 +27,8 @@ impl ChatWP {
     }
 
 
-    pub  fn add_props(&mut self, key: String, value: String) {
-        self.map.insert(key, value  );
+    pub fn add_props(&mut self, key: String, value: String) {
+        self.map.insert(key, value);
     }
 
     pub async fn run(&self, con: &MongoDb<'_>) -> Result<Status, String> {
@@ -57,7 +57,7 @@ impl ChatWP {
                             Err(e) => { Err(e) }
                         }
                     } else {
-                        match bot::bot(&st, con,&self.map).await {
+                        match bot::bot(&st, con, &self.map).await {
                             Ok(c) => { Ok(st.clone()) }
                             Err(e) => { Err(e) }
                         }
@@ -75,7 +75,7 @@ impl ChatWP {
                     match insert {
                         Ok(v) => {
                             if v == true {
-                                match bot::bot(&st, con,&self.map).await {
+                                match bot::bot(&st, con, &self.map).await {
                                     Ok(c) => { Ok(c) }
                                     Err(e) => { Err(e) }
                                 }.expect("TODO: panic message");
@@ -111,12 +111,12 @@ impl ChatWP {
                         Err(e) => { println!("{:?}", e) }
                     };
 
-                   let v = match bot::bot(&new_status, con,&self.map).await {
+                    let v = match bot::bot(&new_status, con, &self.map).await {
                         Ok(c) => { Ok(new_status) }
                         Err(e) => { Err(e) }
                     };
 
-                   v
+                    v
                 } else {
                     let st = Status {
                         id: None,
@@ -130,7 +130,7 @@ impl ChatWP {
                     match insert {
                         Ok(v) => {
                             if v == true {
-                                match bot::bot(&st, con,&self.map).await {
+                                match bot::bot(&st, con, &self.map).await {
                                     Ok(c) => { Ok(c) }
                                     Err(e) => { Err(e) }
                                 }.expect("TODO: panic message");
@@ -159,7 +159,7 @@ impl ChatWP {
                             let mut s = String::from(st.st.clone());
                             let len = s.len();
                             let (e, new_len) = s.split_at(len - 2);
-                            self.map.insert("voltar".to_string(),"true".to_string());
+                            self.map.insert("voltar".to_string(), "true".to_string());
                             format!("{}", e)
                         }
 
@@ -185,7 +185,7 @@ impl ChatWP {
                         Ok(x) => { println!("atualizou o status") }
                         Err(e) => { println!("{:?}", e) }
                     };
-                    match bot::bot(&new_status, con,&self.map).await {
+                    match bot::bot(&new_status, con, &self.map).await {
                         Ok(c) => { Ok(c) }
                         Err(e) => { Err(e) }
                     }
@@ -202,7 +202,7 @@ impl ChatWP {
                     match insert {
                         Ok(v) => {
                             if v == true {
-                                match bot::bot(&st, con,&self.map).await {
+                                match bot::bot(&st, con, &self.map).await {
                                     Ok(c) => { Ok(c) }
                                     Err(e) => { Err(e) }
                                 }.expect("TODO: panic message");
@@ -215,6 +215,47 @@ impl ChatWP {
                 }
             }
             Err(e) => { Err(String::from(e.kind.to_string())) }
+        }
+    }
+    pub async fn back(&mut self, con: &MongoDb<'_>) -> Result<bool, i32> {
+        let res = select_status(self.number.clone(), self.app.clone(), con.0).await;
+
+        match res {
+            Ok(c) => {
+                if c.len() > 0 {
+                    let st: &Status = c.get(0).unwrap();
+
+
+                    let mut s = String::from(st.st.clone());
+                    let len = s.len();
+                    let (e, new_len) = s.split_at(len - 2);
+                    self.map.insert("voltar".to_string(), "true".to_string());
+                    let newst = format!("{}", e);
+
+                    let new_status = Status {
+                        id: st.id,
+                        st: newst,
+                        number: st.number.clone(),
+                        app: st.app.clone(),
+                    };
+
+                    match con.update_status(&new_status).await {
+                        Ok(x) => {
+
+
+                              match bot::bot(&new_status, con, &self.map).await {
+                                Ok(c) => { Ok(true) }
+                                Err(e) => { Err(1) }
+                            }
+
+                        }
+                        Err(e) => { Err(0) }
+                    }
+                }else {
+                    Err(1)
+                }
+            }
+            Err(e) => { Err(2) }
         }
     }
 }

@@ -1,3 +1,4 @@
+use std::future::Future;
 use rocket::http::Status;
 use rocket::response::status::{BadRequest, Created};
 use rocket::serde::json::Json;
@@ -112,33 +113,47 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
 
                 } else if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
-
-                    let my_str = msg.payload.payload.postbackText.parse::<i32>().unwrap();
-
                     chat.add_props(String::from("nodedouser"),msg.payload.sender.name);
 
+                    let my_str = msg.payload.payload.postbackText.parse::<i32>().unwrap();
+                    match  msg.payload.payload.title.as_str() {
 
-                    match  chat.run_list(&(my_str +1).to_string(),&db).await {
-                        Ok(c) => {
+                        "Voltar" =>{
+                            match chat.back(&db).await {
+                                Ok(c) => {
 
-
-
-
-                            let e = NewJob{
-                                number: c.number.clone(),
-                                etapa: c.st.clone(),
-                                time: 0,
-                                app: c.app.clone()
-                            };
-
-                            match   job.send(serde_json::to_string(&e).unwrap()).await {
-                                Ok(x) => {}
-                                Err(e) => { println!("{}",e.0) }
+                                }
+                                Err(e) =>{}
                             }
-
                         }
-                        Err(e) => { println!("erro {}",e)}
+
+                        &_ => {
+                            match  chat.run_list(&(my_str +1).to_string(),&db).await {
+                                Ok(c) => {
+
+
+                                    let e = NewJob{
+                                        number: c.number.clone(),
+                                        etapa: c.st.clone(),
+                                        time: 0,
+                                        app: c.app.clone()
+                                    };
+
+                                    match   job.send(serde_json::to_string(&e).unwrap()).await {
+                                        Ok(x) => {}
+                                        Err(e) => { println!("{}",e.0) }
+                                    }
+
+                                }
+                                Err(e) => { println!("erro {}",e)}
+                            }
+                        }
+
+
                     }
+
+
+
 
                 } else {}
 

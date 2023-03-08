@@ -42,7 +42,7 @@ pub fn factory_text(mut v1:String) -> (String, bool, String, TypeMidia, bool) {
                         "image" => { mi = true ; type_midia = TypeMidia::IMAGE; url  = qg[1].clone(); "" }
                         "video" => { mi = true ; type_midia = TypeMidia::VIDEO ; url  = qg[1].clone(); "" }
                         "document" => { mi = true ; type_midia = TypeMidia::DOCUMENT; url  = qg[1].clone(); "" }
-                        &_ => todo!()
+                        &_ => ""
                     }
 
                 },
