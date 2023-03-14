@@ -156,7 +156,7 @@ impl ChatWP {
 
                         "Encerrar conversa" => {
                             is_button_exit = true;
-                            format!("{}-{}", st.st, 1)
+                            format!("{}-{}", st.st, 2)
                         }
 
                         "Contratar" => {
