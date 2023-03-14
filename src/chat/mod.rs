@@ -145,7 +145,7 @@ impl ChatWP {
                             format!("{}", e)
                         }
 
-                        "+ Informação" => {
+                        "Mais informaçôes" => {
                             format!("{}-{}", st.st, 1)
                         }
 

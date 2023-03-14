@@ -67,7 +67,7 @@ pub struct MidiaType {
     #[serde(rename = "type")]
     pub type_field: String,
     pub url: String,
-    pub filename: String,
+    pub filename: Option<String>,
 }
 
 

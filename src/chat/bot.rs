@@ -10,7 +10,7 @@ use serde_json::Value;
 use crate::chat::db_mongo::MongoDb;
 use crate::chat::factory_msg_send_text::TypeMidia;
 use crate::chat::send_list_wp;
-use crate::chat::send_list_wp::{ButtonWP, ContentBT, ContentMD, GlobalButton, ImageMidia, Item, Message, MessageText, OptionBT, SendWP};
+use crate::chat::send_list_wp::{ButtonWP, ContentBT, ContentMD, GlobalButton, ImageMidia, Item, Message, MessageText, MidiaType, OptionBT, SendWP};
 use crate::chat::structs::{Chat, ChatDataType};
 use crate::chat::structs::list_mongo::{ButtonMenu, Iten, ListMongo, Payload};
 use crate::chat::structs::status::Status;
@@ -149,6 +149,19 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                             } else {
                                 if bo.midia {
                                     match bo.type_midia {
+
+                                        TypeMidia::AUDIO =>{
+
+                                            serde_json::to_value(
+                                                MidiaType {
+                                                    type_field: "audio".to_string(),
+                                                    url: bo.type_field,
+                                                    filename: None
+                                                }
+                                            ).unwrap()
+
+
+                                        }
                                         TypeMidia::NULL => { todo!() }
                                         TypeMidia::IMAGE => {
                                             serde_json::to_value(
@@ -222,6 +235,20 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                             } else {
                                 if button.midia {
                                     match button.type_midia {
+
+                                        TypeMidia::AUDIO =>{
+
+                                            serde_json::to_value(
+                                                MidiaType {
+                                                    type_field: "audio".to_string(),
+                                                    url: button.type_field,
+                                                    filename: None
+                                                }
+                                            ).unwrap()
+
+
+                                        }
+
                                         TypeMidia::NULL => { todo!() }
                                         TypeMidia::IMAGE => {
                                             serde_json::to_value(
