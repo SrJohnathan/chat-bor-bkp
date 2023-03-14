@@ -119,7 +119,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                         } */
 
                         let mut text_final = if map.contains_key("voltar") {
-                            "*Queira por favor indicar qual é o seu interesse*👇".to_string()
+                            "*Em que posso lhe ajudar?*👇".to_string()
 
 
 
