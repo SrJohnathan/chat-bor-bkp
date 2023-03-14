@@ -183,7 +183,10 @@ impl ChatWP {
 
                         match bot::bot(&new_status, con, &self.map).await {
                             Ok(c) => {
-                                if is_button_exit {Ok( Status{
+                                if is_button_exit {
+                                    con.delele_status(&new_status).await.unwrap();
+
+                                    Ok( Status{
                                     id: new_status.id,
                                     st: "exit".to_string(),
                                     number: new_status.number,

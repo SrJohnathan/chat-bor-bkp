@@ -130,7 +130,7 @@ async fn main() {
                             http::http_controller::insert
 
                        ])
-                    //  .mount("/public", FileServer::from(relative!("static")))
+                      .mount("/public", FileServer::from(relative!("static")))
                     .launch()
                     .await;
             }
