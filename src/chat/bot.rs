@@ -99,6 +99,8 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                         }).collect();
 
                         let mut it: Vec<Item> = bot.payload.iter().enumerate().map(|(i, v)| {
+
+
                             send_list_wp::Item {
                                 title: v.title.to_string(),
                                 subtitle: v.title.to_string(),
@@ -106,7 +108,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                     type_field: c.type_field.to_string(),
                                     title: c.title.to_string(),
                                     description: description_list_1(e as i32,st.st.as_str()),
-                                    postback_text: Some(i.to_string()),
+                                    postback_text: Some(  format!("n{}",  e as i32)),
                                 }).collect(),
                             }
                         }).collect();

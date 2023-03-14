@@ -140,9 +140,15 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
 
                 } else if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
+
+
                     chat.add_props(String::from("nodedouser"),msg.payload.sender.name);
 
-                    let my_str = msg.payload.payload.postbackText.parse::<i32>().unwrap();
+                    let tmpstr = msg.payload.payload.postbackText.replace("n","");
+                    let my_str = tmpstr.trim().parse::<i32>().unwrap();
+
+                    println!("{:?}",msg.payload.payload);
+
                     match  msg.payload.payload.title.as_str() {
 
                         "Voltar" =>{
@@ -155,6 +161,8 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
                         }
 
                         &_ => {
+
+
                             match  chat.run_list(&(my_str +1).to_string(),&db).await {
                                 Ok(c) => {
 
