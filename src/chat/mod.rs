@@ -156,7 +156,7 @@ impl ChatWP {
 
                         "Encerrar conversa" => {
                             is_button_exit = true;
-                            format!("{}", 1)
+                            format!("{}-{}", st.st, 1)
                         }
 
                         "Contratar" => {
@@ -168,32 +168,31 @@ impl ChatWP {
                     };
 
 
-                    let new_status = Status {
-                        id: st.id,
-                        st: newst,
-                        number: st.number.clone(),
-                        app: st.app.clone(),
-                    };
-                    match con.update_status(&new_status).await {
-                        Ok(x) => { println!("atualizou o status") }
-                        Err(e) => { println!("{:?}", e) }
-                    };
+                        let new_status = Status {
+                            id: st.id,
+                            st: newst,
+                            number: st.number.clone(),
+                            app: st.app.clone(),
+                        };
+                        match con.update_status(&new_status).await {
+                            Ok(x) => { println!("atualizou o status") }
+                            Err(e) => { println!("{:?}", e) }
+                        };
 
-                    if !is_button_exit {
-                        Ok(Status {
-                            id: new_status.id,
-                            st: "exit".to_string(),
-                            number: new_status.number,
-                            app: new_status.app,
-                        })
-                    } else {
+
+
                         match bot::bot(&new_status, con, &self.map).await {
                             Ok(c) => {
-                                Ok(new_status)
+                                if is_button_exit {Ok( Status{
+                                    id: new_status.id,
+                                    st: "exit".to_string(),
+                                    number: new_status.number,
+                                    app: new_status.app
+                                }  ) } else { Ok(new_status) }
                             }
                             Err(e) => { Err(e) }
                         }
-                    }
+
                 } else {
                     let st = Status {
                         id: None,
