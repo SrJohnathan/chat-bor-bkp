@@ -25,15 +25,15 @@ fn description_list_1(i: i32,st:&str) -> Option<String> {
      "1" => {
          match i {
              0 => "Tenha sua matrícula numa univercidade em Portugal a sua escolha",
-             1 => "Qualquer tipo do visto para qualquer parte do mundo ",
-             2 => "Documentos e alojamento para residir no exterior antes mesmo de chegar",
+             1 => "Tratamos de todo o tipo de visto para Portugal",
+             2 => "Obtenha seu alojamento antes mesmo de chegar em Portugal",
              3 => "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
              4 => "Consideráveis descontos nas nossas ofertas ",
-             5 => "Todos os documentos para residir legalmente no exterior",
+             5 => "Tratamos de qualquer tipo de documento para residir legalmente em Portugal",
              6 => "Cursos e atividades de integração",
              7 => "Nossa e outras bolsas de estudo",
              8 => "Tudo sobre a nossa empresa",
-             9 => "Todas as dúvidas esclarecidas e solicitações",
+             9 => "Esclareça todas as suas dúvidas e realize solicitações",
              _ => Default::default(),
          }
      }

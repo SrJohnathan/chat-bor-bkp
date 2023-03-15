@@ -110,7 +110,7 @@ async fn main() {
                         new_job_sp.app.as_str(),
                         new_job_sp.number.as_str(), get_number_app(new_job_sp.app.as_str()),
                         serde_json::to_value(
-                            MessageText { type_field: "text".to_string(), text: "EEscolha uma opção por favor🙏".to_string() }
+                            MessageText { type_field: "text".to_string(), text: "Escolha uma opção por favor🙏".to_string() }
                         ).unwrap());
 
                     let mut vec = Vec::new();
