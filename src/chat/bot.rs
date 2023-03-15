@@ -29,7 +29,7 @@ fn description_list_1(i: i32,st:&str) -> Option<String> {
              2 => "Obtenha seu alojamento antes mesmo de chegar em Portugal",
              3 => "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
              4 => "Consideráveis descontos nas nossas ofertas ",
-             5 => "Tratamos de qualquer tipo de documento para residir legalmente em Portugal",
+             5 => "TObtenha qualquer tipo de documento para residir em Portugal",
              6 => "Cursos e atividades de integração",
              7 => "Nossa e outras bolsas de estudo",
              8 => "Tudo sobre a nossa empresa",
