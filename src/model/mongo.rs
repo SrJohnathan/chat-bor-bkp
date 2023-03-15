@@ -65,3 +65,12 @@ pub async fn insert_status(st: &Status, db: &Database) -> Result<bool, String> {
         Err(err) => Err(String::from("error em atualizar o status"))
     }
 }
+pub async fn delele_status(number:&String,app:&String, db: &Database) -> Result<bool, mongodb::error::Error> {
+    let filter = doc! { "number": number.as_str() , "app": app.as_str() };
+    let typed_collection = db.collection::<Status>("status");
+    let f = typed_collection.delete_many(filter, None).await;
+    match f {
+        Ok(v) => Ok(v.deleted_count > 0),
+        Err(err) => Err(err)
+    }
+}

@@ -16,7 +16,7 @@ use crate::chat::send_list_wp::{MessageText, SendWP};
 use crate::cofg::{get_number_app, JobWP, NewJob};
 use crate::http::models::SendMessage;
 
-use crate::model::mongo::connection;
+use crate::model::mongo::{connection, delele_status};
 
 //mongo  stw  l1sLXHUz01OACdof
 
@@ -89,6 +89,11 @@ async fn main() {
                         serde_json::to_value(
                             MessageText { type_field: "text".to_string(), text: "Por falta de resposta, estamos encerrando nosso atendimento.".to_string() }
                         ).unwrap());
+
+
+                        let db = connection().await.unwrap();
+
+                        delele_status(&new_job.number,&new_job.app,&db).await.unwrap();
 
                     let mut vec = Vec::new();
                     vec.push(value);

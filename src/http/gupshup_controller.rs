@@ -147,7 +147,7 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
                     let tmpstr = msg.payload.payload.postbackText.replace("n","");
                     let my_str = tmpstr.trim().parse::<i32>().unwrap();
 
-                    println!("{:?}",msg.payload.payload);
+
 
                     match  msg.payload.payload.title.as_str() {
 
