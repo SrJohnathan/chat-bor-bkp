@@ -87,7 +87,7 @@ async fn main() {
                         new_job.app.as_str(),
                         new_job.number.as_str(), get_number_app(new_job.app.as_str()),
                         serde_json::to_value(
-                            MessageText { type_field: "text".to_string(), text: "Por falta de resposta, estamos encerrando nosso atendimento.".to_string() }
+                            MessageText { type_field: "text".to_string(), text: "Por falta de resposta vamos encerrar este atendimento, pode sempre iniciar uma nova conversa enviando qualquer mensagem, obrigado!".to_string() }
                         ).unwrap());
 
 
@@ -102,7 +102,7 @@ async fn main() {
             }
             if new_job_sp.etapa.as_str() != "exit" {
                 threads_number_speed.insert(new_job_sp.number.clone(), tokio::spawn(async move {
-                    tokio::time::sleep(tokio::time::Duration::from_secs(12)).await;
+                    tokio::time::sleep(tokio::time::Duration::from_secs(120)).await;
                     let key = std::env::var("KEY_API").unwrap();
                     let message = SendMessage::new(key);
 
@@ -110,7 +110,7 @@ async fn main() {
                         new_job_sp.app.as_str(),
                         new_job_sp.number.as_str(), get_number_app(new_job_sp.app.as_str()),
                         serde_json::to_value(
-                            MessageText { type_field: "text".to_string(), text: "Escolha uma opção por favor.".to_string() }
+                            MessageText { type_field: "text".to_string(), text: "EEscolha uma opção por favor🙏".to_string() }
                         ).unwrap());
 
                     let mut vec = Vec::new();
