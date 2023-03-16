@@ -29,7 +29,7 @@ fn description_list_1(i: i32,st:&str) -> Option<String> {
              2 => "Obtenha seu alojamento antes mesmo de chegar em Portugal",
              3 => "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
              4 => "Consideráveis descontos nas nossas ofertas ",
-             5 => "TObtenha qualquer tipo de documento para residir em Portugal",
+             5 => "Obtenha qualquer tipo de documento para residir em Portugal",
              6 => "Cursos e atividades de integração",
              7 => "Nossa e outras bolsas de estudo",
              8 => "Tudo sobre a nossa empresa",
@@ -40,9 +40,9 @@ fn description_list_1(i: i32,st:&str) -> Option<String> {
 
      "1-1" =>{
          match i {
-             0 => "Você receberá o link da nossa página com informações sobre o serviço.",
-             1 => "Você receberá o link do formulário de contratação deste serviço",
-             2 => "Escolha esta opção para voltar para o menu principal",
+             0 => "Selecione e receba o link para mais informações.",
+             1 => "Selecione e receba o link para contratar este serviço.",
+             2 => "Selecione para voltar ao menu inicial",
              _ => Default::default(),
          }
      }
@@ -119,7 +119,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                         } */
 
                         let mut text_final = if map.contains_key("voltar") {
-                            "*Em que posso lhe ajudar?*👇".to_string()
+                            "Em que posso lhe ajudar?".to_string()
 
 
 
