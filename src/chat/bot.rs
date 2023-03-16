@@ -70,7 +70,15 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                 }
                 ChatDataType::Text(text) => {
                     let mut vec = Vec::new();
+
+
                     for tex in text {
+
+
+
+
+
+
                         let value: SendWP<Value> = SendWP::new(
                             st.app.as_str(),
                             st.number.as_str(), get_number_app(st.app.as_str()),

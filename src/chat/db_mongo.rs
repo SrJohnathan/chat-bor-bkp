@@ -12,7 +12,7 @@ use crate::chat::structs::{Chat, ChatDataType};
 use crate::chat::structs::list_mongo::ListMongo;
 use crate::chat::structs::status::Status;
 use crate::chat::structs::text_buttons::{ContentMedia, ContentText, TextButtons};
-use crate::chat::structs::text_mongo::TextMongo;
+use crate::chat::structs::text_mongo::{Body, TextMongo};
 
 pub async fn connection() -> Result<Database, mongodb::error::Error> {
     let client_options = ClientOptions::parse(
@@ -89,17 +89,30 @@ impl<'r> MongoDb<'r> {
                         let mut vec = Vec::new();
 
                         let value: TextMongo = serde_json::from_value(s.data).unwrap();
-                        let c: Chat<TextMongo> = Chat {
-                            id: s.id,
-                            index: s.index,
-                            app: s.app,
-                            data: value,
-                            type_field: s.type_field,
-                            midia: false,
-                            type_midia: TypeMidia::NULL,
-                        };
 
-                        vec.push(c);
+                        let tmp: Vec<&str> = value.body.text.split("{|}").collect();
+
+                        for v in tmp {
+                            let mut v1 = v.replace("{|}", "");
+
+                            let res = factory_text(v1);
+
+                            let c: Chat<TextMongo> = Chat {
+                                id: s.id,
+                                index: s.index.clone(),
+                                app: s.app.clone(),
+                                data: TextMongo { body: Body{ type_field: "text".to_string(), text: res.0} },
+                                type_field: if res.1 { res.2 } else { "text".to_string() },
+                                midia: res.1,
+                                type_midia: res.3,
+                            };
+
+                            vec.push(c);
+
+                        }
+
+
+
                         Ok(ChatDataType::Text(vec))
                     }
                     "list" => {
