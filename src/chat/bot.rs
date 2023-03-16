@@ -72,19 +72,56 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                     let mut vec = Vec::new();
 
 
-                    for tex in text {
+                    for button in text {
+
+                    let result =  if button.midia {
+                            match button.type_midia {
+
+                                TypeMidia::AUDIO =>{
+
+                                    serde_json::to_value(
+                                        MidiaType {
+                                            type_field: "audio".to_string(),
+                                            url: button.type_field,
+                                            filename: None
+                                        }
+                                    ).unwrap()
 
 
+                                }
 
-
-
+                                TypeMidia::NULL => { todo!() }
+                                TypeMidia::IMAGE => {
+                                    serde_json::to_value(
+                                        ImageMidia {
+                                            type_field: "image".to_string(),
+                                            original_url: button.type_field.clone(),
+                                            preview_url: button.type_field,
+                                            caption: button.data.body.text,
+                                        }
+                                    ).unwrap()
+                                }
+                                TypeMidia::DOCUMENT => { todo!() }
+                                TypeMidia::VIDEO => {
+                                    serde_json::to_value(
+                                        ContentMD {
+                                            type_field: "video".to_string(),
+                                            url: button.type_field,
+                                            caption: "".to_string(),
+                                        }
+                                    ).unwrap()
+                                }
+                            }
+                        } else {
+                            serde_json::to_value(
+                                MessageText { type_field: "text".to_string(), text: button.data.body.text }
+                            ).unwrap()
+                        };
 
                         let value: SendWP<Value> = SendWP::new(
                             st.app.as_str(),
                             st.number.as_str(), get_number_app(st.app.as_str()),
-                            serde_json::to_value(
-                                MessageText { type_field: "text".to_string(), text: tex.data.body.text }
-                            ).unwrap());
+                           result);
 
                         vec.push(value);
                     }
