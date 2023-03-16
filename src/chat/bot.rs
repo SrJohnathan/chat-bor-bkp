@@ -38,7 +38,7 @@ fn description_list_1(i: i32,st:&str) -> Option<String> {
          }
      }
 
-     "1-1" =>{
+     _ =>{
          match i {
              0 => "Selecione e receba o link para mais informações.",
              1 => "Selecione e receba o link para contratar este serviço.",
