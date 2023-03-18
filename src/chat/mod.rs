@@ -136,6 +136,8 @@ impl ChatWP {
 
 
                     let mut is_button_exit = false;
+                    println!("{}",text.as_str());
+
                     let newst = match text.as_str() {
                         "Voltar" => {
                             let mut s = String::from(st.st.clone());
@@ -145,7 +147,7 @@ impl ChatWP {
                             format!("{}", e)
                         }
 
-                        "Mais informaçôes" => {
+                        "Mais Informações" => {
                             format!("{}-{}", st.st, 1)
                         }
 

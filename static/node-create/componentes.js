@@ -107,7 +107,11 @@ class NodeText extends NodeUI {
         super(1, {});
 
 
-        const id = editor.addNode('github', key, 1, 500, 50, 'github', {"status": "1"}, "NodeText", true);
+
+
+
+
+        const id = editor.addNode('github', key, 1, mouseX,  mouseY, 'github', {"status": "1"}, "NodeText", true);
         this.id = id
         this.typ = "text"
         this.ty = TYPE_MESSAGE.TEXT
@@ -135,7 +139,7 @@ class NodeOption extends NodeUI {
             this.op.push(i)
         }
 
-        const id = editor.addNode('github', entrada, saida, 500, 50, 'github', data, "nodeOption"+saida, true);
+        const id = editor.addNode('github', entrada, saida, mouseX,  mouseY, 'github', data, "nodeOption"+saida, true);
         this.id = id
         this.typ = "quick_reply"
         this.ty = TYPE_MESSAGE.NUMBER
@@ -163,7 +167,7 @@ class NodeList extends NodeUI {
             this.op.push(i)
         }
 
-        const id = editor.addNode('github', entrada, saida, 500, 50, 'github', {"status": "1"}, "nodelista"+saida, true);
+        const id = editor.addNode('github', entrada, saida, mouseX,  mouseY, 'github', {"status": "1"}, "nodelista"+saida, true);
         this.id = id
         this.typ = "list"
         this.ty = TYPE_MESSAGE.NUMBER

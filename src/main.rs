@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::error::Error;
+
 
 use dotenvy::dotenv;
 
@@ -135,7 +135,7 @@ async fn main() {
                             http::http_controller::insert
 
                        ])
-                    //  .mount("/public", FileServer::from(relative!("static")))
+                     // .mount("/public", FileServer::from(relative!("static")))
                     .launch()
                     .await;
             }

@@ -2296,8 +2296,14 @@ class Drawflow {
 
 
 let nodesContrution = [];
+let mouseX = 0 , mouseY = 0;
 
 var example = document.getElementById("view");
+example.addEventListener("mousemove",(e) =>{
+    mouseX = e.offsetX;
+    mouseY = e.offsetY
+})
+
 
 //example.addEventListener('contextmenu', openContextMenu, false);
 

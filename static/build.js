@@ -297,7 +297,7 @@ function newPerguntaOp() {
 
 
         const op = parseInt(document.getElementById("numop").value)
-        nodesContrution.push(new NodeOption(editor, 1, {"status": "1","a-1":"+ Informação","a-2":"Contratar","a-3":"Voltar"}, key, op))
+        nodesContrution.push(new NodeOption(editor, 1, {"status": "1","a-1":"Mais Informações","a-2":"Contratar o serviço","a-3":"Voltar"}, key, op))
         document.getElementById("numop").value = ""
         closeModal();
 
@@ -311,7 +311,7 @@ function newPerguntaOpLista() {
     if(document.getElementById("numopl").value !== ""){
 
 
-        var key = 0
+        let key = 0
         if (nodesContrution.length > 0) {
             key = 1
         }
