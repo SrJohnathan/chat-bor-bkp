@@ -14,6 +14,7 @@ use tokio::task::JoinHandle;
 use crate::chat::send_list_wp::{MessageText, SendWP};
 
 use crate::cofg::{get_number_app, JobWP, NewJob};
+use crate::http::insta_controller::Config;
 use crate::http::models::SendMessage;
 
 use crate::model::mongo::{connection, delele_status};
@@ -122,17 +123,23 @@ async fn main() {
 
     });
 
+    let config = Config { verify_token: "95699569".to_string() };
+
+
     tokio::spawn(async move {
         match connection().await {
             Ok(c) => {
                 let _ = rocket::build()
                     .manage(c)
+                    .manage(config)
                     .manage(channel.0)
                     .mount("/",
                            routes![
                             http::gupshup_controller::web_hook,
                             http::http_controller::get,
-                            http::http_controller::insert
+                            http::http_controller::insert,
+                            http::insta_controller::web_hook,
+                               http::insta_controller::messaging_webhook
 
                        ])
                      // .mount("/public", FileServer::from(relative!("static")))

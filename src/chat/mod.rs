@@ -136,7 +136,7 @@ impl ChatWP {
 
 
                     let mut is_button_exit = false;
-                    println!("{}",text.as_str());
+
 
                     let newst = match text.as_str() {
                         "Voltar" => {
