@@ -16,7 +16,7 @@ pub struct Config {
     pub(crate) verify_token: String,
 }
 
-#[get("/instagram/chatbot?<mode>&<token>&<challenge>")]
+#[get("/instagram/chatbot?<hub.mode>&<hub.verify_token>&<hub.challenge>")]
 pub async fn messaging_webhook(config: &State<Config>, mode: Option<String>, token: Option<String>, challenge: Option<String>) -> Result<String, Status> {
     // Check if all required parameters are present
     let mode = mode.ok_or_else(|| Status::BadRequest)?;
