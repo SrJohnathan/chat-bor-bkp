@@ -1,16 +1,16 @@
-use std::error::Error;
-use std::fmt::{Debug, Formatter};
+
+
 use std::ops::Deref;
-use std::path::Path;
-use std::str::FromStr;
+
+
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
-use diesel_migrations::embed_migrations;
+//use diesel_migrations::embed_migrations;
 pub use diesel::r2d2::Pool;
 use dotenvy::dotenv;
 
 
-
+#[warn(dead_code)]
 pub type  PgAsyncConnection =  Pool<ConnectionManager<PgConnection>>;
 pub struct   PoolPgAsyncConnection( pub PooledConnection<ConnectionManager<PgConnection>>);
 
@@ -38,6 +38,7 @@ impl Default for PgAsyncConnection {
 
 
 */
+#[warn(dead_code)]
 pub async  fn connection(str: String) -> Result<PgAsyncConnection,String> {
     dotenv().unwrap();
     let db_url = std::env::var(str).unwrap();

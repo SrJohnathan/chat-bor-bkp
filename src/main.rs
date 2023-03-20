@@ -1,10 +1,13 @@
+
+
+
 use std::collections::HashMap;
 
 
 use dotenvy::dotenv;
 
-use mongodb::Database;
-use rocket::fs::{FileServer, relative};
+
+
 use rocket::routes;
 use serde_json::Value;
 use tokio;
@@ -13,7 +16,7 @@ use tokio::sync::mpsc::{Sender, Receiver};
 use tokio::task::JoinHandle;
 use crate::chat::send_list_wp::{MessageText, SendWP};
 
-use crate::cofg::{get_number_app, JobWP, NewJob};
+use crate::cofg::{get_number_app, NewJob};
 use crate::http::insta_controller::Config;
 use crate::http::models::SendMessage;
 
@@ -51,7 +54,7 @@ pub mod chat;
 #[tokio::main]
 async fn main() {
     dotenv().unwrap();
-    let url = "DATABASE_URL";
+   // let url = "DATABASE_URL";
 
 
     let mut channel: (Sender<String>, Receiver<String>) = mpsc::channel(100);
