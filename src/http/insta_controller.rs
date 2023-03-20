@@ -63,8 +63,8 @@ pub struct Config {
 
 #[post("/instagram/chatbot",format = "application/json", data = "<task>")]
 pub async fn webhook(config: &State<Config>, task: Json<serde_json::Value>) -> Result<String, Status> {
-        println!("WEBHOOK_VERIFIED");
-    Ok(task.0.to_string())
+        println!("{}",task.0.to_string());
+    Ok("".to_string())
 }
 
 
