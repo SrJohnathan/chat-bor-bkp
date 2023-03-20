@@ -8,13 +8,7 @@ use rocket::request::{FromParam, FromRequest,FromSegments, Outcome};
 use tokio::sync::mpsc::Sender;
 use crate::chat::db_mongo::MongoDb;
 
-#[post("/instagram/chatbot", format = "application/json", data = "<task>")]
-pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serde_json::Value>)-> Status{
 
-    println!("{:?}",task.0);
-
-    Status::Ok
-}
 
 use rocket::serde::Deserialize;
 
@@ -69,6 +63,11 @@ pub struct Config {
 }
 
 
+#[post("/instagram/chatbot",format = "application/json", data = "<task>")]
+pub async fn webhook(config: &State<Config>, task: Json<serde_json::Value>) -> Result<String, Status> {
+        println!("WEBHOOK_VERIFIED");
+    Ok(task.0.to_string())
+}
 
 
 #[get("/instagram/chatbot")]
