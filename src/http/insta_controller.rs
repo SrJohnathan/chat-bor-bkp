@@ -1,11 +1,9 @@
-use rocket::http::{RawStr, Status};
+use rocket::http::{ Status};
 use rocket::serde::json::Json;
 use rocket::{State, post, get,Request};
-use rocket::form::{DataField, FromFormField, ValueField};
-use rocket::http::uri::Query;
 
-use rocket::request::{FromParam, FromRequest,FromSegments, Outcome};
-use tokio::sync::mpsc::Sender;
+
+use rocket::request::{ FromRequest, Outcome};
 use crate::chat::db_mongo::MongoDb;
 
 

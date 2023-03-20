@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 
 use dotenvy::dotenv;
-
+use rocket::fs::FileServer;
 
 
 use rocket::routes;
@@ -145,7 +145,7 @@ async fn main() {
                                http::insta_controller::messaging_webhook
 
                        ])
-                     // .mount("/public", FileServer::from(relative!("static")))
+                      .mount("/public", FileServer::from(rocket::fs::relative!("static")))
                     .launch()
                     .await;
             }

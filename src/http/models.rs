@@ -160,7 +160,7 @@ pub struct Text {
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Image {
-    pub caption: String,
+    pub caption: Option<String>,
     pub url: String,
     pub contentType: String,
     pub urlExpiry: isize,
