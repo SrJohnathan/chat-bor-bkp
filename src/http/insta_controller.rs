@@ -73,11 +73,12 @@ pub struct Config {
 
 #[get("/instagram/chatbot")]
 pub async fn messaging_webhook(config: &State<Config>, param: QueryParams) -> Result<String, Status> {
-    // Check if all required parameters are present
-
-
-
-
+        if param.hub_mode == "subscribe".to_string() && param.hub_verify_token == config.verify_token {
+            println!("WEBHOOK_VERIFIED");
+            Ok(param.hub_challenge)
+        } else {
+            Err(Status::Forbidden)
+        }
 
 
 
@@ -96,5 +97,5 @@ pub async fn messaging_webhook(config: &State<Config>, param: QueryParams) -> Re
         // Respond with '403 Forbidden' if verify tokens do not match
         Err(Status::Forbidden)
     } */
-    Err(Status::Forbidden)
+
 }
