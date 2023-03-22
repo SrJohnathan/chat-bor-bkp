@@ -36,7 +36,9 @@ pub async fn facebook_token(db: MongoDb<'_>, task: Json<FacebookToken>) -> Resul
         Ok(x) => {
             let value :serde_json::Value =   x.json().await.unwrap();
            let data = value.get("data").unwrap();
-           let id = data.get("id").unwrap().to_string();
+            println!("{:?}",data);
+           let arr = &data.as_array().unwrap()[0];
+            let id   = arr.get("id").unwrap().to_string();
            Ok( id )
         }
         Err(e) => { Err(e.to_string()) }
