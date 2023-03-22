@@ -49,12 +49,16 @@ impl<'r> MongoDb<'r> {
         }
     }
 
+    pub async fn get_token_facebook(&self) -> Result<FacebookToken, String> {
+        let typed_collection = self.0.collection::<FacebookToken>("token");
+        let f = typed_collection.find_one( None,None).await.unwrap();
+        match f {
+            None => { Err("Status Vazio".to_string()) }
+            Some(s) => { Ok(s) }
+        }
+    }
+
     pub async fn insert_token_facebook(&self,token: &FacebookToken) -> Result<bool, String> {
-
-
-
-
-
 
         let typed_collection = self.0.collection::<FacebookToken>("token");
         let f = typed_collection.insert_one(token, None).await;

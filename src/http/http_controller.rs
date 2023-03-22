@@ -31,23 +31,31 @@ pub async fn facebook_token(db: MongoDb<'_>, task: Json<FacebookToken>) -> Resul
 
     let mut face: FacebookToken = task.0;
 
-  let id =  match req.get(format!("https://graph.facebook.com/v16.0/me/accounts?access_token={}", face.access_token.clone()))
+    let id = match req.get(format!("https://graph.facebook.com/v16.0/me/accounts?access_token={}", face.access_token.clone()))
         .send().await {
         Ok(x) => {
-            let value :serde_json::Value =   x.json().await.unwrap();
-           let data = value.get("data").unwrap();
-            println!("{:?}",data);
-           let arr = &data.as_array().unwrap()[0];
-            let id   = arr.get("id").unwrap().to_string();
-           Ok( id )
+            let value : serde_json::Value = x.json().await.unwrap();
+            if let Some(data) = value.get("data") {
+                if let Some(arr) = data.as_array().and_then(|arr| arr.get(0)) {
+                    let id = match arr.get("id") {
+                        Some(id) => Ok(id.as_str().unwrap().to_string()),
+                        None => Err("id field not found".to_string())
+                    };
+                    id
+                } else {
+                    Err("empty array".to_string())
+                }
+            } else {
+                Err("data field not found".to_string())
+            }
         }
-        Err(e) => { Err(e.to_string()) }
+        Err(e) => Err(e.to_string())
     };
 
 
     match id {
         Ok(c) => {
-            face.page = Some(c);
+            face.page = Some(String::from(c));
             match db.insert_token_facebook(&face).await {
                 Ok(c) => {
                     Ok(status::Created::new("").body(c.to_string()))

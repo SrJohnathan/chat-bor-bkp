@@ -9,6 +9,7 @@ use crate::chat::db_mongo::MongoDb;
 
 
 use rocket::serde::Deserialize;
+use crate::chat::ChatWP;
 use crate::chat::models_instagram::ReceiverInstagram;
 
 #[derive(Deserialize,Debug)]
@@ -63,8 +64,31 @@ pub struct Config {
 
 
 #[post("/instagram/chatbot",format = "application/json", data = "<task>")]
-pub async fn webhook(config: &State<Config>, task: Json<ReceiverInstagram>) -> Result<String, Status> {
-        println!("{:?}",task.0.entry);
+pub async fn webhook(db:MongoDb<'_>,config: &State<Config>, task: Json<ReceiverInstagram>) -> Result<String, Status> {
+        println!("{:?}",task.0);
+
+    let f =  task.0;
+    let entity  = &f.entry[0];
+    let mut chat = ChatWP::new(entity.id.as_str(),f.object.as_str());
+    if  f.object.eq(&"instagram".to_string()) {
+
+
+        match  chat.run(&db).await {
+            Ok(c) => {
+
+
+
+
+            }
+            Err(e) => { println!("erro {}",e)}
+        }
+
+    }else {
+
+
+    }
+
+
     Ok("".to_string())
 }
 
