@@ -154,7 +154,15 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                 }
                 Err(e) => { Err(e) }
             };
-
+            match g {
+                Ok(v) => {
+                    let send = SendMessage::new(key);
+                    send.send_instagram(v).await;
+                }
+                Err(e) => {
+                    println!("{}", e);
+                }
+            }
         }
         "page" => {
         }
