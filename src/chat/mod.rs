@@ -11,6 +11,7 @@ pub mod send_list_wp;
 pub mod structs;
 pub mod db_mongo;
 pub mod factory_msg_send_text;
+pub mod models_instagram;
 
 
 #[derive(Clone)]

@@ -1,6 +1,4 @@
-use std::ops::Deref;
-use rocket::{get, post, State};
-use rocket::http::Status;
+use rocket::{get, post};
 use rocket::response::status;
 use rocket::serde::json::Json;
 use serde_json::Value;
@@ -10,6 +8,7 @@ use tokio::sync::mpsc::Sender;
 use crate::chat::bot::deza;
 use crate::chat::db_mongo::MongoDb;
 use crate::cofg::JobWP;
+use crate::http::models::FacebookToken;
 
 
 #[post("/whatsapp/bot/insert", format = "application/json", data = "<task>")]
@@ -25,6 +24,15 @@ pub async fn insert(db:MongoDb<'_>,task: Json<Value>) -> Result<status::Created<
     }
 }
 
+#[post("/facebook/token", format = "application/json", data = "<task>")]
+pub async fn facebook_token(db:MongoDb<'_>,task: Json<FacebookToken>) -> Result<status::Created<String>,status::BadRequest<String>> {
+
+    match  db.insert_token_facebook(&task.0).await {
+        Ok(c) => {
+            Ok(status::Created::new("").body(c.to_string()))},
+        Err(e) => Err(status::BadRequest(Some(e)))
+    }
+}
 
 
 #[get("/whatsapp/bot/get")]

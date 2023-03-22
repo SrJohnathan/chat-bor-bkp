@@ -13,6 +13,7 @@ use crate::chat::structs::list_mongo::ListMongo;
 use crate::chat::structs::status::Status;
 use crate::chat::structs::text_buttons::{ContentMedia, ContentText, TextButtons};
 use crate::chat::structs::text_mongo::{Body, TextMongo};
+use crate::http::models::FacebookToken;
 
 pub async fn connection() -> Result<Database, mongodb::error::Error> {
     let client_options = ClientOptions::parse(
@@ -47,6 +48,16 @@ impl<'r> MongoDb<'r> {
             Some(s) => { Ok(s) }
         }
     }
+
+    pub async fn insert_token_facebook(&self,token: &FacebookToken) -> Result<bool, String> {
+        let typed_collection = self.0.collection::<FacebookToken>("token");
+        let f = typed_collection.insert_one(token, None).await;
+        match f {
+            Ok(v) => Ok(true),
+            Err(err) => Err(String::from("error em criar o token facebook"))
+        }
+    }
+
 
     pub async fn update_status(&self, st: &Status) -> Result<bool, mongodb::error::Error> {
         let filter = doc! { "number": st.number.as_str() , "app": st.app.as_str() };

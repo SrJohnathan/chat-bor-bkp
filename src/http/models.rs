@@ -4,7 +4,7 @@ use rocket_okapi::okapi::schemars::{self, JsonSchema};
 use reqwest::{Client, Response, Error, StatusCode};
 use crate::chat::send_list_wp::SendWP;
 use crate::cofg::{get_app_app, HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP};
-
+use mongodb::bson::oid::ObjectId;
 
 pub enum Channels {
     whatsapp,
@@ -271,4 +271,19 @@ pub struct SendTwilio {
     pub Body: String,
     pub To: String,
     pub MediaUrl: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FacebookToken {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    #[serde(rename = "access_token")]
+    pub access_token: String,
+    #[serde(rename = "data_access_expiration_time")]
+    pub data_access_expiration_time: String,
+    #[serde(rename = "expires_in")]
+    pub expires_in: String,
+    #[serde(rename = "long_lived_token")]
+    pub long_lived_token: String,
 }

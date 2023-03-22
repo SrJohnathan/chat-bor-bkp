@@ -141,6 +141,7 @@ async fn main() {
                             http::gupshup_controller::web_hook,
                             http::http_controller::get,
                             http::http_controller::insert,
+                               http::http_controller::facebook_token,
                             http::insta_controller::webhook,
                                http::insta_controller::messaging_webhook
 

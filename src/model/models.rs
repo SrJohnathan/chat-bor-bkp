@@ -21,6 +21,7 @@ pub struct User {
 
 #[derive(Insertable, PartialEq,Debug)]
 #[diesel(table_name = users)]
+#[warn(non_camel_case_types)]
 pub struct new_users {
     pub name: String,
     pub email: String,

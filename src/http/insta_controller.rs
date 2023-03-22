@@ -9,6 +9,7 @@ use crate::chat::db_mongo::MongoDb;
 
 
 use rocket::serde::Deserialize;
+use crate::chat::models_instagram::ReceiverInstagram;
 
 #[derive(Deserialize,Debug)]
 pub struct QueryParams {
@@ -62,8 +63,8 @@ pub struct Config {
 
 
 #[post("/instagram/chatbot",format = "application/json", data = "<task>")]
-pub async fn webhook(config: &State<Config>, task: Json<serde_json::Value>) -> Result<String, Status> {
-        println!("{}",task.0.to_string());
+pub async fn webhook(config: &State<Config>, task: Json<ReceiverInstagram>) -> Result<String, Status> {
+        println!("{:?}",task.0.entry);
     Ok("".to_string())
 }
 
@@ -78,7 +79,7 @@ pub async fn messaging_webhook(config: &State<Config>, param: QueryParams) -> Re
         }
 
 
-
+//  EAAFWay9FdBMBAFpfuiZBrY51aOVq9bD5ZBzB0OJz7LVcbk7XkT2fwZA9ZAuZB8IP0jivbilzvnbkvviCcq1XY0Y7cwlOFk0PMJ9ScplxIhlLWZBaCI5OjumADyz8ZCopVpPnEhZCBLvFsDU784P3OyaelyK3fhev4j8j1CAvy672ftLRIXZCzuLNa
 
   /*  let mut query :QueryParams = c.parse().unwrap();
 
