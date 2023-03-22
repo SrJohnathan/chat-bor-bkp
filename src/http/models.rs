@@ -326,6 +326,7 @@ pub struct FacebookToken {
     pub expires_in: String,
     #[serde(rename = "long_lived_token")]
     pub long_lived_token: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub page: Option<String>,
 }
 /*

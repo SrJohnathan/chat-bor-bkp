@@ -64,8 +64,6 @@ pub async fn facebook_token(db: MongoDb<'_>, task: Json<FacebookToken>) -> Resul
 #[get("/whatsapp/bot/get")]
 pub async fn get(db: MongoDb<'_>) -> Result<status::Accepted<Json<Vec<Value>>>, status::BadRequest<String>> {
     let f = db.get_bot().await.unwrap();
-
-
     Ok(status::Accepted(Some(Json(f))))
 }
 
