@@ -9,6 +9,7 @@ use rocket::fs::FileServer;
 
 
 use rocket::routes;
+use rocket_cors::CorsOptions;
 use serde_json::Value;
 use tokio;
 use tokio::sync::mpsc;
@@ -133,6 +134,7 @@ async fn main() {
         match connection().await {
             Ok(c) => {
                 let _ = rocket::build()
+                    .attach(CorsOptions::default().to_cors().unwrap())
                     .manage(c)
                     .manage(config)
                     .manage(channel.0)
