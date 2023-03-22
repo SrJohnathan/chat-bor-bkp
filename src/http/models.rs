@@ -5,6 +5,7 @@ use reqwest::{Client, Response, Error, StatusCode};
 use crate::chat::send_list_wp::SendWP;
 use crate::cofg::{get_app_app, HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP};
 use mongodb::bson::oid::ObjectId;
+use crate::chat::models_instagram::SendFBIG;
 
 pub enum Channels {
     whatsapp,
@@ -71,6 +72,45 @@ impl SendMessage {
         });
 
     }
+    pub async fn send_instagram<T: serde::Serialize + Send + 'static >(&self, vec: Vec<SendFBIG<T>>) {
+
+        let req: Client = Client::new();
+
+        tokio::spawn( async move {
+
+            for body in vec {
+                let message = body.to_json();
+
+                let params =
+                    [
+                        ("recipient", body.recipient.as_str()),
+                        ("message", &message),
+                        ("access_token", body.access_token.as_str())];
+
+
+
+                let response = req.post(format!("{}{}/messages", "https://graph.facebook.com/v16.0/", body.page_id.as_str() ))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .form(&params)
+                    .send().await;
+
+                match  response {
+                    Ok(x) => {  println!("{:?}",x.text().await.unwrap())
+                    }
+                    Err(e) => {println!("{:?}",e.to_string())}
+                }
+                tokio::time::sleep(tokio::time::Duration::from_secs(7)).await;
+            }
+
+
+
+        });
+
+
+    }
+    pub async fn send_facebook<T: serde::Serialize + Send + 'static >(&self, vec: Vec<SendWP<T>>) {}
+
+
 }
 
 
@@ -286,4 +326,9 @@ pub struct FacebookToken {
     pub expires_in: String,
     #[serde(rename = "long_lived_token")]
     pub long_lived_token: String,
+    pub page: Option<String>,
 }
+/*
+curl -i -X GET \
+"https://graph.facebook.com/v16.0/me/accounts?access_token=EAAHd7pJH78sBAG8oA3ZAkge3xh280oYwVUZCVwEQ18eP323djNMbvHHoecnuywLIF2lVpnN5HoUfHQr7Pxl3ZCXwe7xE6NbmFJhxYzPtLMpBR0ZCUJ7GACzN0rZA1pBK6YhZAQuz2uTzYqMVpTO9kk4AAriATS0AiLIwyd0sHrNzc4Sx3aRG8KmdCA1FLrvYYJy9zd41OnoK5FZB3ipHltDsSlPZBZApZBHs0ZD"
+*/

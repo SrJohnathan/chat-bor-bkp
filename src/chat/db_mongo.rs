@@ -50,6 +50,12 @@ impl<'r> MongoDb<'r> {
     }
 
     pub async fn insert_token_facebook(&self,token: &FacebookToken) -> Result<bool, String> {
+
+
+
+
+
+
         let typed_collection = self.0.collection::<FacebookToken>("token");
         let f = typed_collection.insert_one(token, None).await;
         match f {
