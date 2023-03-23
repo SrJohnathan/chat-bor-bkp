@@ -148,7 +148,7 @@ async fn main() {
                                http::insta_controller::messaging_webhook
 
                        ])
-                      .mount("/public", FileServer::from(rocket::fs::relative!("static")))
+                   //   .mount("/public", FileServer::from(rocket::fs::relative!("static")))
                     .launch()
                     .await;
             }
