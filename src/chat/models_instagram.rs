@@ -22,7 +22,8 @@ pub struct Messaging {
     pub sender: Sender,
     pub recipient: Recipient,
     pub timestamp: i64,
-    pub message: Message,
+    pub message: Option<Message>,
+    pub read: Option<Read>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -42,6 +43,12 @@ pub struct Recipient {
 pub struct Message {
     pub mid: String,
     pub text: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Read {
+    pub mid: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
