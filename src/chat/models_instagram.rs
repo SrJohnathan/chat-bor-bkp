@@ -53,6 +53,13 @@ pub struct SendFBIG<T> {
     pub page_id:String
 }
 
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct FBIG<T> {
+    pub recipient: String,
+    pub message: T,
+
+}
+
 impl <T:Sized + serde::Serialize>SendFBIG<T> {
     pub fn new (page_id:String,number:String,msg:T,channel:String,access_token:String) ->Self {
         Self {
