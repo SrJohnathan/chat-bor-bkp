@@ -84,7 +84,7 @@ impl SendMessage {
                   let msg = FBIG { recipient: body.recipient, message: body.message };
 
                 let response = req.post(format!("{}{}/messages?access_token={}", "https://graph.facebook.com/v16.0/", body.page_id.as_str(), body.access_token.as_str()))
-                    .json(&body)
+                    .json(&msg)
                     .send().await;
 
                 match  response {
