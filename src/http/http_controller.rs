@@ -56,12 +56,24 @@ pub async fn facebook_token(db: MongoDb<'_>, task: Json<FacebookToken>) -> Resul
     match id {
         Ok(c) => {
             face.page = Some(String::from(c));
-            match db.insert_or_update_facebook_token(&face).await {
-                Ok(c) => {
-                    Ok(status::Created::new("").body(c.to_string()))
+            let page_token = page_token(face.page.clone().unwrap(),face.long_lived_token.clone(),req).await;
+
+            match  page_token {
+                Ok(x) => {
+
+                    face.page_token = Some(String::from(x.1));
+                    match db.insert_or_update_facebook_token(&face).await {
+                        Ok(c) => {
+                            Ok(status::Created::new("").body(c.to_string()))
+                        }
+                        Err(e) => Err(status::BadRequest(Some(e)))
+                    }
+
+
                 }
                 Err(e) => Err(status::BadRequest(Some(e)))
             }
+
 
         }
         Err(e) => Err(status::BadRequest(Some(e)))
@@ -77,3 +89,20 @@ pub async fn get(db: MongoDb<'_>) -> Result<status::Accepted<Json<Vec<Value>>>, 
     Ok(status::Accepted(Some(Json(f))))
 }
 
+async fn page_token(page_id:String, acess_token:String, req: Client ) -> Result<(String, String), String> {
+     match req.get(format!("https://graph.facebook.com/{}?fields=access_token&access_token={}",page_id, acess_token))
+        .send().await{
+        Ok(x) => {
+            let mut value : serde_json::Value = x.json().await.unwrap();
+
+            let ac = value.get("access_token").unwrap().as_str().unwrap();
+            let id = value.get("id").unwrap().as_str().unwrap();
+
+           Ok( (  id.to_string(),ac.to_string() ) )
+        }
+        Err(x) =>  Err(x.to_string())
+    }
+
+
+
+}

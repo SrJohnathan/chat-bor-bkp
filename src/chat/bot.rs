@@ -131,7 +131,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                     st.number.clone(),
                                     result,
                                     st.app.clone(),
-                                    token.long_lived_token.clone());
+                                    token.page_token.clone().unwrap());
 
                                 vec.push(value);
                             }

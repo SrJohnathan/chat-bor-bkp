@@ -80,9 +80,6 @@ impl SendMessage {
 
             for body in vec {
 
-
-                println!("{:?}",body);
-
                   let msg = FBIG { recipient: Recipient{id:body.recipient}, message: body.message };
 
                 let response = req.post(format!("{}{}/messages?access_token={}", "https://graph.facebook.com/v16.0/", body.page_id.as_str(), body.access_token.as_str()))
@@ -323,6 +320,8 @@ pub struct FacebookToken {
     pub long_lived_token: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_token: Option<String>,
 }
 /*
 curl -i -X GET \
