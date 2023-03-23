@@ -91,7 +91,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                                     attachment: Attachment{
                                                         type_field: "audio".to_string(),
                                                         payload: Payload{ url: button.type_field },
-                                                        is_reusable: true
+                                                       // is_reusable: true
                                                     }
                                                 }
                                             ).unwrap()
@@ -106,7 +106,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                                     attachment: Attachment{
                                                         type_field: "image".to_string(),
                                                         payload: Payload{ url: button.type_field },
-                                                        is_reusable: true
+                                                       // is_reusable: true
                                                     }
                                                 }
                                             ).unwrap()
@@ -118,7 +118,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                                     attachment: Attachment{
                                                         type_field: "video".to_string(),
                                                         payload: Payload{ url: button.type_field },
-                                                        is_reusable: true
+                                                      //  is_reusable: true
                                                     }
                                                 }
                                             ).unwrap()
