@@ -67,10 +67,10 @@ pub struct Config {
 pub async fn webhook(db:MongoDb<'_>,config: &State<Config>, task: Json<ReceiverInstagram>) -> Result<String, Status> {
         println!("{}", serde_json::to_string(&task.0).unwrap());
 
-
+// entity.messaging[0].sender.id.as_str()
     let f =  task.0;
     let entity  = &f.entry[0];
-    let mut chat = ChatWP::new(entity.messaging[0].sender.id.as_str(),f.object.as_str());
+    let mut chat = ChatWP::new(entity.id.as_str(),f.object.as_str());
     if  f.object.eq(&"instagram".to_string()) {
 
 
