@@ -10,7 +10,7 @@ use crate::chat::db_mongo::MongoDb;
 use rocket::serde::Deserialize;
 use serde_json::Value;
 use crate::chat::ChatWP;
-use crate::chat::models_instagram::ReceiverInstagram;
+use crate::chat::models_instagram::{Message, ReceiverInstagram};
 
 #[derive(Deserialize, Debug)]
 pub struct QueryParams {
@@ -71,26 +71,18 @@ pub async fn webhook(db: MongoDb<'_>, config: &State<Config>, task: Json<Receive
 
     let entity = &f.entry[0];
 
-    if let Some(message) = &entity.messaging[0].message {
-
-        let mut chat = ChatWP::new(entity.messaging[0].sender.id.as_str(), f.object.as_str());
-        if f.object.eq(&"instagram".to_string()) {
-            match chat.run(&db).await {
-                Ok(c) => {}
-                Err(e) => { println!("erro {}", e) }
-            }
-        } else {}
+    match &entity.messaging[0].message {
+        None => {}
+        Some(x) => {
+            let mut chat = ChatWP::new(entity.messaging[0].sender.id.as_str(), f.object.as_str());
+            if f.object.eq(&"instagram".to_string()) {
+                match chat.run(&db).await {
+                    Ok(c) => {}
+                    Err(e) => { println!("erro {}", e) }
+                }
+            } else {}
+        }
     }
-
-    if let Some(message) = &entity.messaging[0].read {
-
-        let mut chat = ChatWP::new(entity.id.as_str(), f.object.as_str());
-        if f.object.eq(&"instagram".to_string()) {
-
-        } else {}
-    }
-
-
 
 
     Ok("".to_string())
