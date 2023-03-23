@@ -77,7 +77,7 @@ impl<'r> MongoDb<'r> {
                     }
                 }
             }
-            Err(e) => Err(String::from("error ao atualizar o token facebook")),
+            Err(_e) => Err(String::from("error ao atualizar o token facebook")),
         }
     }
 
@@ -128,7 +128,7 @@ impl<'r> MongoDb<'r> {
                         let tmp: Vec<&str> = value.body.text.split("{|}").collect();
 
                         for v in tmp {
-                            let mut v1 = v.replace("{|}", "");
+                            let v1 = v.replace("{|}", "");
 
                             let res = factory_text(v1);
 
@@ -153,13 +153,13 @@ impl<'r> MongoDb<'r> {
                     "list" => {
                         let mut vec = Vec::new();
 
-                        let mut value: ListMongo = serde_json::from_value(s.data).unwrap();
+                        let  value: ListMongo = serde_json::from_value(s.data).unwrap();
 
 
                         let tmp: Vec<&str> = value.body.split("{|}").collect();
 
                         for v in tmp {
-                            let mut v1 = v.replace("{|}", "");
+                            let  v1 = v.replace("{|}", "");
 
                             let res = factory_text(v1);
 
@@ -198,7 +198,7 @@ impl<'r> MongoDb<'r> {
                             let tmp: Vec<&str> = value.content.text.split("{|}").collect();
 
                             for v in tmp {
-                                let mut v1 = v.replace("{|}", "");
+                                let  v1 = v.replace("{|}", "");
 
 
                                 let res = factory_text(v1);

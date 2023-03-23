@@ -65,7 +65,8 @@ pub struct Config {
 
 #[post("/instagram/chatbot",format = "application/json", data = "<task>")]
 pub async fn webhook(db:MongoDb<'_>,config: &State<Config>, task: Json<ReceiverInstagram>) -> Result<String, Status> {
-        println!("{:?}",task.0);
+        println!("{}", serde_json::to_string(&task.0).unwrap());
+
 
     let f =  task.0;
     let entity  = &f.entry[0];

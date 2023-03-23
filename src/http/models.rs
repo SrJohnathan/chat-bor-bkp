@@ -5,7 +5,7 @@ use reqwest::{Client, Response, Error, StatusCode};
 use crate::chat::send_list_wp::SendWP;
 use crate::cofg::{get_app_app, HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP};
 use mongodb::bson::oid::ObjectId;
-use crate::chat::models_instagram::{FBIG, SendFBIG};
+use crate::chat::models_instagram::{FBIG, Recipient, SendFBIG};
 
 pub enum Channels {
     whatsapp,
@@ -72,7 +72,7 @@ impl SendMessage {
         });
 
     }
-    pub async fn send_instagram<T: serde::Serialize + Send + 'static + std::marker::Sync>(&self, vec: Vec<SendFBIG<T>>) {
+    pub async fn send_instagram<T: serde::Serialize + Send + 'static + std::marker::Sync + std::fmt::Debug>(&self, vec: Vec<SendFBIG<T>>) {
 
         let req: Client = Client::new();
 
@@ -81,7 +81,9 @@ impl SendMessage {
             for body in vec {
 
 
-                  let msg = FBIG { recipient: body.recipient, message: body.message };
+                println!("{:?}",body);
+
+                  let msg = FBIG { recipient: Recipient{id:body.recipient}, message: body.message };
 
                 let response = req.post(format!("{}{}/messages?access_token={}", "https://graph.facebook.com/v16.0/", body.page_id.as_str(), body.access_token.as_str()))
                     .json(&msg)

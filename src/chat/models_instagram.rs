@@ -55,7 +55,7 @@ pub struct SendFBIG<T> {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FBIG<T> {
-    pub recipient: String,
+    pub recipient: Recipient,
     pub message: T,
 
 }
