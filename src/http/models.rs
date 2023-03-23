@@ -88,6 +88,7 @@ impl SendMessage {
                         ("access_token", body.access_token.as_str())];
 
 
+                println!("{:?}",params);
 
                 let response = req.post(format!("{}{}/messages", "https://graph.facebook.com/v16.0/", body.page_id.as_str() ))
                     .header("Content-Type", "application/x-www-form-urlencoded")
