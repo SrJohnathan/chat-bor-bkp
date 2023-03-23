@@ -96,7 +96,7 @@ pub struct Attachment {
     pub type_field: String,
     pub payload: Payload,
     #[serde(rename = "is_reusable")]
-    pub is_reusable: String,
+    pub is_reusable: bool,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
