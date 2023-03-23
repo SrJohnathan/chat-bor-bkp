@@ -22,7 +22,9 @@ pub struct Messaging {
     pub sender: Sender,
     pub recipient: Recipient,
     pub timestamp: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub message: Option<Message>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub read: Option<Read>,
 }
 

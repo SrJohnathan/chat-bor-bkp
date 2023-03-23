@@ -86,10 +86,7 @@ pub async fn webhook(db: MongoDb<'_>, config: &State<Config>, task: Json<Receive
 
         let mut chat = ChatWP::new(entity.id.as_str(), f.object.as_str());
         if f.object.eq(&"instagram".to_string()) {
-            match chat.run(&db).await {
-                Ok(c) => {}
-                Err(e) => { println!("erro {}", e) }
-            }
+
         } else {}
     }
 
