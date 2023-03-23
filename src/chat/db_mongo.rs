@@ -1,7 +1,7 @@
 use futures::TryStreamExt;
 use mongodb::{bson, Client, Database};
 use mongodb::bson::doc;
-use mongodb::options::ClientOptions;
+use mongodb::options::{ClientOptions, UpdateOptions};
 use regex::Regex;
 use rocket::{Request, State};
 use rocket::request::{FromRequest, Outcome};
@@ -58,15 +58,29 @@ impl<'r> MongoDb<'r> {
         }
     }
 
-    pub async fn insert_token_facebook(&self,token: &FacebookToken) -> Result<bool, String> {
-
+    pub async fn insert_or_update_facebook_token(&self, token: &FacebookToken) -> Result<bool, String> {
         let typed_collection = self.0.collection::<FacebookToken>("token");
-        let f = typed_collection.insert_one(token, None).await;
-        match f {
-            Ok(v) => Ok(true),
-            Err(err) => Err(String::from("error em criar o token facebook"))
+        let filter = doc! {"_id": token.id.clone()};
+        let update = doc! {"$set": bson::to_document(&token).unwrap()};
+        let options = UpdateOptions::builder().upsert(true).build();
+        let result = typed_collection.update_one(filter, update, options).await;
+
+        match result {
+            Ok(result) => {
+                if result.matched_count > 0 {
+                    Ok(true) // Updated existing token
+                } else {
+                    let f = typed_collection.insert_one(token, None).await;
+                    match f {
+                        Ok(_) => Ok(false), // Inserted new token
+                        Err(_) => Err(String::from("error ao criar o token facebook")),
+                    }
+                }
+            }
+            Err(e) => Err(String::from("error ao atualizar o token facebook")),
         }
     }
+
 
 
     pub async fn update_status(&self, st: &Status) -> Result<bool, mongodb::error::Error> {

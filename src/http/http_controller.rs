@@ -56,7 +56,7 @@ pub async fn facebook_token(db: MongoDb<'_>, task: Json<FacebookToken>) -> Resul
     match id {
         Ok(c) => {
             face.page = Some(String::from(c));
-            match db.insert_token_facebook(&face).await {
+            match db.insert_or_update_facebook_token(&face).await {
                 Ok(c) => {
                     Ok(status::Created::new("").body(c.to_string()))
                 }
