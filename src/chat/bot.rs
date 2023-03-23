@@ -9,11 +9,11 @@ use serde_derive::Serialize;
 use serde_json::Value;
 use crate::chat::db_mongo::MongoDb;
 use crate::chat::factory_msg_send_text::TypeMidia;
-use crate::chat::models_instagram::{SendFBIG, Text};
+use crate::chat::models_instagram::{Attachment, Midia, Payload, SendFBIG, Text};
 use crate::chat::send_list_wp;
 use crate::chat::send_list_wp::{ButtonWP, ContentBT, ContentMD, GlobalButton, ImageMidia, Item, Message, MessageText, MidiaType, OptionBT, SendWP};
 use crate::chat::structs::{Chat, ChatDataType};
-use crate::chat::structs::list_mongo::{ButtonMenu, Iten, ListMongo, Payload};
+use crate::chat::structs::list_mongo::{ButtonMenu, Iten, ListMongo};
 use crate::chat::structs::status::Status;
 use crate::chat::structs::text_buttons::{ContentText, OptionB, TextButtons};
 use crate::chat::structs::text_mongo::{Body, TextMongo};
@@ -87,10 +87,12 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                         TypeMidia::AUDIO =>{
 
                                             serde_json::to_value(
-                                                MidiaType {
-                                                    type_field: "audio".to_string(),
-                                                    url: button.type_field,
-                                                    filename: None
+                                                Midia {
+                                                    attachment: Attachment{
+                                                        type_field: "video".to_string(),
+                                                        payload: Payload{ url: button.type_field },
+                                                        is_reusable: "true".to_string()
+                                                    }
                                                 }
                                             ).unwrap()
 
@@ -100,21 +102,24 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                         TypeMidia::NULL => { todo!() }
                                         TypeMidia::IMAGE => {
                                             serde_json::to_value(
-                                                ImageMidia {
-                                                    type_field: "image".to_string(),
-                                                    original_url: button.type_field.clone(),
-                                                    preview_url: button.type_field,
-                                                    caption: button.data.body.text,
+                                                Midia {
+                                                    attachment: Attachment{
+                                                        type_field: "video".to_string(),
+                                                        payload: Payload{ url: button.type_field },
+                                                        is_reusable: "true".to_string()
+                                                    }
                                                 }
                                             ).unwrap()
                                         }
                                         TypeMidia::DOCUMENT => { todo!() }
                                         TypeMidia::VIDEO => {
                                             serde_json::to_value(
-                                                ContentMD {
-                                                    type_field: "video".to_string(),
-                                                    url: button.type_field,
-                                                    caption: "".to_string(),
+                                                Midia {
+                                                    attachment: Attachment{
+                                                        type_field: "video".to_string(),
+                                                        payload: Payload{ url: button.type_field },
+                                                        is_reusable: "true".to_string()
+                                                    }
                                                 }
                                             ).unwrap()
                                         }
@@ -633,7 +638,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
 
 
         if typ == "list" {
-            let mut it: Vec<Payload> = Vec::new();
+            let mut it: Vec<crate::chat::structs::list_mongo::Payload> = Vec::new();
             for ii in 0..3 {
                 let mut c = ii * 10;
 
@@ -650,7 +655,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
 
 
                 let count = iitens.len();
-                let pay = Payload { title: "".to_string(), itens: iitens };
+                let pay = crate::chat::structs::list_mongo::Payload { title: "".to_string(), itens: iitens };
                 if count > 0 {
                     it.push(pay)
                 }

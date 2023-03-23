@@ -53,6 +53,10 @@ pub struct Read {
     pub mid: String,
 }
 
+
+// SEND MESSAGE
+
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SendFBIG<T> {
     pub channel: String,  // page  || instagram
@@ -68,6 +72,39 @@ pub struct FBIG<T> {
     pub message: T,
 
 }
+
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Text {
+    pub text: String,
+
+}
+
+
+// MIDIA
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Midia {
+    pub attachment: Attachment,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Attachment {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub payload: Payload,
+    #[serde(rename = "is_reusable")]
+    pub is_reusable: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Payload {
+    pub url: String,
+}
+
 
 impl <T:Sized + serde::Serialize>SendFBIG<T> {
     pub fn new (page_id:String,number:String,msg:T,channel:String,access_token:String) ->Self {
@@ -101,9 +138,5 @@ pub struct IdFbIg {
 
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Text {
-    pub text: String,
 
-}
 
