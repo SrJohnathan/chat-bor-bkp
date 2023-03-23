@@ -84,12 +84,12 @@ impl SendMessage {
                 let params =
                     [
                         ("recipient", body.recipient.as_str()),
-                        ("message", &message),
-                        ("access_token", body.access_token.as_str())];
+                        ("message", &message)
+                        ];
 
 
 
-                let response = req.post(format!("{}{}/messages", "https://graph.facebook.com/v16.0/", body.page_id.as_str() ))
+                let response = req.post(format!("{}{}/messages?access_token={}", "https://graph.facebook.com/v16.0/", body.page_id.as_str(), body.access_token.as_str()))
                     .header("Content-Type", "application/json")
                    // .header("Content-Type", "application/x-www-form-urlencoded")
 
