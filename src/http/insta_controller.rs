@@ -74,13 +74,19 @@ pub async fn webhook(db: MongoDb<'_>, config: &State<Config>, task: Json<Receive
     match &entity.messaging[0].message {
         None => {}
         Some(x) => {
-            let mut chat = ChatWP::new(entity.messaging[0].sender.id.as_str(), f.object.as_str());
-            if f.object.eq(&"instagram".to_string()) {
-                match chat.run(&db).await {
-                    Ok(c) => {}
-                    Err(e) => { println!("erro {}", e) }
-                }
-            } else {}
+
+            if entity.id  == entity.messaging[0].recipient.id {
+
+                let mut chat = ChatWP::new(entity.messaging[0].sender.id.as_str(), f.object.as_str());
+                if f.object.eq(&"instagram".to_string()) {
+                    match chat.run(&db).await {
+                        Ok(c) => {}
+                        Err(e) => { println!("erro {}", e) }
+                    }
+                } else {}
+            }
+
+
         }
     }
 
