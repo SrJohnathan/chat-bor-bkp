@@ -26,8 +26,7 @@ pub struct Messaging {
     pub message: Option<Message>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub read: Option<Read>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub attachments:Option<serde_json::Value>
+
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -46,7 +45,10 @@ pub struct Recipient {
 #[serde(rename_all = "camelCase")]
 pub struct Message {
     pub mid: String,
-    pub text: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attachments:Option<serde_json::Value>
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
