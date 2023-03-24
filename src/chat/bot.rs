@@ -224,7 +224,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                             }
                                         } else {
                                             serde_json::to_value(
-                                                MessageText { type_field: "text".to_string(), text: text_final }
+                                                Text { text: text_final }
                                             ).unwrap()
                                         }
                                     }
