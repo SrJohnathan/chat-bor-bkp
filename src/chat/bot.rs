@@ -9,7 +9,7 @@ use serde_derive::Serialize;
 use serde_json::Value;
 use crate::chat::db_mongo::MongoDb;
 use crate::chat::factory_msg_send_text::TypeMidia;
-use crate::chat::models_instagram::{Attachment, Midia, Payload, SendFBIG, Text};
+use crate::chat::models_instagram::{Attachment, ListButtonIG, Midia, Payload, QuickReply, SendFBIG, Text};
 use crate::chat::send_list_wp;
 use crate::chat::send_list_wp::{ButtonWP, ContentBT, ContentMD, GlobalButton, ImageMidia, Item, Message, MessageText, MidiaType, OptionBT, SendWP};
 use crate::chat::structs::{Chat, ChatDataType};
@@ -20,37 +20,33 @@ use crate::chat::structs::text_mongo::{Body, TextMongo};
 use crate::cofg::{API_DEV, API_PRODU, get_number_app};
 use crate::http::models::SendMessage;
 
-fn description_list_1(i: i32,st:&str) -> Option<String> {
+fn description_list_1(i: i32, st: &str) -> Option<String> {
+    let e = match st {
+        "1" => {
+            match i {
+                0 => "Tenha sua matrícula numa univercidade em Portugal a sua escolha",
+                1 => "Tratamos de todo o tipo de visto para Portugal",
+                2 => "Obtenha seu alojamento antes mesmo de chegar em Portugal",
+                3 => "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
+                4 => "Consideráveis descontos nas nossas ofertas ",
+                5 => "Obtenha qualquer tipo de documento para residir em Portugal",
+                6 => "Cursos e atividades de integração",
+                7 => "Nossa e outras bolsas de estudo",
+                8 => "Tudo sobre a nossa empresa",
+                9 => "Esclareça todas as suas dúvidas e realize solicitações",
+                _ => Default::default(),
+            }
+        }
 
- let e =   match  st {
-     "1" => {
-         match i {
-             0 => "Tenha sua matrícula numa univercidade em Portugal a sua escolha",
-             1 => "Tratamos de todo o tipo de visto para Portugal",
-             2 => "Obtenha seu alojamento antes mesmo de chegar em Portugal",
-             3 => "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
-             4 => "Consideráveis descontos nas nossas ofertas ",
-             5 => "Obtenha qualquer tipo de documento para residir em Portugal",
-             6 => "Cursos e atividades de integração",
-             7 => "Nossa e outras bolsas de estudo",
-             8 => "Tudo sobre a nossa empresa",
-             9 => "Esclareça todas as suas dúvidas e realize solicitações",
-             _ => Default::default(),
-         }
-     }
-
-     _ =>{
-         match i {
-             0 => "Selecione e receba o link para mais informações.",
-             1 => "Selecione e receba o link para contratar este serviço.",
-             2 => "Selecione para voltar ao menu inicial",
-             _ => Default::default(),
-         }
-     }
-
-
- };
-
+        _ => {
+            match i {
+                0 => "Selecione e receba o link para mais informações.",
+                1 => "Selecione e receba o link para contratar este serviço.",
+                2 => "Selecione para voltar ao menu inicial",
+                _ => Default::default(),
+            }
+        }
+    };
 
 
     Some(e.to_string())
@@ -63,13 +59,11 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
     let key = std::env::var("KEY_API").unwrap();
 
 
-
     match st.app.as_str() {
         "instagram" => {
             let g = match db.get_chat(&st.st, &st.app).await {
                 Ok(c) => {
-
-                   let token =  db.get_token_facebook().await.unwrap();
+                    let token = db.get_token_facebook().await.unwrap();
 
                     let i = match c {
                         ChatDataType::Null => {
@@ -80,33 +74,28 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
 
 
                             for button in text {
-
-                                let result =  if button.midia {
+                                let result = if button.midia {
                                     match button.type_midia {
-
-                                        TypeMidia::AUDIO =>{
-
+                                        TypeMidia::AUDIO => {
                                             serde_json::to_value(
                                                 Midia {
-                                                    attachment: Attachment{
+                                                    attachment: Attachment {
                                                         type_field: "audio".to_string(),
-                                                        payload: Payload{ url: button.type_field },
-                                                       // is_reusable: true
+                                                        payload: Payload { url: button.type_field },
+                                                        // is_reusable: true
                                                     }
                                                 }
                                             ).unwrap()
-
-
                                         }
 
                                         TypeMidia::NULL => { todo!() }
                                         TypeMidia::IMAGE => {
                                             serde_json::to_value(
                                                 Midia {
-                                                    attachment: Attachment{
+                                                    attachment: Attachment {
                                                         type_field: "image".to_string(),
-                                                        payload: Payload{ url: button.type_field },
-                                                       // is_reusable: true
+                                                        payload: Payload { url: button.type_field },
+                                                        // is_reusable: true
                                                     }
                                                 }
                                             ).unwrap()
@@ -115,10 +104,10 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                         TypeMidia::VIDEO => {
                                             serde_json::to_value(
                                                 Midia {
-                                                    attachment: Attachment{
+                                                    attachment: Attachment {
                                                         type_field: "video".to_string(),
-                                                        payload: Payload{ url: button.type_field },
-                                                      //  is_reusable: true
+                                                        payload: Payload { url: button.type_field },
+                                                        //  is_reusable: true
                                                     }
                                                 }
                                             ).unwrap()
@@ -145,7 +134,122 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                             Ok(vec)
                         }
                         ChatDataType::List(list) => {
-                            todo!();
+                            let mut vec = Vec::new();
+
+                            for bo in list {
+                                let bot = bo.data;
+
+
+
+
+                                let mut it:Vec<Vec<QuickReply>> = bot.payload.iter().enumerate().map(|(i, v)| {
+                                    v.itens.iter().enumerate().map(|(e, c)|
+                                        QuickReply {
+                                            content_type: "text".to_string(),
+                                            title: c.title.to_string(),
+                                            payload: format!("n{}", e as i32),
+                                        }
+                                    ).collect()
+
+                                    /*  send_list_wp::Item {
+                                          title: v.title.to_string(),
+                                          subtitle: v.title.to_string(),
+                                          options: v.itens.iter().enumerate().map(|(e, c)| send_list_wp::Optio {
+                                              type_field: c.type_field.to_string(),
+                                              title: c.title.to_string(),
+                                              description: description_list_1(e as i32,st.st.as_str()),
+                                              postback_text: Some(  format!("n{}",  e as i32)),
+                                          }).collect(),
+                                      } */
+                                }).collect();
+
+                                /*   for i in 0..bot.button_menu.len() {
+                                       let item: &Item = it.get(i).expect("");
+                                       let btn: &GlobalButton = gb.get(i).expect("");
+                                   } */
+
+                                let mut text_final = if map.contains_key("voltar") {
+                                    "Em que posso lhe ajudar?".to_string()
+                                } else {
+                                    match map.get("nodedouser") {
+                                        None => { bot.body }
+                                        Some(x) => { bot.body.replace("nodedouser", x.as_str()) }
+                                    }
+                                };
+
+                                let dat = {
+                                    if bot.show.unwrap() {
+                                        serde_json::to_value(
+                                            ListButtonIG{ text: text_final, quick_replies :it[0].clone() }
+                                        ).unwrap()
+                                    } else {
+                                        if bo.midia {
+                                            match bo.type_midia {
+                                                TypeMidia::AUDIO => {
+                                                    serde_json::to_value(
+                                                        Midia {
+                                                            attachment: Attachment {
+                                                                type_field: "audio".to_string(),
+                                                                payload: Payload { url: bo.type_field },
+                                                                // is_reusable: true
+                                                            }
+                                                        }
+                                                    ).unwrap()
+                                                }
+
+                                                TypeMidia::NULL => { todo!() }
+                                                TypeMidia::IMAGE => {
+                                                    serde_json::to_value(
+                                                        Midia {
+                                                            attachment: Attachment {
+                                                                type_field: "image".to_string(),
+                                                                payload: Payload { url: bo.type_field },
+                                                                // is_reusable: true
+                                                            }
+                                                        }
+                                                    ).unwrap()
+                                                }
+                                                TypeMidia::DOCUMENT => { todo!() }
+                                                TypeMidia::VIDEO => {
+                                                    serde_json::to_value(
+                                                        Midia {
+                                                            attachment: Attachment {
+                                                                type_field: "video".to_string(),
+                                                                payload: Payload { url: bo.type_field },
+                                                                //  is_reusable: true
+                                                            }
+                                                        }
+                                                    ).unwrap()
+                                                }
+                                            }
+                                        } else {
+                                            serde_json::to_value(
+                                                MessageText { type_field: "text".to_string(), text: text_final }
+                                            ).unwrap()
+                                        }
+                                    }
+                                };
+
+
+                                let page = token.page.clone().unwrap();
+                                let value: SendFBIG<Value> = SendFBIG::new(
+                                    page,
+                                    st.number.clone(),
+                                    dat,
+                                    st.app.clone(),
+                                    token.page_token.clone().unwrap());
+
+
+
+                                if map.contains_key("voltar") {
+                                    vec.clear();
+                                    vec.push(value);
+                                } else {
+                                    vec.push(value);
+                                }
+                            }
+
+                            Ok(vec)
                         }
                         ChatDataType::ButtonMidia(midia) => {
                             todo!();
@@ -169,9 +273,8 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                 }
             }
         }
-        "page" => {
-        }
-        _ =>{
+        "page" => {}
+        _ => {
             let g = match db.get_chat(&st.st, &st.app).await {
                 Ok(c) => {
                     let i = match c {
@@ -183,23 +286,17 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
 
 
                             for button in text {
-
-                                let result =  if button.midia {
+                                let result = if button.midia {
                                     match button.type_midia {
-
-                                        TypeMidia::AUDIO =>{
-
+                                        TypeMidia::AUDIO => {
                                             serde_json::to_value(
                                                 MidiaType {
                                                     type_field: "audio".to_string(),
                                                     url: button.type_field,
-                                                    filename: None
+                                                    filename: None,
                                                 }
                                             ).unwrap()
-
-
                                         }
-
                                         TypeMidia::NULL => { todo!() }
                                         TypeMidia::IMAGE => {
                                             serde_json::to_value(
@@ -254,16 +351,14 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                 }).collect();
 
                                 let mut it: Vec<Item> = bot.payload.iter().enumerate().map(|(i, v)| {
-
-
                                     send_list_wp::Item {
                                         title: v.title.to_string(),
                                         subtitle: v.title.to_string(),
                                         options: v.itens.iter().enumerate().map(|(e, c)| send_list_wp::Optio {
                                             type_field: c.type_field.to_string(),
                                             title: c.title.to_string(),
-                                            description: description_list_1(e as i32,st.st.as_str()),
-                                            postback_text: Some(  format!("n{}",  e as i32)),
+                                            description: description_list_1(e as i32, st.st.as_str()),
+                                            postback_text: Some(format!("n{}", e as i32)),
                                         }).collect(),
                                     }
                                 }).collect();
@@ -275,20 +370,11 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
 
                                 let mut text_final = if map.contains_key("voltar") {
                                     "Em que posso lhe ajudar?".to_string()
-
-
-
                                 } else {
-                                    match   map.get("nodedouser") {
+                                    match map.get("nodedouser") {
                                         None => { bot.body }
-                                        Some(x) => {  bot.body.replace("nodedouser", x.as_str()) }
+                                        Some(x) => { bot.body.replace("nodedouser", x.as_str()) }
                                     }
-
-
-
-
-
-
                                 };
 
                                 let dat = {
@@ -304,18 +390,14 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                     } else {
                                         if bo.midia {
                                             match bo.type_midia {
-
-                                                TypeMidia::AUDIO =>{
-
+                                                TypeMidia::AUDIO => {
                                                     serde_json::to_value(
                                                         MidiaType {
                                                             type_field: "audio".to_string(),
                                                             url: bo.type_field,
-                                                            filename: None
+                                                            filename: None,
                                                         }
                                                     ).unwrap()
-
-
                                                 }
                                                 TypeMidia::NULL => { todo!() }
                                                 TypeMidia::IMAGE => {
@@ -339,7 +421,6 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                                     ).unwrap()
                                                 }
                                             }
-
                                         } else {
                                             serde_json::to_value(
                                                 MessageText { type_field: "text".to_string(), text: text_final }
@@ -357,10 +438,9 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                 if map.contains_key("voltar") {
                                     vec.clear();
                                     vec.push(value);
-                                }else {
+                                } else {
                                     vec.push(value);
                                 }
-
                             }
 
                             Ok(vec)
@@ -390,18 +470,14 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                                     } else {
                                         if button.midia {
                                             match button.type_midia {
-
-                                                TypeMidia::AUDIO =>{
-
+                                                TypeMidia::AUDIO => {
                                                     serde_json::to_value(
                                                         MidiaType {
                                                             type_field: "audio".to_string(),
                                                             url: button.type_field,
-                                                            filename: None
+                                                            filename: None,
                                                         }
                                                     ).unwrap()
-
-
                                                 }
 
                                                 TypeMidia::NULL => { todo!() }
@@ -463,9 +539,6 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
             }
         }
     }
-
-
-
 
 
     Ok("OK".to_string())
@@ -674,7 +747,7 @@ pub async fn deza(val: &Value, db: &MongoDb<'_>) {
                 data: ListMongo { show: Some(false), body: a.to_string(), payload: it, button_menu: bt },
                 type_field: typ.to_string(),
                 midia: false,
-                type_midia: TypeMidia::NULL
+                type_midia: TypeMidia::NULL,
             };
             db.set_chat(serde_json::to_value(chat).unwrap()).await.unwrap();
         }

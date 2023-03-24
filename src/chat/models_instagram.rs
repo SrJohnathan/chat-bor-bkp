@@ -110,6 +110,27 @@ pub struct Payload {
 }
 
 
+// LIST - BUTTON
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ListButtonIG {
+    pub text: String,
+    #[serde(rename = "quick_replies")]
+    pub quick_replies: Vec<QuickReply>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct QuickReply {
+    #[serde(rename = "content_type")]
+    pub content_type: String,
+    pub title: String,
+    pub payload: String,
+}
+
+
+
 impl <T:Sized + serde::Serialize>SendFBIG<T> {
     pub fn new (page_id:String,number:String,msg:T,channel:String,access_token:String) ->Self {
         Self {
