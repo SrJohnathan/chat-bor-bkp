@@ -1,6 +1,3 @@
-
-
-
 use std::collections::HashMap;
 
 
@@ -42,9 +39,6 @@ use mongodb::{bson::doc, options::ClientOptions, Client};
 */
 
 
-
-
-
 mod model;
 pub mod schema;
 mod http;
@@ -55,31 +49,28 @@ pub mod chat;
 #[tokio::main]
 async fn main() {
     dotenv().unwrap();
-   // let url = "DATABASE_URL";
+    // let url = "DATABASE_URL";
 
 
     let mut channel: (Sender<String>, Receiver<String>) = mpsc::channel(100);
+
 
     tokio::spawn(async move {
         let mut threads_number: HashMap<String, JoinHandle<_>> = HashMap::new();
         let mut threads_number_speed: HashMap<String, JoinHandle<_>> = HashMap::new();
 
         while let Some(v) = channel.1.recv().await {
-
-
             let new_job: NewJob = serde_json::from_str(&v).unwrap();
             let new_job_sp: NewJob = serde_json::from_str(&v).unwrap();
 
-            if  threads_number.contains_key(new_job.number.as_str()   ) {
+            if threads_number.contains_key(new_job.number.as_str()) {
                 let thread = threads_number.remove(new_job.number.as_str()).unwrap();
                 thread.abort();
-
             }
 
-            if  threads_number_speed.contains_key(new_job_sp.number.as_str()   ) {
+            if threads_number_speed.contains_key(new_job_sp.number.as_str()) {
                 let thread = threads_number_speed.remove(new_job_sp.number.as_str()).unwrap();
                 thread.abort();
-
             }
 
             if new_job.etapa.as_str() != "exit" {
@@ -96,9 +87,9 @@ async fn main() {
                         ).unwrap());
 
 
-                        let db = connection().await.unwrap();
+                    let db = connection().await.unwrap();
 
-                        delele_status(&new_job.number,&new_job.app,&db).await.unwrap();
+                    delele_status(&new_job.number, &new_job.app, &db).await.unwrap();
 
                     let mut vec = Vec::new();
                     vec.push(value);
@@ -124,7 +115,6 @@ async fn main() {
                 }));
             }
         }
-
     });
 
     let config = Config { verify_token: "95699569".to_string() };
@@ -145,10 +135,12 @@ async fn main() {
                             http::http_controller::insert,
                                http::http_controller::facebook_token,
                             http::insta_controller::webhook,
-                               http::insta_controller::messaging_webhook
+                               http::insta_controller::messaging_webhook,
+                               http::siga_controller::send,
+                                 http::siga_controller::agente
 
                        ])
-                   //   .mount("/public", FileServer::from(rocket::fs::relative!("static")))
+                    //   .mount("/public", FileServer::from(rocket::fs::relative!("static")))
                     .launch()
                     .await;
             }
