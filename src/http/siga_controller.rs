@@ -4,6 +4,7 @@ use rocket::serde::json::Json;
 use crate::chat::db_mongo::MongoDb;
 use rocket::{get, post};
 use rocket::http::Status;
+use rocket::response::status::Created;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
@@ -18,7 +19,7 @@ pub struct ReadWT {
 }
 
 #[post("/agent/send", format = "application/json", data = "<task>")]
-pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Accepted<String> {
+pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Created<String> {
     let key = std::env::var("KEY_API").unwrap();
 
     let wt = task.0;
@@ -36,12 +37,12 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Accepted<Strin
 
     send.send( vec![value]).await;
 
-    status::Accepted(Some("".to_string()))
+    status::Created::new("".to_string()).body("".to_string())
 }
 
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
-pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> status::Accepted<String> {
+pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Created<String> {
     let message = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
@@ -102,5 +103,5 @@ pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> status::A
     }
 
 
-    status::Accepted(Some("".to_string()))
+    status::Created::new("".to_string()).body("".to_string())
 }
