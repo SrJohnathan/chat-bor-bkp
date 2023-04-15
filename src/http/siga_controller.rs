@@ -1,4 +1,4 @@
-use reqwest::Client;
+use reqwest::{Client, Error, Response};
 use rocket::response::status;
 use rocket::serde::json::Json;
 use crate::chat::db_mongo::MongoDb;
@@ -42,7 +42,7 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Created<String
 
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
-pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Created<String> {
+pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,String> {
     let message = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
@@ -80,7 +80,12 @@ pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Created<S
                     let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
                        // .header("Content-Type", "application/json")
                         .json(&msg)
-                        .send().await.unwrap();
+                        .send().await;
+
+                    match response {
+                        Ok(e) => {  Ok(status::Created::new("".to_string()).body("".to_string())) }
+                        Err(s) => {  Err(s.to_string()) }
+                    }
 
 
                 } else if ty.as_str().unwrap().eq(&"image".to_string()) {
@@ -103,5 +108,5 @@ pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Created<S
     }
 
 
-    status::Created::new("".to_string()).body("".to_string())
+    Ok(status::Created::new("".to_string()).body("".to_string()))
 }
