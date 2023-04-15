@@ -18,7 +18,7 @@ pub struct ReadWT {
 }
 
 #[post("/agent/send", format = "application/json", data = "<task>")]
-pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Status {
+pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Accepted<String> {
     let key = std::env::var("KEY_API").unwrap();
 
     let wt = task.0;
@@ -36,12 +36,12 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Status {
 
     send.send( vec![value]).await;
 
-    Status::Ok
+    status::Accepted(Some("".to_string()))
 }
 
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
-pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Status {
+pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> status::Accepted<String> {
     let message = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
@@ -79,7 +79,7 @@ pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Status {
                     let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
                        // .header("Content-Type", "application/json")
                         .json(&msg)
-                        .send().await;
+                        .send().await.unwrap();
 
 
                 } else if ty.as_str().unwrap().eq(&"image".to_string()) {
@@ -102,5 +102,5 @@ pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Status {
     }
 
 
-    Status::Ok
+    status::Accepted(Some("".to_string()))
 }
