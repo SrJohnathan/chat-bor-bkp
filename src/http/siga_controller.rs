@@ -83,15 +83,23 @@ pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,St
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
 
 
-                    let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
-                        // .header("Content-Type", "application/json")
-                        .json(&msg)
-                        .send().await;
+                    tokio::spawn(async move {
 
-                    match response {
-                        Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
-                        Err(s) => { Err(s.to_string()) }
-                    }
+                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                            // .header("Content-Type", "application/json")
+                            .json(&msg)
+                            .send().await;
+
+                        match response {
+                            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                            Err(s) => { Err(s.to_string()) }
+                        }
+                    } );
+
+                    Ok(status::Created::new("".to_string()).body("".to_string()))
+
+
+
                 } else if ty.as_str().unwrap().eq(&"image".to_string()) {
                     let msg: ParentMessage<MessageGP<Image>> = serde_json::from_str(&message.to_string()).unwrap();
                     Ok(status::Created::new("".to_string()).body("".to_string()))
