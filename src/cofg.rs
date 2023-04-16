@@ -19,6 +19,7 @@ pub fn get_number_app(app:&str) -> &str {
 
      match app {
          "WhatsAppSTWpt" => "351253930233",
+         "BusinessSTWpt" => "351926683992",
          _ => "917834811114",
     }
 
@@ -28,6 +29,7 @@ pub fn get_app_app(app:&str) -> &str {
 
     match app {
         "WhatsAppSTWpt" => API_PRODU,
+        "BusinessSTWpt" => API_PRODU,
         _ => API_DEV,
     }
 
