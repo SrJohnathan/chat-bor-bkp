@@ -21,7 +21,7 @@ pub struct ReadWT {
 #[post("/agent/send", format = "application/json", data = "<task>")]
 pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Created<String> {
     let key = std::env::var("KEY_API").unwrap();
-
+    let req: Client = Client::new();
     let wt = task.0;
 
     let result = serde_json::to_value(
@@ -33,9 +33,25 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Created<String
         wt.number.as_str(), get_number_app(wt.app.as_str()),
         result);
 
+
     let send = SendMessage::new(key.clone());
 
-    send.send( vec![value]).await;
+    send.send( vec![value.clone()]).await;
+
+    tokio::spawn(async move {
+
+        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+            // .header("Content-Type", "application/json")
+            .json(&value)
+            .send().await;
+
+        match response {
+            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+            Err(s) => { Err(s.to_string()) }
+        }
+    } );
+
+
 
     status::Created::new("".to_string()).body("".to_string())
 }
@@ -89,6 +105,8 @@ pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,St
                             // .header("Content-Type", "application/json")
                             .json(&msg)
                             .send().await;
+
+
 
                         match response {
                             Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
