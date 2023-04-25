@@ -40,6 +40,7 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Created<String
 
     tokio::spawn(async move {
 
+      //  let response = req.post("http://localhost:3334/api/v1/whatsapp/webHookSocketSystem")
         let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketSystem")
             // .header("Content-Type", "application/json")
             .json(&value)
