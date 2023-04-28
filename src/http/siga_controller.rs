@@ -106,9 +106,6 @@ pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,St
                             // .header("Content-Type", "application/json")
                             .json(&msg)
                             .send().await;
-
-
-
                         match response {
                             Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
                             Err(s) => { Err(s.to_string()) }
