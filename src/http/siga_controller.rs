@@ -7,6 +7,7 @@ use rocket::http::Status;
 use rocket::response::status::Created;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
+use tokio::task;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
 
@@ -39,11 +40,17 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
      let respo = send.sendNoTime(&value).await;
 
 
+    task::spawn( async  move {
+
+        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketSystem")
+            // .header("Content-Type", "application/json")
+            .json(&value)
+            .send().await.unwrap();
+
+    });
+
     //  let response = req.post("http://localhost:3334/api/v1/whatsapp/webHookSocketSystem")
-    let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketSystem")
-        // .header("Content-Type", "application/json")
-        .json(&value)
-        .send().await;
+
 
 
     match respo {
