@@ -19,7 +19,7 @@ pub struct ReadWT {
 }
 
 #[post("/agent/send", format = "application/json", data = "<task>")]
-pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Created<String> {
+pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>, String> {
     let key = std::env::var("KEY_API").unwrap();
     let req: Client = Client::new();
     let wt = task.0;
@@ -36,30 +36,30 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> status::Created<String
 
     let send = SendMessage::new(key.clone());
 
-    send.send( vec![value.clone()]).await;
+    send.send(vec![value.clone()]).await;
 
-    tokio::spawn(async move {
 
-      //  let response = req.post("http://localhost:3334/api/v1/whatsapp/webHookSocketSystem")
-        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketSystem")
-            // .header("Content-Type", "application/json")
-            .json(&value)
-            .send().await;
+    //  let response = req.post("http://localhost:3334/api/v1/whatsapp/webHookSocketSystem")
+    let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketSystem")
+        // .header("Content-Type", "application/json")
+        .json(&value)
+        .send().await;
 
-        match response {
-            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
-            Err(s) => { Err(s.to_string()) }
+
+    match response {
+        Ok(e) => {
+
+           let res =   e.json().await;
+
+            Ok(status::Created::new("".to_string()).body(res.unwrap()))
         }
-    } );
-
-
-
-    status::Created::new("".to_string()).body("".to_string())
+        Err(s) => { Err(s.to_string()) }
+    }
 }
 
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
-pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,String> {
+pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, String> {
     let message = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
@@ -87,7 +87,6 @@ pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,St
                     let msg: ParentMessage<MessageEvent<Delivered>> = serde_json::from_str(&message.to_string()).unwrap();
 
                     tokio::spawn(async move {
-
                         let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
                             // .header("Content-Type", "application/json")
                             .json(&msg)
@@ -96,7 +95,7 @@ pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,St
                             Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
                             Err(s) => { Err(s.to_string()) }
                         }
-                    } );
+                    });
 
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
@@ -115,7 +114,6 @@ pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,St
 
 
                     tokio::spawn(async move {
-
                         let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
                             // .header("Content-Type", "application/json")
                             .json(&msg)
@@ -124,12 +122,9 @@ pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,St
                             Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
                             Err(s) => { Err(s.to_string()) }
                         }
-                    } );
+                    });
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
-
-
-
                 } else if ty.as_str().unwrap().eq(&"image".to_string()) {
                     let msg: ParentMessage<MessageGP<Image>> = serde_json::from_str(&message.to_string()).unwrap();
                     Ok(status::Created::new("".to_string()).body("".to_string()))
@@ -159,6 +154,4 @@ pub async fn agente( task: Json<serde_json::Value>) -> Result<Created<String>,St
             }
         }
     }
-
-
 }
