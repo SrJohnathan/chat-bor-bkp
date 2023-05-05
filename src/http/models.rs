@@ -34,6 +34,39 @@ impl SendMessage {
     pub fn new(api_key: String) -> Self {
         SendMessage { api_key }
     }
+    pub async fn sendNoTime<T: serde::Serialize + Send + 'static >(&self, vec: &SendWP<T>) -> Result<String, String> {
+        let req: Client = Client::new();
+
+                let message = vec.to_json();
+
+                let params =
+                    [("channel", "whatsapp"),
+                        ("source", vec.source.as_str()),
+                        ("destination", vec.destination.as_str()),
+                        ("message", &message),
+                        ("disablePreview", "false"),
+                        ("src.name", vec.src_name.as_str())];
+
+
+                let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
+                    .header("apikey", get_app_app(vec.src_name.as_str()))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .form(&params)
+                    .send().await;
+
+                match  response {
+                    Ok(x) => {  Ok(x.text().await.unwrap())
+                    }
+                    Err(e) => {  Err(e.to_string())}
+                }
+
+
+
+
+
+
+    }
+
     pub async fn send<T: serde::Serialize + Send + 'static >(&self, vec: Vec<SendWP<T>>)  {
         let req: Client = Client::new();
 

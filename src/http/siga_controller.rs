@@ -36,7 +36,7 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 
     let send = SendMessage::new(key.clone());
 
-    send.send(vec![value.clone()]).await;
+     let respo = send.sendNoTime(&value).await;
 
 
     //  let response = req.post("http://localhost:3334/api/v1/whatsapp/webHookSocketSystem")
@@ -46,12 +46,12 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
         .send().await;
 
 
-    match response {
+    match respo {
         Ok(e) => {
 
-           let res: serde_json::Value =   e.json().await.unwrap();
+          // let res: serde_json::Value =   e.json().await.unwrap();
 
-            Ok(status::Created::new("".to_string()).body(res.to_string()))
+            Ok(status::Created::new("".to_string()).body(e))
         }
         Err(s) => { Err(s.to_string()) }
     }
