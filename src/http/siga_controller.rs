@@ -49,9 +49,9 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
     match response {
         Ok(e) => {
 
-           let res =   e.json().await;
+           let res: serde_json::Value =   e.json().await.unwrap();
 
-            Ok(status::Created::new("".to_string()).body(res.unwrap()))
+            Ok(status::Created::new("".to_string()).body(res.to_string()))
         }
         Err(s) => { Err(s.to_string()) }
     }
