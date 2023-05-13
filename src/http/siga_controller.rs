@@ -39,24 +39,9 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 
      let respo = send.sendNoTime(&value).await;
 
-
-    task::spawn( async  move {
-
-        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketSystem")
-            // .header("Content-Type", "application/json")
-            .json(&value)
-            .send().await.unwrap();
-
-    });
-
-    //  let response = req.post("http://localhost:3334/api/v1/whatsapp/webHookSocketSystem")
-
-
-
     match respo {
         Ok(e) => {
 
-          // let res: serde_json::Value =   e.json().await.unwrap();
 
             Ok(status::Created::new("".to_string()).body(e))
         }
