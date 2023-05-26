@@ -54,11 +54,15 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
     let d = message.get("type");
     let req: Client = Client::new();
 
+
+
+
     match d {
         None => { Ok(status::Created::new("".to_string()).body("".to_string())) }
         Some(c) => {
             let app = message.get("app").unwrap();
 
+            println!("{:?}",c);
 
             if c.as_str().unwrap().eq("message-event") {
                 let pl = message.get("payload").unwrap();
