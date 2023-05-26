@@ -50,19 +50,19 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
 pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, String> {
-    let message = task.0;
+    let message:serde_json::Value = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
 
 
-
+println!("{:?}",message.to_string());
 
     match d {
         None => { Ok(status::Created::new("".to_string()).body("".to_string())) }
         Some(c) => {
             let app = message.get("app").unwrap();
 
-            println!("{:?}",c);
+
 
             if c.as_str().unwrap().eq("message-event") {
                 let pl = message.get("payload").unwrap();
