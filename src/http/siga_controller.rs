@@ -34,20 +34,18 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
         wt.number.as_str(), get_number_app(wt.app.as_str()),
         result);
 
-
     let send = SendMessage::new(key.clone());
 
      let respo = send.sendNoTime(&value).await;
 
     match respo {
         Ok(e) => {
-
-
             Ok(status::Created::new("".to_string()).body(e))
         }
         Err(s) => { Err(s.to_string()) }
     }
 }
+
 
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
@@ -71,6 +69,9 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else if ty.as_str().unwrap().eq(&"failed".to_string()) {
                     let msg: ParentMessage<MessageEvent<Failed>> = serde_json::from_str(&message.to_string()).unwrap();
+
+                    println!("{:?}",msg);
+
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else if ty.as_str().unwrap().eq(&"sent".to_string()) {
                     let msg: ParentMessage<MessageEvent<Sent>> = serde_json::from_str(&message.to_string()).unwrap();

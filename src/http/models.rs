@@ -34,6 +34,9 @@ impl SendMessage {
     pub fn new(api_key: String) -> Self {
         SendMessage { api_key }
     }
+
+
+
     pub async fn sendNoTime<T: serde::Serialize + Send + 'static >(&self, vec: &SendWP<T>) -> Result<String, String> {
         let req: Client = Client::new();
 
@@ -59,11 +62,6 @@ impl SendMessage {
                     }
                     Err(e) => {  Err(e.to_string())}
                 }
-
-
-
-
-
 
     }
 
