@@ -17,6 +17,7 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
     let message = task.0;
     let d = message.get("type");
 
+    println!("{:?}",message.to_string());
 
 
     match d {

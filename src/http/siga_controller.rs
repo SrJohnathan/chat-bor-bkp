@@ -55,15 +55,12 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
     let req: Client = Client::new();
 
 
-println!("{:?}",message.to_string());
+        println!("{:?}",message.to_string());
 
     match d {
         None => { Ok(status::Created::new("".to_string()).body("".to_string())) }
         Some(c) => {
             let app = message.get("app").unwrap();
-
-
-
             if c.as_str().unwrap().eq("message-event") {
                 let pl = message.get("payload").unwrap();
                 let ty = pl.get("type").unwrap();
@@ -74,7 +71,7 @@ println!("{:?}",message.to_string());
                 } else if ty.as_str().unwrap().eq(&"failed".to_string()) {
                     let msg: ParentMessage<MessageEvent<Failed>> = serde_json::from_str(&message.to_string()).unwrap();
 
-                    println!("{:?}",msg);
+
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else if ty.as_str().unwrap().eq(&"sent".to_string()) {
