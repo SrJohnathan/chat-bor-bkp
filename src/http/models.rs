@@ -36,43 +36,50 @@ impl SendMessage {
     }
 
 
-
-    pub async fn sendNoTime<T: serde::Serialize + Send + 'static >(&self, vec: &SendWP<T>) -> Result<String, String> {
+    pub async fn sendNoTime<T: serde::Serialize + Send + 'static>(&self, vec: &SendWP<T>) -> Result<String, String> {
         let req: Client = Client::new();
 
-                let message = vec.to_json();
+        let message = vec.to_json();
 
-                let params =
-                    [("channel", "whatsapp"),
-                        ("source", vec.source.as_str()),
-                        ("destination", vec.destination.as_str()),
-                        ("message", &message),
-                        ("disablePreview", "false"),
-                        ("src.name", vec.src_name.as_str())];
+        let params =
+            [("channel", "whatsapp"),
+                ("source", vec.source.as_str()),
+                ("destination", vec.destination.as_str()),
+                ("message", &message),
+                ("disablePreview", "false"),
+                ("src.name", vec.src_name.as_str())];
 
 
-                let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
-                    .header("apikey", get_app_app(vec.src_name.as_str()))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .form(&params)
-                    .send().await;
+        let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
+            .header("apikey", get_app_app(vec.src_name.as_str()))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .form(&params)
+            .send().await;
 
-                match  response {
-                    Ok(x) => {  Ok(x.text().await.unwrap())
-                    }
-                    Err(e) => {  Err(e.to_string())}
-                }
 
+        let respons = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketAlt")
+            .json(&vec)
+            .send().await;
+        match respons {
+            Ok(e) => {}
+            Err(s) => {}
+        }
+
+
+        match response {
+            Ok(x) => {
+                Ok(x.text().await.unwrap())
+            }
+            Err(e) => { Err(e.to_string()) }
+        }
     }
 
-    pub async fn send<T: serde::Serialize + Send + 'static + std::marker::Sync>(&self, vec: Vec<SendWP<T>>)  {
+    pub async fn send<T: serde::Serialize + Send + 'static + std::marker::Sync>(&self, vec: Vec<SendWP<T>>) {
         let req: Client = Client::new();
 
-        tokio::spawn( async move {
-
+        tokio::spawn(async move {
             for body in vec {
                 let message = body.to_json();
-
 
 
                 let params =
@@ -90,62 +97,48 @@ impl SendMessage {
                     .form(&params)
                     .send().await;
 
-                match  response {
+                match response {
                     Ok(x) => {
+                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketAlt")
+                            // .header("Content-Type", "application/json")
+                            .json(&body)
+                            .send().await;
+                        match response {
+                            Ok(e) => {}
+                            Err(s) => {}
+                        }
 
-                            let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
-                                // .header("Content-Type", "application/json")
-                                .json(&body)
-                                .send().await;
-                            match response {
-                                Ok(e) => { }
-                                Err(s) => { }
-                            }
 
-
-                        println!("{:?}",x.text().await.unwrap())
+                        println!("{:?}", x.text().await.unwrap())
                     }
-                    Err(e) => {println!("{:?}",e.to_string())}
+                    Err(e) => { println!("{:?}", e.to_string()) }
                 }
                 tokio::time::sleep(tokio::time::Duration::from_secs(7)).await;
             }
-
-
-
         });
-
     }
     pub async fn send_instagram<T: serde::Serialize + Send + 'static + std::marker::Sync + std::fmt::Debug>(&self, vec: Vec<SendFBIG<T>>) {
-
         let req: Client = Client::new();
 
-        tokio::spawn( async move {
-
+        tokio::spawn(async move {
             for body in vec {
-
-                  let msg = FBIG { recipient: Recipient{id:body.recipient}, message: body.message };
+                let msg = FBIG { recipient: Recipient { id: body.recipient }, message: body.message };
 
                 let response = req.post(format!("{}{}/messages?access_token={}", "https://graph.facebook.com/v16.0/", body.page_id.as_str(), body.access_token.as_str()))
                     .json(&msg)
                     .send().await;
 
-                match  response {
-                    Ok(x) => {  println!("{:?}",x.text().await.unwrap())
+                match response {
+                    Ok(x) => {
+                        println!("{:?}", x.text().await.unwrap())
                     }
-                    Err(e) => {println!("{:?}",e.to_string())}
+                    Err(e) => { println!("{:?}", e.to_string()) }
                 }
                 tokio::time::sleep(tokio::time::Duration::from_secs(7)).await;
             }
-
-
-
         });
-
-
     }
-    pub async fn send_facebook<T: serde::Serialize + Send + 'static >(&self, vec: Vec<SendWP<T>>) {}
-
-
+    pub async fn send_facebook<T: serde::Serialize + Send + 'static>(&self, vec: Vec<SendWP<T>>) {}
 }
 
 
