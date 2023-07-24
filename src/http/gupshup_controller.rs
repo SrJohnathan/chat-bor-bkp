@@ -17,7 +17,7 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
     let message = task.0;
     let d = message.get("type");
 
-    println!("{:?}",message.to_string());
+
 
 
     match d {
@@ -64,8 +64,6 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
                 if ty.as_str().unwrap().eq(&"text".to_string()) {
 
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
-
-
 
                     chat.add_props(String::from("nodedouser"),msg.payload.sender.name);
 

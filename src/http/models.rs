@@ -65,7 +65,7 @@ impl SendMessage {
 
     }
 
-    pub async fn send<T: serde::Serialize + Send + 'static >(&self, vec: Vec<SendWP<T>>)  {
+    pub async fn send<T: serde::Serialize + Send + 'static + std::marker::Sync>(&self, vec: Vec<SendWP<T>>)  {
         let req: Client = Client::new();
 
         tokio::spawn( async move {
@@ -91,7 +91,19 @@ impl SendMessage {
                     .send().await;
 
                 match  response {
-                    Ok(x) => {  println!("{:?}",x.text().await.unwrap())
+                    Ok(x) => {
+
+                            let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                                // .header("Content-Type", "application/json")
+                                .json(&body)
+                                .send().await;
+                            match response {
+                                Ok(e) => { }
+                                Err(s) => { }
+                            }
+
+
+                        println!("{:?}",x.text().await.unwrap())
                     }
                     Err(e) => {println!("{:?}",e.to_string())}
                 }
