@@ -1,4 +1,5 @@
 use std::future::Future;
+use reqwest::Client;
 use rocket::http::Status;
 use rocket::response::status::{BadRequest, Created};
 use rocket::serde::json::Json;
@@ -16,7 +17,7 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
 
     let message = task.0;
     let d = message.get("type");
-
+    let req: Client = Client::new();
 
 
 
@@ -65,12 +66,17 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
 
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
 
+
+                    req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                        // .header("Content-Type", "application/json")
+                        .json(&msg)
+                        .send().await;
+
+
                     chat.add_props(String::from("nodedouser"),msg.payload.sender.name);
 
                     match  chat.run(&db).await {
                         Ok(c) => {
-
-
                             let e = NewJob{
                                 number: c.number.clone(),
                                 etapa: c.st.clone(),
