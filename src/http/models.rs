@@ -57,13 +57,7 @@ impl SendMessage {
             .send().await;
 
 
-        let respons = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketAlt")
-            .json(&vec)
-            .send().await;
-        match respons {
-            Ok(e) => {}
-            Err(s) => {}
-        }
+
 
 
         match response {
