@@ -88,8 +88,6 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
                                 Ok(x) => {}
                                 Err(e) => { println!("{}",e.0) }
                             }
-
-
                         }
                         Err(e) => { println!("erro {}",e)}
                     }
@@ -108,6 +106,10 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
                     let msg: ParentMessage<MessageGP<ButtonReply>> = serde_json::from_str(&message.to_string()).unwrap();
 
 
+                    req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                        // .header("Content-Type", "application/json")
+                        .json(&msg)
+                        .send().await;
 
 
                     match  chat.run_button(&msg.payload.payload.title,&db).await {
@@ -146,6 +148,11 @@ pub async fn web_hook(db:MongoDb<'_>, job:&State<Sender<String>>,task: Json<serd
                 } else if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
 
+
+                    req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                        // .header("Content-Type", "application/json")
+                        .json(&msg)
+                        .send().await;
 
                     chat.add_props(String::from("nodedouser"),msg.payload.sender.name);
 
