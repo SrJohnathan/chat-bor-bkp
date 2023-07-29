@@ -86,31 +86,34 @@ impl SendMessage {
                         ("src.name", body.src_name.as_str())];
 
 
+                if !is_bot(&req, body.src_name.clone(), body.destination.clone()).await {
+
+                    let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
+                        .header("apikey", get_app_app(body.src_name.as_str()))
+                        .header("Content-Type", "application/x-www-form-urlencoded")
+                        .form(&params)
+                        .send().await;
+
+                    match response {
+                        Ok(x) => {
+                            let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketAlt")
+                                // .header("Content-Type", "application/json")
+                                .json(&body)
+                                .send().await;
+                            match response {
+                                Ok(e) => {}
+                                Err(s) => {}
+                            }
 
 
-                let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
-                    .header("apikey", get_app_app(body.src_name.as_str()))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .form(&params)
-                    .send().await;
-
-                match response {
-                    Ok(x) => {
-                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketAlt")
-                            // .header("Content-Type", "application/json")
-                            .json(&body)
-                            .send().await;
-                        match response {
-                            Ok(e) => {}
-                            Err(s) => {}
+                            println!("{:?}", x.text().await.unwrap())
                         }
-
-
-                        println!("{:?}", x.text().await.unwrap())
+                        Err(e) => { println!("{:?}", e.to_string()) }
                     }
-                    Err(e) => { println!("{:?}", e.to_string()) }
+                    tokio::time::sleep(tokio::time::Duration::from_secs(7)).await;
                 }
-                tokio::time::sleep(tokio::time::Duration::from_secs(7)).await;
+
+
             }
         });
 
@@ -119,6 +122,7 @@ impl SendMessage {
     }
     pub async fn send_instagram<T: serde::Serialize + Send + 'static + std::marker::Sync + std::fmt::Debug>(&self, vec: Vec<SendFBIG<T>>) {
         let req: Client = Client::new();
+
 
         tokio::spawn(async move {
             for body in vec {
@@ -142,7 +146,53 @@ impl SendMessage {
 }
 
 
+async fn is_bot(req: &reqwest::Client, app: String, number: String) -> bool {
+    let tmp = format!("https://siga-telecom.herokuapp.com/api/v1/whatsapp/isbot/{}/{}", app, number);
 
+    // Realiza a solicitação HTTP e aguarda a resposta
+    let response = req.get(&tmp).send().await;
+
+    // Verifica se houve algum erro na solicitação HTTP
+    match response {
+        Ok(resp) => {
+            // Verifica se o status da resposta é bem-sucedido (código 2xx)
+            if resp.status().is_success() {
+                // Lê o conteúdo da resposta como texto
+                let body = resp.text().await;
+
+                // Verifica se houve algum erro ao obter o conteúdo da resposta
+                match body {
+                    Ok(text) => {
+                        // Converte o texto em um bool
+                        if text.trim() == "true" {
+                            true
+                        } else if text.trim() == "false" {
+                            false
+                        } else {
+                            // Resposta inválida da API, trata o erro como preferir
+                            eprintln!("Resposta inválida da API: {}", text);
+                            false
+                        }
+                    }
+                    Err(err) => {
+                        // Tratamento de erro ao obter o corpo da resposta
+                        eprintln!("Erro ao obter o corpo da resposta: {}", err);
+                        false // ou tratar o erro de outra forma, dependendo do caso
+                    }
+                }
+            } else {
+                // Tratamento de erro para resposta com status diferente de 2xx (erro HTTP)
+                eprintln!("Erro na resposta HTTP: {:?}", resp.status());
+                false // ou tratar o erro de outra forma, dependendo do caso
+            }
+        }
+        Err(err) => {
+            // Tratamento de erro na solicitação HTTP
+            eprintln!("Erro na solicitação HTTP: {}", err);
+            false // ou tratar o erro de outra forma, dependendo do caso
+        }
+    }
+}
 
 
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
