@@ -85,6 +85,7 @@ impl SendMessage {
                         ("disablePreview", "false"),
                         ("src.name", body.src_name.as_str())];
 
+                tokio::time::sleep(tokio::time::Duration::from_secs(7)).await;
 
                 if !is_bot(&req, body.src_name.clone(), body.destination.clone()).await {
 
@@ -110,7 +111,6 @@ impl SendMessage {
                         }
                         Err(e) => { println!("{:?}", e.to_string()) }
                     }
-                    tokio::time::sleep(tokio::time::Duration::from_secs(7)).await;
                 }
 
 
