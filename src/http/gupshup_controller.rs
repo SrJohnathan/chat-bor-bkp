@@ -67,17 +67,12 @@ pub async fn web_hook(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<s
 
                     match name {
                         Ok(x) => {
-
                             let tex = x.text().await.unwrap();
-
                             if tex != "null".to_string() {
-
                                 chat.add_props(String::from("nodedouser"), tex);
-
                             } else {
                                 chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
                             }
-
                         }
                         Err(e) => {
                             chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
@@ -102,6 +97,9 @@ pub async fn web_hook(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<s
                             }
                             Err(e) => { println!("erro {}", e) }
                         }
+                    } else {
+
+
                     }
                 } else if ty.as_str().unwrap().eq(&"image".to_string()) {
                     let msg: ParentMessage<MessageGP<Image>> = serde_json::from_str(&message.to_string()).unwrap();
