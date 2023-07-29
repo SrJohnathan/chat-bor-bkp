@@ -115,23 +115,12 @@ impl SendMessage {
                 }
             });
 
-        }else {
-
-            for body in vec {
-
-                let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketAlt")
-                    // .header("Content-Type", "application/json")
-                    .json(&body)
-                    .send().await;
-                match response {
-                    Ok(e) => {}
-                    Err(s) => {}
-                }
-
-            }
-
-
         }
+
+
+
+
+
 
 
 
