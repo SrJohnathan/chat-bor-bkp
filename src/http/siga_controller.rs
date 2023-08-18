@@ -10,6 +10,7 @@ use serde_json::Value;
 use tokio::task;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
+use crate::chat::send_list_wp::{ImageMidia, MidiaType};
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct ReadWT {
@@ -18,6 +19,25 @@ pub struct ReadWT {
     pub app: String,
     pub number: String,
 }
+
+#[derive(Serialize, Debug, Deserialize, Clone)]
+pub struct ReadWTDoc {
+    pub r#type: String,
+    pub payload: Docc,
+    pub app: String,
+    pub number: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Docc {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub original_url: String,
+    pub preview_url: String,
+    pub caption: String,
+}
+
 
 #[post("/agent/send", format = "application/json", data = "<task>")]
 pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>, String> {
@@ -36,7 +56,7 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 
     let send = SendMessage::new(key.clone());
 
-     let respo = send.sendNoTime(&value).await;
+    let respo = send.sendNoTime(&value).await;
 
     match respo {
         Ok(e) => {
@@ -47,15 +67,63 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 }
 
 
+#[post("/agent/sendArchive", format = "application/json", data = "<task>")]
+pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Created<String>, String> {
+    let key = std::env::var("KEY_API").unwrap();
+    let req: Client = Client::new();
+    let wt = task.0;
+
+    let result = if wt.r#type == "image".to_string() {
+        serde_json::to_value(
+            ImageMidia {
+                type_field: "image".to_string(),
+                caption: wt.payload.caption,
+                original_url: wt.payload.original_url,
+                preview_url: wt.payload.preview_url,
+            }
+        ).unwrap()
+    } else if wt.r#type == "file".to_string() {
+        serde_json::to_value(
+            MidiaType {
+                type_field: "file".to_string(),
+                url: wt.payload.original_url,
+                filename: Option::Some(wt.payload.preview_url),
+
+            }
+        ).unwrap()
+
+    } else {
+        serde_json::to_value(
+            MessageText { type_field: "text".to_string(), text: "NOT_FOUND".to_string() }
+        ).unwrap()
+    };
+
+    let value: SendWP<Value> = SendWP::new(
+        wt.app.as_str(),
+        wt.number.as_str(), get_number_app(wt.app.as_str()),
+        result);
+
+    let send = SendMessage::new(key.clone());
+
+    let respo = send.sendNoTime(&value).await;
+
+    match respo {
+        Ok(e) => {
+            Ok(status::Created::new("".to_string()).body(e))
+        }
+        Err(s) => { Err(s.to_string()) }
+    }
+}
+
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
 pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, String> {
-    let message:serde_json::Value = task.0;
+    let message: serde_json::Value = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
 
 
-        println!("{:?}",message.to_string());
+    println!("{:?}", message.to_string());
 
     match d {
         None => { Ok(status::Created::new("".to_string()).body("".to_string())) }
@@ -72,7 +140,6 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
                     let msg: ParentMessage<MessageEvent<Failed>> = serde_json::from_str(&message.to_string()).unwrap();
 
 
-
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else if ty.as_str().unwrap().eq(&"sent".to_string()) {
                     let msg: ParentMessage<MessageEvent<Sent>> = serde_json::from_str(&message.to_string()).unwrap();
@@ -80,16 +147,16 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
                 } else if ty.as_str().unwrap().eq(&"delivered".to_string()) {
                     let msg: ParentMessage<MessageEvent<Delivered>> = serde_json::from_str(&message.to_string()).unwrap();
 
-                   /* tokio::spawn(async move {
-                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
-                            // .header("Content-Type", "application/json")
-                            .json(&msg)
-                            .send().await;
-                        match response {
-                            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
-                            Err(s) => { Err(s.to_string()) }
-                        }
-                    }); */
+                    /* tokio::spawn(async move {
+                         let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                             // .header("Content-Type", "application/json")
+                             .json(&msg)
+                             .send().await;
+                         match response {
+                             Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                             Err(s) => { Err(s.to_string()) }
+                         }
+                     }); */
 
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))

@@ -137,6 +137,7 @@ async fn main() {
                             http::insta_controller::webhook,
                                http::insta_controller::messaging_webhook,
                                http::siga_controller::send,
+                               http::siga_controller::send_archive,
                                  http::siga_controller::agente
 
                        ])
