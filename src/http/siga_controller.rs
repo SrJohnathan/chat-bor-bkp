@@ -87,7 +87,7 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
             MidiaType {
                 type_field: "file".to_string(),
                 url: wt.payload.original_url,
-                filename: Option::Some(wt.payload.preview_url),
+                filename: Option::Some(wt.payload.caption),
 
             }
         ).unwrap()
