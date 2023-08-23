@@ -299,7 +299,7 @@ pub struct Video {
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct File {
-    pub caption: String,
+    pub caption: Option<String>,
     pub name: String,
     pub url: String,
     pub contentType: String,
