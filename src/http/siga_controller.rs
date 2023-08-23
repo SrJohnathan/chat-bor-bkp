@@ -35,7 +35,7 @@ pub struct Docc {
     pub type_field: String,
     pub original_url: String,
     pub preview_url: String,
-    pub caption: String,
+    pub caption: Option<String>,
 }
 
 
@@ -77,7 +77,10 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
         serde_json::to_value(
             ImageMidia {
                 type_field: "image".to_string(),
-                caption: wt.payload.caption,
+                caption: match   wt.payload.caption {
+                    None => "".to_string(),
+                    Some(x) => x
+                },
                 original_url: wt.payload.original_url,
                 preview_url: wt.payload.preview_url,
             }
@@ -87,7 +90,7 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
             MidiaType {
                 type_field: "file".to_string(),
                 url: wt.payload.original_url,
-                filename: Option::Some(wt.payload.caption),
+                filename: wt.payload.caption,
 
             }
         ).unwrap()
