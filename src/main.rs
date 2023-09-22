@@ -53,6 +53,7 @@ async fn main() {
 
 
     let mut channel: (Sender<String>, Receiver<String>) = mpsc::channel(100);
+    let mut countDown: (Sender<String>, Receiver<String>) = mpsc::channel(100);
 
 
     tokio::spawn(async move {
@@ -120,6 +121,9 @@ async fn main() {
     let config = Config { verify_token: "95699569".to_string() };
 
 
+
+
+
     tokio::spawn(async move {
         match connection().await {
             Ok(c) => {
@@ -128,6 +132,7 @@ async fn main() {
                     .manage(c)
                     .manage(config)
                     .manage(channel.0)
+                    .manage(countDown.0)
                     .mount("/",
                            routes![
                             http::gupshup_controller::web_hook,
