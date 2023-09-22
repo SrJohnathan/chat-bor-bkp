@@ -126,7 +126,7 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
     let req: Client = Client::new();
 
 
-    println!("{:?}", message.to_string());
+    println!("{:?}", message);
 
     match d {
         None => { Ok(status::Created::new("".to_string()).body("".to_string())) }
@@ -248,7 +248,29 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
 
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
-                } else if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
+                } else if ty.as_str().unwrap().eq(&"quick_reply".to_string()) {
+                    let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
+
+                    tokio::spawn(async move {
+                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                            // .header("Content-Type", "application/json")
+                            .json(&msg)
+                            .send().await;
+                        match response {
+                            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                            Err(s) => { Err(s.to_string()) }
+                        }
+                    });
+
+
+
+                    Ok(status::Created::new("".to_string()).body("".to_string()))
+                } else
+
+
+
+
+                if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else {
