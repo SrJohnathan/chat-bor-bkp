@@ -125,7 +125,7 @@ async fn main() {
     let cors = CorsOptions::default()
         .allowed_origins(AllowedOrigins::all())
         .allowed_methods(
-            vec![Method::Get, Method::Post, Method::Patch,Method::Put,Method::Delete,Method::Options]
+            vec![Method::Get, Method::Post, Method::Patch,Method::Put,Method::Delete]
                 .into_iter()
                 .map(From::from)
                 .collect(),
@@ -137,7 +137,7 @@ async fn main() {
         match connection().await {
             Ok(c) => {
                 let _ = rocket::build()
-                    .attach(CORS)
+                    .attach(cors.to_cors().unwrap())
                     .manage(c)
                     .manage(config)
                     .manage(channel.0)
