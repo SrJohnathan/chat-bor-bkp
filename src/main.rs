@@ -3,10 +3,11 @@ use std::collections::HashMap;
 
 use dotenvy::dotenv;
 use rocket::fs::FileServer;
+use rocket::http::Method;
 
 
 use rocket::routes;
-use rocket_cors::CorsOptions;
+use rocket_cors::{AllowedOrigins, CorsOptions};
 use serde_json::Value;
 use tokio;
 use tokio::sync::mpsc;
@@ -120,14 +121,22 @@ async fn main() {
     let config = Config { verify_token: "95699569".to_string() };
 
 
-
+    let cors = CorsOptions::default()
+        .allowed_origins(AllowedOrigins::all())
+        .allowed_methods(
+            vec![Method::Get, Method::Post, Method::Patch,Method::Put,Method::Delete,Method::Options]
+                .into_iter()
+                .map(From::from)
+                .collect(),
+        )
+        .allow_credentials(true);
 
 
     tokio::spawn(async move {
         match connection().await {
             Ok(c) => {
                 let _ = rocket::build()
-                    .attach(CorsOptions::default().to_cors().unwrap())
+                    .attach(cors.to_cors().unwrap())
                     .manage(c)
                     .manage(config)
                     .manage(channel.0)
