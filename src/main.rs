@@ -2,11 +2,12 @@ use std::collections::HashMap;
 
 
 use dotenvy::dotenv;
+use rocket::fairing::{Fairing, Info, Kind};
 use rocket::fs::FileServer;
-use rocket::http::Method;
+use rocket::http::{Header, Method};
 
 
-use rocket::routes;
+use rocket::{Request, Response, routes};
 use rocket_cors::{AllowedOrigins, CorsOptions};
 use serde_json::Value;
 use tokio;
@@ -136,7 +137,7 @@ async fn main() {
         match connection().await {
             Ok(c) => {
                 let _ = rocket::build()
-                    .attach(cors.to_cors().unwrap())
+                    .attach(CORS)
                     .manage(c)
                     .manage(config)
                     .manage(channel.0)
@@ -161,4 +162,26 @@ async fn main() {
             Err(e) => { println!("{}", e.kind.to_string()) }
         }
     }).await.expect("TODO: panic message");
+}
+
+
+
+
+pub struct CORS;
+
+#[rocket::async_trait]
+impl Fairing for CORS {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response
+        }
+    }
+
+    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Methods", "POST,PUT,GET,PATCH, OPTIONS"));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
 }
