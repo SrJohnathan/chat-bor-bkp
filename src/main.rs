@@ -141,7 +141,7 @@ async fn main() {
                     .manage(c)
                     .manage(config)
                     .manage(channel.0)
-                    .mount("/", rocket_cors::catch_all_options_routes())
+                //    .mount("/", rocket_cors::catch_all_options_routes())
                     .mount("/",
                            routes![
                             http::gupshup_controller::web_hook,
