@@ -95,7 +95,18 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
             }
         ).unwrap()
 
-    } else {
+    } else if wt.r#type == "audio".to_string() {
+        serde_json::to_value(
+            MidiaType {
+                type_field: "audio".to_string(),
+                url: wt.payload.original_url,
+                filename: None
+
+            }
+        ).unwrap()
+
+    }
+    else {
         serde_json::to_value(
             MessageText { type_field: "text".to_string(), text: "NOT_FOUND".to_string() }
         ).unwrap()
@@ -165,6 +176,20 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else if ty.as_str().unwrap().eq(&"read".to_string()) {
                     let msg: ParentMessage<MessageEvent<Read>> = serde_json::from_str(&message.to_string()).unwrap();
+
+
+                    tokio::spawn(async move {
+                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                            // .header("Content-Type", "application/json")
+                            .json(&msg)
+                            .send().await;
+                        match response {
+                            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                            Err(s) => { Err(s.to_string()) }
+                        }
+                    });
+
+
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else {
                     Ok(status::Created::new("".to_string()).body("".to_string()))
