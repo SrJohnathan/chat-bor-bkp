@@ -97,7 +97,7 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
             }
         ).unwrap()
 
-    } else if wt.r#type == "audio".to_string() {
+    } else if wt.r#type == "audio/mpeg".to_string() {
         serde_json::to_value(
             MidiaType {
                 type_field: "audio".to_string(),
