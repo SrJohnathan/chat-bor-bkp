@@ -73,7 +73,7 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
     let req: Client = Client::new();
     let wt = task.0;
 
-    println!("{:?}", task.0);
+    println!("{:?}", wt);
 
     let result = if wt.r#type == "image".to_string() {
         serde_json::to_value(
