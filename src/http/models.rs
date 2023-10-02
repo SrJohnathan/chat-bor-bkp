@@ -50,9 +50,12 @@ impl SendMessage {
                 ("src.name", vec.src_name.as_str())];
 
 
+
+
         let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
             .header("apikey", get_app_app(vec.src_name.as_str()))
             .header("Content-Type", "application/x-www-form-urlencoded")
+           // .header("Content-Length", content_length.to_string())
             .form(&params)
             .send().await;
 

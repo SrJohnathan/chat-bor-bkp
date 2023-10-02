@@ -125,7 +125,7 @@ async fn main() {
     let cors = CorsOptions::default()
         .allowed_origins(AllowedOrigins::all())
         .allowed_methods(
-            vec![Method::Get, Method::Post, Method::Patch,Method::Put,Method::Delete]
+            vec![Method::Get, Method::Post, Method::Patch, Method::Put, Method::Delete]
                 .into_iter()
                 .map(From::from)
                 .collect(),
@@ -141,7 +141,7 @@ async fn main() {
                     .manage(c)
                     .manage(config)
                     .manage(channel.0)
-                //    .mount("/", rocket_cors::catch_all_options_routes())
+                    //    .mount("/", rocket_cors::catch_all_options_routes())
                     .mount("/",
                            routes![
                             http::gupshup_controller::web_hook,
@@ -152,7 +152,7 @@ async fn main() {
                                http::insta_controller::messaging_webhook,
                                http::siga_controller::send,
                                http::siga_controller::send_archive,
-                                 http::siga_controller::agente
+                            http::siga_controller::agente
 
                        ])
                     //   .mount("/public", FileServer::from(rocket::fs::relative!("static")))
@@ -165,8 +165,6 @@ async fn main() {
 }
 
 
-
-
 pub struct CORS;
 
 #[rocket::async_trait]
@@ -174,7 +172,7 @@ impl Fairing for CORS {
     fn info(&self) -> Info {
         Info {
             name: "Add CORS headers to responses",
-            kind: Kind::Response
+            kind: Kind::Response,
         }
     }
 
