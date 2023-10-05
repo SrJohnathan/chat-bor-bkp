@@ -10,7 +10,7 @@ use serde_json::Value;
 use tokio::task;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
-use crate::chat::send_list_wp::{ImageMidia, MidiaType};
+use crate::chat::send_list_wp::{ImageMidia, MidiaType, TemplateText};
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct ReadWT {
@@ -19,6 +19,16 @@ pub struct ReadWT {
     pub app: String,
     pub number: String,
 }
+
+#[derive(Serialize, Debug, Deserialize, Clone)]
+pub struct ReadTemplate {
+    pub r#type: String,
+    pub id: String,
+    pub params: Vec<String>,
+    pub app: String,
+    pub number: String,
+}
+
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct ReadWTDoc {
@@ -47,6 +57,34 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 
     let result = serde_json::to_value(
         MessageText { type_field: "text".to_string(), text: wt.text }
+    ).unwrap();
+
+    let value: SendWP<Value> = SendWP::new(
+        wt.app.as_str(),
+        wt.number.as_str(), get_number_app(wt.app.as_str()),
+        result);
+
+    let send = SendMessage::new(key.clone());
+
+    let respo = send.sendNoTime(&value).await;
+
+    match respo {
+        Ok(e) => {
+            Ok(status::Created::new("".to_string()).body(e))
+        }
+        Err(s) => { Err(s.to_string()) }
+    }
+}
+
+
+#[post("/agent/template", format = "application/json", data = "<task>")]
+pub async fn template(db: MongoDb<'_>, task: Json<ReadTemplate>) -> Result<Created<String>, String> {
+    let key = std::env::var("KEY_API").unwrap();
+    let req: Client = Client::new();
+    let wt = task.0;
+
+    let result = serde_json::to_value(
+        TemplateText { id: wt.id , params: wt.params }
     ).unwrap();
 
     let value: SendWP<Value> = SendWP::new(

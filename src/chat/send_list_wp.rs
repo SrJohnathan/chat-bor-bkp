@@ -35,6 +35,19 @@ impl <T:Sized + serde::Serialize>SendWP<T> {
 }
 
 
+
+//TEMPLATE
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TemplateText {
+    #[serde(rename = "type")]
+    pub id: String,
+    pub params: Vec<String>,
+
+}
+
+
+
 //TEXT
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
