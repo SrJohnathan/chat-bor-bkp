@@ -35,6 +35,18 @@ pub fn get_app_app(app:&str) -> &str {
 
 }
 
+
+pub fn get_app_id(app:&str) -> &str {
+
+    match app {
+        "WhatsAppSTWpt" => "2ba40208-eeeb-453f-9a76-66510031344f",
+        "BusinessSTWpt" => "f60e78d0-c1a9-4d9d-b2ec-87a46928cc9a",
+        _ => "",
+    }
+
+}
+
+
 #[derive(Serialize, Deserialize, Clone,Debug)]
 pub struct NewJob{
    pub number:String,

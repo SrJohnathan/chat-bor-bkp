@@ -1,8 +1,8 @@
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Error, Response, StatusCode};
 use rocket::response::status;
 use rocket::serde::json::Json;
 use crate::chat::db_mongo::MongoDb;
-use rocket::{get, post};
+use rocket::{get, post, put};
 use rocket::http::Status;
 use rocket::response::status::Created;
 use serde_derive::{Deserialize, Serialize};
@@ -11,6 +11,7 @@ use tokio::task;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
 use crate::chat::send_list_wp::{ImageMidia, MidiaType, TemplateText};
+use crate::cofg::{get_app_app, get_app_id, HOST_API_GUPSHUP};
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct ReadWT {
@@ -19,6 +20,15 @@ pub struct ReadWT {
     pub app: String,
     pub number: String,
 }
+
+
+#[derive(Serialize, Debug, Deserialize, Clone)]
+pub struct ReadMessage {
+    pub app: String,
+    pub idm: String,
+
+}
+
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct ReadTemplate {
@@ -77,6 +87,29 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 }
 
 
+#[put("/agent/read", format = "application/json", data = "<task>")]
+pub async fn read(db: MongoDb<'_>, task: Json<ReadMessage>) -> Status {
+    let key = std::env::var("KEY_API").unwrap();
+    let req: Client = Client::new();
+    let wt = task.0;
+
+
+    let response = req.put(format!("{}/wa/app/{}/msg/{}/read", HOST_API_GUPSHUP, get_app_id( wt.app.as_str()) ,wt.idm ))
+        .header("apikey", get_app_app(wt.app.as_str()))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        // .header("Content-Length", content_length.to_string())
+        .send().await;
+
+
+      let st = response.unwrap();
+
+     Status::new(st.status().as_u16() )
+
+
+}
+
+
+
 #[post("/agent/template", format = "application/json", data = "<task>")]
 pub async fn template(db: MongoDb<'_>, task: Json<ReadTemplate>) -> Result<Created<String>, String> {
     let key = std::env::var("KEY_API").unwrap();
@@ -86,6 +119,8 @@ pub async fn template(db: MongoDb<'_>, task: Json<ReadTemplate>) -> Result<Creat
     let result = serde_json::to_value(
         TemplateText { id: wt.id , params: wt.params }
     ).unwrap();
+
+
 
     let value: SendWP<Value> = SendWP::new(
         wt.app.as_str(),
