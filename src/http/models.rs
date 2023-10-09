@@ -307,7 +307,7 @@ pub struct Sender {
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Context {
     pub id: String,
-    pub gsId: String,
+    pub gsId: Option<String>,
 
 }
 
