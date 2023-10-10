@@ -306,7 +306,7 @@ pub struct Sender {
 #[allow(non_snake_case)]
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct Context {
-    pub id: String,
+    pub id: Option<String>,
     pub gsId: Option<String>,
 
 }
