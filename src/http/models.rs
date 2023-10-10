@@ -285,7 +285,7 @@ pub struct MessageEvent<T> {
 
 #[derive(Serialize, Debug, Deserialize, Clone, JsonSchema)]
 pub struct MessageGP<T> {
-    pub id: String,
+    pub id: Option<String>,
     pub r#type: String,
     // "text"|"image"|"file"|"audio"|"video"|"contact"|"location"|"button_reply"|"list_reply",
     pub source: String,
