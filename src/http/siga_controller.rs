@@ -366,6 +366,9 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else if ty.as_str().unwrap().eq(&"quick_reply".to_string()) {
+
+
+
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
 
                     tokio::spawn(async move {
@@ -380,6 +383,9 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
                     });
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
+
+
+
                 } else
 
                 if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
