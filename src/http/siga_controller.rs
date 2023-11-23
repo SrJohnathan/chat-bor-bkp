@@ -87,25 +87,29 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 }
 
 
-#[put("/agent/read", format = "application/json", data = "<task>")]
-pub async fn read(db: MongoDb<'_>, task: Json<ReadMessage>) -> Status {
-    let key = std::env::var("KEY_API").unwrap();
+#[put("/system/read", format = "application/json", data = "<task>")]
+pub async fn read_system(task: Json<ReadMessage>) -> Result<Status,String> {
+
+    println!("{:?}",task.0);
+
     let req: Client = Client::new();
     let wt = task.0;
 
 
-    let response = req.put(format!("{}/wa/app/{}/msg/{}/read", HOST_API_GUPSHUP, get_app_id( wt.app.as_str()) ,wt.idm ))
+
+let url = format!("{}/wa/app/{}/msg/{}/read", HOST_API_GUPSHUP, get_app_id( wt.app.as_str()) ,wt.idm );
+
+
+
+    let response = req.put(url)
         .header("apikey", get_app_app(wt.app.as_str()))
-        .header("Content-Type", "application/x-www-form-urlencoded")
         // .header("Content-Length", content_length.to_string())
         .send().await;
 
-
-      let st = response.unwrap();
-
-     Status::new(st.status().as_u16() )
-
-
+      match  response {
+          Ok(x) => {  Ok( Status::new(x.status().as_u16() )) }
+          Err(x) => {  Err(x.to_string()) }
+      }
 }
 
 
@@ -369,6 +373,7 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
 
 
 
+
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
 
                     tokio::spawn(async move {
@@ -377,7 +382,11 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
                             .json(&msg)
                             .send().await;
                         match response {
-                            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                            Ok(e) => {
+
+
+
+                                Ok(status::Created::new("".to_string()).body("".to_string())) }
                             Err(s) => { Err(s.to_string()) }
                         }
                     });
