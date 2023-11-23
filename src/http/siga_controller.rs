@@ -106,6 +106,44 @@ let url = format!("{}/wa/app/{}/msg/{}/read", HOST_API_GUPSHUP, get_app_id( wt.a
 }
 
 
+#[get("/template/<appName>")]
+pub async fn read_template(appName:String) -> Result<Created<String>, String> {
+
+    let req: Client = Client::new();
+    let url = format!("{}/sm/api/v1/template/list/{}", HOST_API_GUPSHUP, appName );
+    let response = req.get(url)
+        .header("apikey", get_app_app(appName.as_str()))
+        // .header("Content-Length", content_length.to_string())
+        .send().await;
+    match response {
+        Ok(e) => {
+            Ok(status::Created::new("".to_string()).body(  e.text().await.unwrap()  ))
+        }
+        Err(s) => { Err(s.to_string()) }
+    }
+}
+
+
+
+#[get("/money")]
+pub async fn money() -> Result<Created<String>, String> {
+
+    let req: Client = Client::new();
+
+    let response = req.get("https://api.gupshup.io/sm/api/v2/wallet/balance")
+        .header("apikey", "ku8gzeihiztucp71pog5xoipestl5abp")
+        // .header("Content-Length", content_length.to_string())
+        .send().await;
+    match response {
+        Ok(e) => {
+            Ok(status::Created::new("".to_string()).body(  e.text().await.unwrap()  ))
+        }
+        Err(s) => { Err(s.to_string()) }
+    }
+}
+
+
+
 
 #[post("/agent/template", format = "application/json", data = "<task>")]
 pub async fn template(db: MongoDb<'_>, task: Json<ReadTemplate>) -> Result<Created<String>, String> {
