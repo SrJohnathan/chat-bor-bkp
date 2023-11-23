@@ -52,7 +52,7 @@ impl SendMessage {
 
 
 
-        let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
+        let response = req.post(format!("{}/sm/api/v1/template/msg", HOST_API_GUPSHUP))
             .header("apikey", get_app_app(vec.src_name.as_str()))
             .header("Content-Type", "application/x-www-form-urlencoded")
             // .header("Content-Length", content_length.to_string())
