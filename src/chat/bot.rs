@@ -1,11 +1,5 @@
 use std::collections::HashMap;
-use std::future::Future;
-use diesel::row::NamedRow;
-use reqwest::{Error, StatusCode};
-use tokio::fs;
 
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
 use serde_json::Value;
 use crate::chat::db_mongo::MongoDb;
 use crate::chat::factory_msg_send_text::TypeMidia;

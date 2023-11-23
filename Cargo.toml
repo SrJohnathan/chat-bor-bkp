@@ -6,8 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-diesel = { version = "2.0.3", features = ["postgres","r2d2", "uuid", "chrono"] }
-diesel_migrations = "2.0.0"
+
 dotenvy = "0.15"
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0"
@@ -20,7 +19,6 @@ rocket_okapi = { version = "0.8.0-rc.2", features = ["swagger", "rapidoc"] }
 schemars = { version = "0.8.6", features = ["preserve_order"] }
 reqwest = { version = "0.11" , features = [ "json"]}
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
-tokio-diesel = {git = "https://github.com/SrJohnathan/tokio-diesel"  }
 base64 = "*"
 
 

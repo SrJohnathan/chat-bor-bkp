@@ -42,7 +42,7 @@ use mongodb::{bson::doc, options::ClientOptions, Client};
 
 
 mod model;
-pub mod schema;
+
 mod http;
 pub mod cofg;
 pub mod chat;
