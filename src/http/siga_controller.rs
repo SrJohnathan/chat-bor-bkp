@@ -90,17 +90,10 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 #[put("/system/read", format = "application/json", data = "<task>")]
 pub async fn read_system(task: Json<ReadMessage>) -> Result<Status,String> {
 
-    println!("{:?}",task.0);
-
     let req: Client = Client::new();
     let wt = task.0;
 
-
-
 let url = format!("{}/wa/app/{}/msg/{}/read", HOST_API_GUPSHUP, get_app_id( wt.app.as_str()) ,wt.idm );
-
-
-
     let response = req.put(url)
         .header("apikey", get_app_app(wt.app.as_str()))
         // .header("Content-Length", content_length.to_string())
@@ -124,8 +117,6 @@ pub async fn template(db: MongoDb<'_>, task: Json<ReadTemplate>) -> Result<Creat
         TemplateText { id: wt.id , params: wt.params }
     ).unwrap();
 
-
-
     let value: SendWP<Value> = SendWP::new(
         wt.app.as_str(),
         wt.number.as_str(), get_number_app(wt.app.as_str()),
@@ -133,7 +124,7 @@ pub async fn template(db: MongoDb<'_>, task: Json<ReadTemplate>) -> Result<Creat
 
     let send = SendMessage::new(key.clone());
 
-    let respo = send.sendNoTime(&value).await;
+    let respo = send.sendTemplate(&value).await;
 
     match respo {
         Ok(e) => {
