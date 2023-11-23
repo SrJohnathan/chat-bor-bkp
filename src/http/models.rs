@@ -48,7 +48,9 @@ impl SendMessage {
                 ("template", &message),
                 ("src.name", vec.src_name.as_str())];
 
-        let response = req.post(format!("{}/sm/api/v1/template/msg", HOST_API_GUPSHUP))
+        println!("{:?}",params);
+
+        let response = req.post(format!("{}/wa/api/v1/template/msg", HOST_API_GUPSHUP))
             .header("apikey", get_app_app(vec.src_name.as_str()))
             .header("Content-Type", "application/x-www-form-urlencoded")
             // .header("Content-Length", content_length.to_string())
