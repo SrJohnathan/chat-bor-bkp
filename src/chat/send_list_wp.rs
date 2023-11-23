@@ -30,6 +30,7 @@ impl <T:Sized + serde::Serialize>SendWP<T> {
         serde_json::to_string(&self.message).unwrap()
     }
     pub fn urlencoded(&self) -> String {
+
         serde_urlencoded::to_string(self).unwrap()
     }
 }
@@ -40,7 +41,7 @@ impl <T:Sized + serde::Serialize>SendWP<T> {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TemplateText {
-    #[serde(rename = "type")]
+    //#[serde(rename = "type")]
     pub id: String,
     pub params: Vec<String>,
 
