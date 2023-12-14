@@ -41,6 +41,8 @@ impl SendMessage {
 
         let message = vec.to_json();
 
+        println!("{:?}",message);
+
         let params =
             [("channel", "whatsapp"),
                 ("source", vec.source.as_str()),
