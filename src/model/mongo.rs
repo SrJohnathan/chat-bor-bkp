@@ -1,19 +1,25 @@
 use futures::TryStreamExt;
 use mongodb::{bson, Client, Database};
 use mongodb::bson::doc;
-use mongodb::options::ClientOptions;
+use mongodb::options::{ClientOptions, ServerApi, ServerApiVersion};
 use rocket::{Request, State};
 use rocket::request::{FromRequest, Outcome};
 use crate::chat::structs::status::Status;
 
 
 pub async fn connection() -> Result<Database, mongodb::error::Error> {
-    let client_options = ClientOptions::parse(
+    let mut  client_options = ClientOptions::parse(
         //"mongodb+srv://stw:l1sLXHUz01OACdof@chat-wp.pmlgafg.mongodb.net/?retryWrites=true&w=majority", // production
-        "mongodb+srv://stw:9NAkSlpXLYUB7WgV@cluster0.nniry7o.mongodb.net/?retryWrites=true&w=majority"
+       // "mongodb+srv://stw:4bPdry56JkBn5ANt@cluster0.nniry7o.mongodb.net/?retryWrites=true&w=majority"
+            "mongodb+srv://stw:4bPdry56JkBn5ANt@cluster0.nniry7o.mongodb.net/?retryWrites=true&w=majority"
     )
         .await?;
+
+    let  server_api = ServerApi::builder().version(ServerApiVersion::V1).build();
+    client_options.server_api = Some(server_api);
+
     let client = Client::with_options(client_options)?;
+
     let database = client.database("chat-WP");
     Ok(database)
 }
