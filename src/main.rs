@@ -158,7 +158,7 @@ async fn main() {
                                http::siga_controller::money
 
                        ])
-                       .mount("/public", FileServer::from(rocket::fs::relative!("static")))
+                      // .mount("/public", FileServer::from(rocket::fs::relative!("static")))
                     .launch()
                     .await;
             }
