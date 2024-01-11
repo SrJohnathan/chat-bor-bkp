@@ -65,9 +65,8 @@ pub async fn webhook(db: MongoDb<'_>, config: &State<Config>, task: Json<Receive
     println!("{}", serde_json::to_string(&task.0).unwrap());
 
 
-// entity.messaging[0].sender.id.as_str()
-    let f = task.0;
 
+    let f = task.0;
 
     let entity = &f.entry[0];
 
