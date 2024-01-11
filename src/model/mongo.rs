@@ -42,7 +42,7 @@ pub async fn select_status(number: String , app:String, db: &Database) -> Result
     let mut bots: Vec<Status> = vec![];
     let filter = doc! { "number": number.as_str() , "app": app.as_str() };
     let typed_collection = db.collection::<Status>("status");
-    let mut f = typed_collection.find(filter, None).await.unwrap();
+    let mut f = typed_collection.find(filter, None).await?;
     while let Some(dob) = f.try_next().await? {
         bots.push(dob);
     }
