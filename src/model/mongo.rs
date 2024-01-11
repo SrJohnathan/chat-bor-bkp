@@ -11,7 +11,7 @@ pub async fn connection() -> Result<Database, mongodb::error::Error> {
     let mut  client_options = ClientOptions::parse(
         //"mongodb+srv://stw:l1sLXHUz01OACdof@chat-wp.pmlgafg.mongodb.net/?retryWrites=true&w=majority", // production
        // "mongodb+srv://stw:4bPdry56JkBn5ANt@cluster0.nniry7o.mongodb.net/?retryWrites=true&w=majority"
-            "mongodb+srv://stw:4bPdry56JkBn5ANt@cluster0.nniry7o.mongodb.net/?retryWrites=true&w=majority"
+            "mongodb+srv://db:k0G1C2kIstXNm2jp@cluster0.nniry7o.mongodb.net/?retryWrites=true&w=majority"
     )
         .await?;
 
