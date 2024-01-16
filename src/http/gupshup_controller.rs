@@ -49,6 +49,8 @@ pub async fn web_hook(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<s
                     let msg: ParentMessage<MessageEvent<Read>> = serde_json::from_str(&message.to_string()).unwrap();
                 } else {}
             } else if c.as_str().unwrap().eq("message") {
+
+
                 let pl = message.get("payload").unwrap();
                 let ty = pl.get("type").unwrap();
                 let number = pl.get("source").unwrap();
@@ -56,6 +58,12 @@ pub async fn web_hook(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<s
 
 
                 if ty.as_str().unwrap().eq(&"text".to_string()) {
+
+
+
+
+
+
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
 
 

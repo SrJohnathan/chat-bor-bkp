@@ -2,12 +2,13 @@ use std::ops::Deref;
 use std::sync::mpsc::{channel, SendError};
 
 use std::time::Duration;
+use chrono::{ NaiveDateTime};
+use reqwest::{Error, Response};
 use serde_derive::{Deserialize, Serialize};
 use rocket::{Request, State};
 use rocket::request::{FromRequest, Outcome};
+use serde_json::Value;
 use tokio::sync::{mpsc, oneshot::{Receiver, Sender}, oneshot};
-use tokio::task::JoinHandle;
-use tokio::time;
 
 pub const HOST_API_GUPSHUP:&str = "https://api.gupshup.io";
 pub const HOST_API_GUPSHUP_NO_HTTPS:&str = "http://api.gupshup.io";
@@ -81,4 +82,45 @@ impl <'r>JobWP<'r> {
 
 
 
+pub async  fn api_leads(string: &String) -> Result<Leads, String> {
+    let req = reqwest::Client::new();
+
+ let res =    req.get( format!("https://api-sigaa.herokuapp.com/api/v1/leads/number/wp/{}",string))
+        .send().await;
+
+    match res  {
+        Ok(x) => {
+
+             if let Ok(f) =  x.json::<Option<Leads>>().await {
+
+
+                 match  f {
+                     None =>  Err("nullo".to_string()),
+                     Some(array) =>  Ok(array)
+                 }
+
+           } else {
+
+                 Err("nullo".to_string())
+             }
+
+        }
+        Err(e) => Err(e.to_string())
+    }
+
+
+
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+ pub struct Leads {
+    id: String,
+    name: String,
+    email: String,
+    phone: String,
+    details: Option<Value>,
+    service_id: String,
+    status: String,
+    status_type: String,
+}
 

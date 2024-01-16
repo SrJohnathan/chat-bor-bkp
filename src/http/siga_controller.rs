@@ -10,8 +10,9 @@ use serde_json::Value;
 use tokio::task;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
+use crate::chat::ChatWP;
 use crate::chat::send_list_wp::{ImageMidia, MidiaType, TemplateText};
-use crate::cofg::{get_app_app, get_app_id, HOST_API_GUPSHUP};
+use crate::cofg::{api_leads, get_app_app, get_app_id, HOST_API_GUPSHUP, Leads, NewJob};
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct ReadWT {
@@ -239,13 +240,14 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
 
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
-pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, String> {
+pub async fn agente(db: MongoDb<'_>,task: Json<serde_json::Value>) -> Result<Created<String>, String> {
     let message: serde_json::Value = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
 
 
-    println!("{:?}", message);
+
+
 
     match d {
         None => { Ok(status::Created::new("".to_string()).body("".to_string())) }
@@ -303,25 +305,67 @@ pub async fn agente(task: Json<serde_json::Value>) -> Result<Created<String>, St
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 }
             } else if c.as_str().unwrap().eq("message") {
+
                 let pl = message.get("payload").unwrap();
                 let ty = pl.get("type").unwrap();
 
+
+
                 if ty.as_str().unwrap().eq(&"text".to_string()) {
+
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
+                    
+
+                     let res =  api_leads(&msg.payload.source).await;
+
+                    
+                        match res {
+                            Ok(x) => {
+
+                                tokio::spawn(async move {
+                                    let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                                        // .header("Content-Type", "application/json")
+                                        .json(&msg)
+                                        .send().await;
+                                    match response {
+                                        Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                                        Err(s) => { Err(s.to_string()) }
+                                    }
+                                });
 
 
-                    tokio::spawn(async move {
-                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
-                            // .header("Content-Type", "application/json")
-                            .json(&msg)
-                            .send().await;
-                        match response {
-                            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
-                            Err(s) => { Err(s.to_string()) }
-                        }
-                    });
+                            }
+                            Err(e) => {
+
+
+                                let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
+
+                                match chat.run(&db).await {
+                                    Ok(c) => {
+                                        let e = NewJob {
+                                            number: c.number.clone(),
+                                            etapa: c.st.clone(),
+                                            time: 0,
+                                            app: c.app.clone(),
+                                        };
+
+                                       /* match job.send(serde_json::to_string(&e).unwrap()).await {
+                                            Ok(x) => {}
+                                            Err(e) => { println!("{}", e.0) }
+                                        }*/
+                                    }
+                                    Err(e) => { println!("erro {}", e) }
+                                }
+
+                            }
+                        };
+
+                   
+
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
+
+
                 } else if ty.as_str().unwrap().eq(&"image".to_string()) {
                     let msg: ParentMessage<MessageGP<Image>> = serde_json::from_str(&message.to_string()).unwrap();
 

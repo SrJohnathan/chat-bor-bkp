@@ -53,7 +53,7 @@ impl<'r> MongoDb<'r> {
         let typed_collection = self.0.collection::<FacebookToken>("token");
         let f = typed_collection.find_one( None,None).await.unwrap();
         match f {
-            None => { Err("Status Vazio".to_string()) }
+            None => { Err("token facebook Vazio".to_string()) }
             Some(s) => { Ok(s) }
         }
     }
