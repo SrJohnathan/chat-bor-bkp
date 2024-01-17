@@ -15,16 +15,6 @@ use crate::chat::structs::text_buttons::{ContentMedia, ContentText, TextButtons}
 use crate::chat::structs::text_mongo::{Body, TextMongo};
 use crate::http::models::FacebookToken;
 
-pub async fn connection() -> Result<Database, mongodb::error::Error> {
-    let client_options = ClientOptions::parse(
-        //"mongodb+srv://stw:l1sLXHUz01OACdof@chat-wp.pmlgafg.mongodb.net/?retryWrites=true&w=majority", // production
-        "mongodb+srv://stw:9NAkSlpXLYUB7WgV@cluster0.nniry7o.mongodb.net/?retryWrites=true&w=majority"
-    )
-        .await?;
-    let client = Client::with_options(client_options)?;
-    let database = client.database("chat-WP");
-    Ok(database)
-}
 
 pub struct MongoDb<'r>(pub &'r Database);
 
@@ -111,19 +101,33 @@ impl<'r> MongoDb<'r> {
     }
 
     pub async fn get_chat(&self, number: &String, app: &String) -> Result<ChatDataType, String> {
+
         let filter = doc! { "index": number.as_str(),"app": app.as_str()};
 
 
         let typed_collection = self.0.collection::<Chat<Value>>("chat");
-        let f = typed_collection.find_one(filter, None).await.unwrap();
+
+        let f =  typed_collection.find_one(filter, None).await.map(|t| { t }).map_err(|e| {
+            println!( "{}",e.to_string())
+        }).unwrap();
+
+
         match f {
             None => { Err("Status Vazio".to_string()) }
+
             Some(s) => {
+
+
+
                 match s.type_field.as_str() {
                     "text" => {
+
+
                         let mut vec = Vec::new();
 
                         let value: TextMongo = serde_json::from_value(s.data).unwrap();
+
+
 
                         let tmp: Vec<&str> = value.body.text.split("{|}").collect();
 

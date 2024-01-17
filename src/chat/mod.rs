@@ -38,12 +38,20 @@ impl ChatWP {
         match res {
             Ok(c) => {
                 if c.len() > 0 {
+
+
                     let st: &Status = c.get(0).unwrap();
 
+
+
                     match bot::bot(&st, con, &self.map).await {
-                        Ok(c) => { Ok(st.clone()) }
+                        Ok(c) => {
+                            println!("{}",c);
+                            Ok(st.clone()) }
                         Err(e) => { Err(e) }
                     }
+
+
                 } else {
                     let st = Status {
                         id: None,

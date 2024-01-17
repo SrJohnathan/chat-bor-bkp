@@ -21,6 +21,8 @@ pub async fn web_hook(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<s
     let req: Client = Client::new();
 
 
+    println!("{}",message);
+
     match d {
         None => { println!("não encontrou type") }
         Some(c) => {

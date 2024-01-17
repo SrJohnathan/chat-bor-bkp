@@ -24,19 +24,6 @@ pub async fn connection() -> Result<Database, mongodb::error::Error> {
     Ok(database)
 }
 
-pub struct MongoDb<'r>(pub  &'r Database);
-
-#[rocket::async_trait]
-impl<'r> FromRequest<'r> for MongoDb<'r>  {
-    type Error = ();
-
-    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, ()> {
-        let res =  request.guard::<&State<Database>>().await;
-       res.map(|c| MongoDb(c))
-
-    }
-}
-
 
 pub async fn select_status(number: String , app:String, db: &Database) -> Result<Vec<Status>, mongodb::error::Error> {
     let mut bots: Vec<Status> = vec![];

@@ -126,7 +126,7 @@ impl SendMessage {
 
                 tokio::time::sleep(tokio::time::Duration::from_secs(7)).await;
 
-                if is_bot(&req, body.src_name.clone(), body.destination.clone()).await {
+              //  if is_bot(&req, body.src_name.clone(), body.destination.clone()).await {
 
                     let response = req.post(format!("{}{}", HOST_API_GUPSHUP, MESSAGE_PATH_GUPSHUP))
                         .header("apikey", get_app_app(body.src_name.as_str()))
@@ -136,21 +136,12 @@ impl SendMessage {
 
                     match response {
                         Ok(x) => {
-                            let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocketAlt")
-                                // .header("Content-Type", "application/json")
-                                .json(&body)
-                                .send().await;
-                            match response {
-                                Ok(e) => {}
-                                Err(s) => {}
-                            }
 
-
-                            println!("{:?}", x.text().await.unwrap())
+                            println!("{}",x.text().await.unwrap())
                         }
                         Err(e) => { println!("{:?}", e.to_string()) }
                     }
-                }
+             //   }
 
 
             }

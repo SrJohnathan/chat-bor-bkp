@@ -323,7 +323,7 @@ pub async fn agente(db: MongoDb<'_>,task: Json<serde_json::Value>) -> Result<Cre
                             Ok(x) => {
 
                                 tokio::spawn(async move {
-                                    let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                                    let response = req.post("https://apibotstw-ecd4d17d82c8.herokuapp.com/receiver")
                                         // .header("Content-Type", "application/json")
                                         .json(&msg)
                                         .send().await;
@@ -338,16 +338,15 @@ pub async fn agente(db: MongoDb<'_>,task: Json<serde_json::Value>) -> Result<Cre
                             Err(e) => {
 
 
+                                println!("{}",app.as_str().unwrap());
+
                                 let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
+                                chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
 
                                 match chat.run(&db).await {
                                     Ok(c) => {
-                                        let e = NewJob {
-                                            number: c.number.clone(),
-                                            etapa: c.st.clone(),
-                                            time: 0,
-                                            app: c.app.clone(),
-                                        };
+
+                                        println!("{:?}",c)
 
                                        /* match job.send(serde_json::to_string(&e).unwrap()).await {
                                             Ok(x) => {}

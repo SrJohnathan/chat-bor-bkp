@@ -83,24 +83,43 @@ impl <'r>JobWP<'r> {
 
 
 pub async  fn api_leads(string: &String) -> Result<Leads, String> {
+
+    let ddi = string[0..2].to_string();
+
+    println!("{}",ddi);
+
+    let number = if ddi == "55"
+    {
+        adicionar_nove(string.as_str())
+    } else {
+        string.clone()
+    };
+
+
     let req = reqwest::Client::new();
 
- let res =    req.get( format!("https://api-sigaa.herokuapp.com/api/v1/leads/number/wp/{}",string))
+ let res =    req.get( format!("https://api-sigaa.herokuapp.com/api/v1/leads/number/wp/{}",number))
         .send().await;
 
     match res  {
         Ok(x) => {
 
+
+
+
+
+
              if let Ok(f) =  x.json::<Option<Leads>>().await {
 
 
-                 match  f {
+                 match  f.clone() {
                      None =>  Err("nullo".to_string()),
                      Some(array) =>  Ok(array)
                  }
 
            } else {
 
+                 println!("erro na ");
                  Err("nullo".to_string())
              }
 
@@ -112,15 +131,47 @@ pub async  fn api_leads(string: &String) -> Result<Leads, String> {
 
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+
+
+
+pub fn adicionar_nove(numero: &str) -> String {
+    // Verifica se o número tem o formato esperado
+    let regex = regex::Regex::new(r"^(\d{4})(\d{8})$").unwrap();
+    if let Some(captures) = regex.captures(numero) {
+        let parte1 = &captures[1]; // XXXX
+        let parte2 = &captures[2]; // XXXXXXX
+
+        // Adiciona '9' se não estiver presente
+        let novo_numero =  format!("9{}", parte2);
+
+        // Retorna o número formatado
+        format!("{}{}", parte1, novo_numero)
+    } else {
+        // Retorna o número original se não estiver no formato esperado
+        numero.to_string()
+    }
+}
+
+// Remove o dígito '9' do número de telefone
+pub fn remover_nove(numero: &str) -> String {
+    // Verifica se o número tem o formato esperado
+    let regex = regex::Regex::new(r"^(\d{4})9(\d{8})$").unwrap();
+    if let Some(captures) = regex.captures(numero) {
+        let parte1 = &captures[1]; // XXXX
+        let parte2 = &captures[2]; // XXXXXX
+
+        format!("{}{}", parte1, parte2)
+    } else {
+        numero.to_string()
+    }
+}
+
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
  pub struct Leads {
-    id: String,
-    name: String,
-    email: String,
-    phone: String,
-    details: Option<Value>,
-    service_id: String,
-    status: String,
-    status_type: String,
+   pub id: String,
+   pub name: String,
+   pub email: String,
+   pub phone: String,
 }
 

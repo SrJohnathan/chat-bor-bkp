@@ -269,13 +269,22 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
         }
         "page" => {}
         _ => {
+
+            println!("BOT WHATSAPP {} <> {}",&st.st, &st.app);
+
             let g = match db.get_chat(&st.st, &st.app).await {
                 Ok(c) => {
                     let i = match c {
                         ChatDataType::Null => {
+
+                            println!("null");
+
                             Err("null".to_string())
                         }
                         ChatDataType::Text(text) => {
+
+                            println!("{:?}",text);
+
                             let mut vec = Vec::new();
 
 
@@ -328,12 +337,16 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                             }
 
 
+
                             Ok(vec)
                         }
                         ChatDataType::List(list) => {
                             let mut vec = Vec::new();
 
                             for bo in list {
+
+
+
                                 let bot = bo.data;
 
 
@@ -522,9 +535,13 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                 }
                 Err(e) => { Err(e) }
             };
+
+
             match g {
                 Ok(v) => {
                     let send = SendMessage::new(key);
+
+
                     send.send(v).await;
                 }
                 Err(e) => {
