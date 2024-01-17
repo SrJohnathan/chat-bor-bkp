@@ -246,7 +246,7 @@ pub async fn agente(db: MongoDb<'_>,task: Json<serde_json::Value>) -> Result<Cre
     let req: Client = Client::new();
 
 
-
+    println!("{}",message);
 
 
     match d {
