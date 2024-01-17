@@ -153,6 +153,8 @@ pub async fn web_hook(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<s
                         }
                         Err(e) => { println!("erro {}", e) }
                     }
+
+
                 } else if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
 

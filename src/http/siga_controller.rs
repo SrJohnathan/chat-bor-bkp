@@ -89,46 +89,42 @@ pub async fn send(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String>
 
 
 #[put("/system/read", format = "application/json", data = "<task>")]
-pub async fn read_system(task: Json<ReadMessage>) -> Result<Status,String> {
-
+pub async fn read_system(task: Json<ReadMessage>) -> Result<Status, String> {
     let req: Client = Client::new();
     let wt = task.0;
 
-let url = format!("{}/wa/app/{}/msg/{}/read", HOST_API_GUPSHUP, get_app_id( wt.app.as_str()) ,wt.idm );
+    let url = format!("{}/wa/app/{}/msg/{}/read", HOST_API_GUPSHUP, get_app_id(wt.app.as_str()), wt.idm);
     let response = req.put(url)
         .header("apikey", get_app_app(wt.app.as_str()))
         // .header("Content-Length", content_length.to_string())
         .send().await;
 
-      match  response {
-          Ok(x) => {  Ok( Status::new(x.status().as_u16() )) }
-          Err(x) => {  Err(x.to_string()) }
-      }
+    match response {
+        Ok(x) => { Ok(Status::new(x.status().as_u16())) }
+        Err(x) => { Err(x.to_string()) }
+    }
 }
 
 
 #[get("/template/<appName>")]
-pub async fn read_template(appName:String) -> Result<Created<String>, String> {
-
+pub async fn read_template(appName: String) -> Result<Created<String>, String> {
     let req: Client = Client::new();
-    let url = format!("{}/sm/api/v1/template/list/{}", HOST_API_GUPSHUP, appName );
+    let url = format!("{}/sm/api/v1/template/list/{}", HOST_API_GUPSHUP, appName);
     let response = req.get(url)
         .header("apikey", get_app_app(appName.as_str()))
         // .header("Content-Length", content_length.to_string())
         .send().await;
     match response {
         Ok(e) => {
-            Ok(status::Created::new("".to_string()).body(  e.text().await.unwrap()  ))
+            Ok(status::Created::new("".to_string()).body(e.text().await.unwrap()))
         }
         Err(s) => { Err(s.to_string()) }
     }
 }
 
 
-
 #[get("/money")]
 pub async fn money() -> Result<Created<String>, String> {
-
     let req: Client = Client::new();
 
     let response = req.get("https://api.gupshup.io/sm/api/v2/wallet/balance")
@@ -137,13 +133,11 @@ pub async fn money() -> Result<Created<String>, String> {
         .send().await;
     match response {
         Ok(e) => {
-            Ok(status::Created::new("".to_string()).body(  e.text().await.unwrap()  ))
+            Ok(status::Created::new("".to_string()).body(e.text().await.unwrap()))
         }
         Err(s) => { Err(s.to_string()) }
     }
 }
-
-
 
 
 #[post("/agent/template", format = "application/json", data = "<task>")]
@@ -153,7 +147,7 @@ pub async fn template(db: MongoDb<'_>, task: Json<ReadTemplate>) -> Result<Creat
     let wt = task.0;
 
     let result = serde_json::to_value(
-        TemplateText { id: wt.id , params: wt.params }
+        TemplateText { id: wt.id, params: wt.params }
     ).unwrap();
 
     let value: SendWP<Value> = SendWP::new(
@@ -186,7 +180,7 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
         serde_json::to_value(
             ImageMidia {
                 type_field: "image".to_string(),
-                caption: match   wt.payload.caption {
+                caption: match wt.payload.caption {
                     None => "".to_string(),
                     Some(x) => x
                 },
@@ -203,19 +197,15 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
 
             }
         ).unwrap()
-
     } else if wt.r#type == "audio/mpeg".to_string() {
         serde_json::to_value(
             MidiaType {
                 type_field: "audio".to_string(),
                 url: wt.payload.original_url,
-                filename: None
-
+                filename: None,
             }
         ).unwrap()
-
-    }
-    else {
+    } else {
         serde_json::to_value(
             MessageText { type_field: "text".to_string(), text: "NOT_FOUND".to_string() }
         ).unwrap()
@@ -240,13 +230,13 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
 
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
-pub async fn agente(db: MongoDb<'_>,task: Json<serde_json::Value>) -> Result<Created<String>, String> {
+pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Result<Created<String>, String> {
     let message: serde_json::Value = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
 
 
-    println!("{}",message);
+    println!("{}", message);
 
 
     match d {
@@ -305,73 +295,53 @@ pub async fn agente(db: MongoDb<'_>,task: Json<serde_json::Value>) -> Result<Cre
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 }
             } else if c.as_str().unwrap().eq("message") {
-
                 let pl = message.get("payload").unwrap();
                 let ty = pl.get("type").unwrap();
 
 
-
                 if ty.as_str().unwrap().eq(&"text".to_string()) {
-
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
-                    
-
-                     let res =  api_leads(&msg.payload.source).await;
-
-                    
-                        match res {
-                            Ok(x) => {
-
-                                tokio::spawn(async move {
-                                    let response = req.post("https://apibotstw-ecd4d17d82c8.herokuapp.com/receiver")
-                                        // .header("Content-Type", "application/json")
-                                        .json(&msg)
-                                        .send().await;
-                                    match response {
-                                        Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
-                                        Err(s) => { Err(s.to_string()) }
-                                    }
-                                });
 
 
-                            }
-                            Err(e) => {
-
-
-                                println!("{}",app.as_str().unwrap());
-
-                                let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
-                                chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
-
-                                match chat.run(&db).await {
-                                    Ok(c) => {
-
-                                        println!("{:?}",c)
-
-                                       /* match job.send(serde_json::to_string(&e).unwrap()).await {
-                                            Ok(x) => {}
-                                            Err(e) => { println!("{}", e.0) }
-                                        }*/
-                                    }
-                                    Err(e) => { println!("erro {}", e) }
+                    let res = api_leads(&msg.payload.source).await;
+                    match res {
+                        Ok(x) => {
+                            tokio::spawn(async move {
+                                let response = req.post("https://apibotstw-ecd4d17d82c8.herokuapp.com/receiver")
+                                    // .header("Content-Type", "application/json")
+                                    .json(&msg)
+                                    .send().await;
+                                match response {
+                                    Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                                    Err(s) => { Err(s.to_string()) }
                                 }
+                            });
+                        }
+                        Err(e) => {
+                            let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
+                            chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
 
+                            match chat.run(&db).await {
+                                Ok(c) => {
+                                    println!("{:?}", c)
+
+                                    /* match job.send(serde_json::to_string(&e).unwrap()).await {
+                                         Ok(x) => {}
+                                         Err(e) => { println!("{}", e.0) }
+                                     }*/
+                                }
+                                Err(e) => { println!("erro {}", e) }
                             }
-                        };
-
-                   
+                        }
+                    };
 
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
-
-
                 } else if ty.as_str().unwrap().eq(&"image".to_string()) {
                     let msg: ParentMessage<MessageGP<Image>> = serde_json::from_str(&message.to_string()).unwrap();
 
 
                     tokio::spawn(async move {
-
-
                         let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
                             // .header("Content-Type", "application/json")
                             .json(&msg)
@@ -383,12 +353,7 @@ pub async fn agente(db: MongoDb<'_>,task: Json<serde_json::Value>) -> Result<Cre
                     });
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
-
-
-
                 } else if ty.as_str().unwrap().eq(&"file".to_string()) {
-
-
                     let msg: ParentMessage<MessageGP<File>> = serde_json::from_str(&message.to_string()).unwrap();
 
                     tokio::spawn(async move {
@@ -429,23 +394,34 @@ pub async fn agente(db: MongoDb<'_>,task: Json<serde_json::Value>) -> Result<Cre
                     let msg: ParentMessage<MessageGP<ButtonReply>> = serde_json::from_str(&message.to_string()).unwrap();
 
 
-                    tokio::spawn(async move {
-                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
-                            // .header("Content-Type", "application/json")
-                            .json(&msg)
-                            .send().await;
-                        match response {
-                            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
-                            Err(s) => { Err(s.to_string()) }
+                    let res = api_leads(&msg.payload.source).await;
+                    match res {
+                        Ok(x) => {
+                            tokio::spawn(async move {
+                                let response = req.post("https://apibotstw-ecd4d17d82c8.herokuapp.com/receiver")
+                                    // .header("Content-Type", "application/json")
+                                    .json(&msg)
+                                    .send().await;
+                                match response {
+                                    Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                                    Err(s) => { Err(s.to_string()) }
+                                }
+                            });
                         }
-                    });
+                        Err(e) => {
+                            let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
+                            chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
+
+                            match chat.run_button(&msg.payload.payload.title, &db).await {
+                                Ok(c) => {}
+                                Err(e) => { println!("erro {}", e) }
+                            }
+                        }
+                    };
+
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else if ty.as_str().unwrap().eq(&"quick_reply".to_string()) {
-
-
-
-
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
 
                     tokio::spawn(async move {
@@ -455,22 +431,65 @@ pub async fn agente(db: MongoDb<'_>,task: Json<serde_json::Value>) -> Result<Cre
                             .send().await;
                         match response {
                             Ok(e) => {
-
-
-
-                                Ok(status::Created::new("".to_string()).body("".to_string())) }
+                                Ok(status::Created::new("".to_string()).body("".to_string()))
+                            }
                             Err(s) => { Err(s.to_string()) }
                         }
                     });
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
-
-
-
                 } else
 
                 if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<ListReply>> = serde_json::from_str(&message.to_string()).unwrap();
+
+
+                    let res = api_leads(&msg.payload.source).await;
+                    match res {
+                        Ok(x) => {
+                            tokio::spawn(async move {
+                                let response = req.post("https://apibotstw-ecd4d17d82c8.herokuapp.com/receiver")
+                                    // .header("Content-Type", "application/json")
+                                    .json(&msg)
+                                    .send().await;
+                                match response {
+                                    Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                                    Err(s) => { Err(s.to_string()) }
+                                }
+                            });
+                        }
+                        Err(e) => {
+                            let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
+                            chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
+
+                            let tmpstr = msg.payload.payload.postbackText.replace("n", "");
+                            let my_str = tmpstr.trim().parse::<i32>().unwrap();
+
+
+                            match msg.payload.payload.title.as_str() {
+                                "Voltar" => {
+                                    match chat.back(&db).await {
+                                        Ok(c) => {}
+                                        Err(e) => {}
+                                    }
+                                }
+
+                                &_ => {
+                                    match chat.run_list(&(my_str + 1).to_string(), &db).await {
+                                        Ok(c) => {
+                                            /*match job.send(serde_json::to_string(&e).unwrap()).await {
+                                                Ok(x) => {}
+                                                Err(e) => { println!("{}", e.0) }
+                                            }*/
+                                        }
+                                        Err(e) => { println!("erro {}", e) }
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+
                     Ok(status::Created::new("".to_string()).body("".to_string()))
                 } else {
                     Ok(status::Created::new("".to_string()).body("".to_string()))
