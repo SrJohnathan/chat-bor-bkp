@@ -24,10 +24,6 @@ fn description_list_1(i: i32, st: &str) -> Option<String> {
                 3 => "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
                 4 => "Consideráveis descontos nas nossas ofertas ",
                 5 => "Obtenha qualquer tipo de documento para residir em Portugal",
-                6 => "Cursos e atividades de integração",
-                7 => "Nossa e outras bolsas de estudo",
-                8 => "Tudo sobre a nossa empresa",
-                9 => "Esclareça todas as suas dúvidas e realize solicitações",
                 _ => Default::default(),
             }
         }
