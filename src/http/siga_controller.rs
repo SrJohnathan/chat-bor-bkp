@@ -2,11 +2,12 @@ use reqwest::{Client, Error, Response, StatusCode};
 use rocket::response::status;
 use rocket::serde::json::Json;
 use crate::chat::db_mongo::MongoDb;
-use rocket::{get, post, put};
+use rocket::{get, post, put, State};
 use rocket::http::Status;
 use rocket::response::status::Created;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
+use tokio::sync::mpsc::Sender;
 use tokio::task;
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
@@ -230,7 +231,7 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
 
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
-pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Result<Created<String>, String> {
+pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<serde_json::Value>) -> Result<Created<String>, String> {
     let message: serde_json::Value = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
@@ -323,12 +324,17 @@ pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Result<Cr
 
                             match chat.run(&db).await {
                                 Ok(c) => {
-                                    println!("{:?}", c)
+                                    let e = NewJob {
+                                        number: c.number.clone(),
+                                        etapa: c.st.clone(),
+                                        time: 0,
+                                        app: c.app.clone(),
+                                    };
 
-                                    /* match job.send(serde_json::to_string(&e).unwrap()).await {
-                                         Ok(x) => {}
-                                         Err(e) => { println!("{}", e.0) }
-                                     }*/
+                                    match job.send(serde_json::to_string(&e).unwrap()).await {
+                                        Ok(x) => {}
+                                        Err(e) => { println!("{}", e.0) }
+                                    }
                                 }
                                 Err(e) => { println!("erro {}", e) }
                             }
@@ -413,7 +419,30 @@ pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Result<Cr
                             chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
 
                             match chat.run_button(&msg.payload.payload.title, &db).await {
-                                Ok(c) => {}
+                                Ok(c) => {
+
+                                    let e = if c.st.as_str() == "exit" {
+                                        NewJob {
+                                            number: c.number.clone(),
+                                            etapa: "exit".to_string(),
+                                            time: 0,
+                                            app: c.app.clone(),
+                                        }
+                                    } else {
+                                        NewJob {
+                                            number: c.number.clone(),
+                                            etapa: c.st.clone(),
+                                            time: 0,
+                                            app: c.app.clone(),
+                                        }
+                                    };
+
+                                    match job.send(serde_json::to_string(&e).unwrap()).await {
+                                        Ok(x) => {}
+                                        Err(e) => { println!("{}", e.0) }
+                                    }
+
+                                }
                                 Err(e) => { println!("erro {}", e) }
                             }
                         }
@@ -477,10 +506,17 @@ pub async fn agente(db: MongoDb<'_>, task: Json<serde_json::Value>) -> Result<Cr
                                 &_ => {
                                     match chat.run_list(&(my_str + 1).to_string(), &db).await {
                                         Ok(c) => {
-                                            /*match job.send(serde_json::to_string(&e).unwrap()).await {
+                                            let e = NewJob {
+                                                number: c.number.clone(),
+                                                etapa: c.st.clone(),
+                                                time: 0,
+                                                app: c.app.clone(),
+                                            };
+
+                                            match job.send(serde_json::to_string(&e).unwrap()).await {
                                                 Ok(x) => {}
                                                 Err(e) => { println!("{}", e.0) }
-                                            }*/
+                                            }
                                         }
                                         Err(e) => { println!("erro {}", e) }
                                     }
