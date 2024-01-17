@@ -18,12 +18,12 @@ fn description_list_1(i: i32, st: &str) -> Option<String> {
     let e = match st {
         "1" => {
             match i {
-                0 => "Tenha sua matrícula numa univercidade em Portugal a sua escolha",
-                1 => "Tratamos de todo o tipo de visto para Portugal",
-                2 => "Obtenha seu alojamento antes mesmo de chegar em Portugal",
-                3 => "Tenha transporte e alguém a sua espera no aeroporto de chegada ",
-                4 => "Consideráveis descontos nas nossas ofertas ",
-                5 => "Obtenha qualquer tipo de documento para residir em Portugal",
+                0 => "Matrículas em escolas ou universidades no estrangeiro",
+                1 => "Auxiliar na solicitação de qualquer tipo de visto",
+                2 => "Pesquisa de alojamento, inclusive antes de chegar ao seu destino",
+                3 => "Até 10% mais baratos do que o preço normal de mercado",
+                4 => "Documentos necessários para residir legalmente no estrangeiro",
+                5 => "Tudo financiado para estudar no estrangeiro",
                 _ => Default::default(),
             }
         }
