@@ -170,7 +170,7 @@ impl ChatWP {
                             format!("{}-{}", st.st, 2)
                         }
 
-                        "Contratar" => {
+                        "Reservar serviço" => {
                             format!("{}-{}", st.st, 2)
                         }
                         _ => {
