@@ -2,9 +2,200 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #f0f0f0;
+            cursor: default;
+        }
+
+        .box {
+            position: absolute;
+            width: 100px;
+            height: 50px;
+            background-color: #ffffff;
+            border: 2px solid #333333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: move;
+        }
+
+        .anchor {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .selected {
+            border: 2px solid #0045b0;
+        }
+    </style>
 </head>
 <body>
+
+<div id="container"></div>
+
+<script>
+    let container = document.getElementById('container');
+    let selectedBox = null;
+    let offsetX, offsetY;
+
+
+    container.addEventListener('mousedown', handleMouseDown);
+
+
+
+    function handleMouseDown(e) {
+        if (e.target.classList.contains('box')) {
+            handleBoxMouseDown(e.target, e.clientX, e.clientY);
+        }
+    }
+
+    function handleBoxMouseDown(box, clientX, clientY) {
+        selectedBox = box;
+        offsetX = clientX - box.getBoundingClientRect().left;
+        offsetY = clientY - box.getBoundingClientRect().top;
+
+
+
+        document.addEventListener('mousemove', handleBoxDrag);
+        document.addEventListener('mouseup', handleBoxMouseUp);
+    }
+
+    function handleBoxDrag(e) {
+        selectedBox.style.left = e.clientX - offsetX + 'px';
+        selectedBox.style.top = e.clientY - offsetY + 'px';
+        updateAnchors();
+        updateLines();
+    }
+
+
+
+
+
+    function handleBoxMouseUp() {
+        document.removeEventListener('mousemove', handleBoxDrag);
+        document.removeEventListener('mouseup', handleBoxMouseUp);
+    }
+
+    let startPoint = null;
+
+    function handleAnchorClick(anchor) {
+
+
+        if (!startPoint) {
+            // Se startPoint ainda não foi definido, este é o primeiro anchor clicado
+            startPoint = {
+                x: parseFloat(anchor.style.left) + 5,
+                y: parseFloat(anchor.style.top) + 5
+            };
+        } else {
+            // Se startPoint já foi definido, este é o segundo anchor clicado
+            let endPoint = {
+                x: parseFloat(anchor.style.left) + 5,
+                y: parseFloat(anchor.style.top) + 5
+            };
+
+            // Conectar os dois anchors com uma linha SVG
+            connectPoints(startPoint, endPoint);
+
+            // Reiniciar startPoint para o próximo par de anchors
+            startPoint = null;
+
+
+        }
+    }
+
+    function connectPoints(startPoint, endPoint) {
+        let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+        let line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', startPoint.x);
+        line.setAttribute('y1', startPoint.y);
+        line.setAttribute('x2', endPoint.x);
+        line.setAttribute('y2', endPoint.y);
+        line.setAttribute('stroke', '#333333');
+        line.setAttribute('stroke-width', '2');
+
+        svg.appendChild(line);
+        container.appendChild(svg);
+    }
+
+
+
+    function createAnchor(box) {
+        let anchor = document.createElement('div');
+        anchor.className = 'anchor';
+        anchor.addEventListener('click', () => handleAnchorClick(anchor));
+        container.appendChild(anchor);
+        updateAnchorPosition(box, anchor);
+        return anchor;
+    }
+
+    function updateAnchorPosition(box, anchor) {
+        let boxRect = box.getBoundingClientRect();
+        anchor.style.left = boxRect.right + 5 + 'px'; // Adicionei uma pequena margem de 5 pixels
+        anchor.style.top = boxRect.top + boxRect.height / 2 - 5 + 'px';
+
+
+    }
+
+    function updateAnchors() {
+        let boxes = document.querySelectorAll('.box');
+        let anchors = document.querySelectorAll('.anchor');
+
+        anchors.forEach((anchor, index) => {
+            let box = boxes[index];
+            if (box) {
+                updateAnchorPosition(box, anchor);
+            }
+        });
+    }
+
+    function createBox(x, y) {
+        let box = document.createElement('div');
+        box.className = 'box';
+        box.style.left = x - 50 + 'px';
+        box.style.top = y - 25 + 'px';
+        container.appendChild(box);
+
+        let anchor = createAnchor(box);
+
+        box.addEventListener('mousedown', (e) => handleBoxMouseDown(box, e.clientX, e.clientY));
+        box.addEventListener('click', handleBoxClick);
+
+        function handleBoxClick() {
+
+            document.querySelectorAll('.box').forEach(otherBox => {
+                if (otherBox !== box) {
+                    otherBox.classList.remove('selected');
+                }
+            });
+            box.classList.toggle('selected');
+        }
+    }
+
+    container.addEventListener('mousedown', (e) => {
+        if (e.target === container) {
+            createBox(e.clientX, e.clientY);
+        }
+    });
+</script>
 
 </body>
 </html>

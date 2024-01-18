@@ -2,12 +2,7 @@ var arrayColor = ["#4CAF50", "#1e4695", "#b3144c", "#cd4e14"
     , "#ead517", "#f30909", "#51a309", "#1839e7"
     , "#ad22b8", "#ff06d6", "#ffa707", "#17efc2"]
 
-function arrayRemove(arr, value) {
 
-    return arr.filter(function(ele){
-        return ele !== value;
-    });
-}
 
 class Drawflow {
     constructor(container, render = null) {
