@@ -474,20 +474,29 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                 } else if ty.as_str().unwrap().eq(&"quick_reply".to_string()) {
                     let msg: ParentMessage<MessageGP<Text>> = serde_json::from_str(&message.to_string()).unwrap();
 
-                    tokio::spawn(async move {
-                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
-                            // .header("Content-Type", "application/json")
-                            .json(&msg)
-                            .send().await;
-                        match response {
-                            Ok(e) => {
-                                Ok(status::Created::new("".to_string()).body("".to_string()))
-                            }
-                            Err(s) => { Err(s.to_string()) }
+
+                    let res = api_leads(&msg.payload.source).await;
+                    match res {
+                        Ok(x) => {
+                            tokio::spawn(async move {
+                                let response = req.post("https://apibotstw-ecd4d17d82c8.herokuapp.com/receiver")
+                                    // .header("Content-Type", "application/json")
+                                    .json(&msg)
+                                    .send().await;
+                                match response {
+                                    Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                                    Err(s) => { Err(s.to_string()) }
+                                }
+                            });
                         }
-                    });
+                        Err(e) => {}
+                    };
+
 
                     Ok(status::Created::new("".to_string()).body("".to_string()))
+
+
+
                 } else
 
                 if ty.as_str().unwrap().eq(&"list_reply".to_string()) {
