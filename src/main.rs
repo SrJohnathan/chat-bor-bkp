@@ -155,7 +155,8 @@ async fn main() {
                                http::siga_controller::read_system,
                                http::siga_controller::send_archive,
                                 http::siga_controller::agente,
-                               http::siga_controller::money
+                               http::siga_controller::money,
+                               http::siga_controller::get_clients_bots
 
                        ])
 

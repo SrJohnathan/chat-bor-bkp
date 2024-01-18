@@ -1,10 +1,11 @@
+use multipart::server::nickel::nickel::hyper::BadRequest;
 use reqwest::{Client, Error, Response, StatusCode};
 use rocket::response::status;
 use rocket::serde::json::Json;
 use crate::chat::db_mongo::MongoDb;
 use rocket::{get, post, put, State};
 use rocket::http::Status;
-use rocket::response::status::Created;
+use rocket::response::status::{Accepted, Created};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::mpsc::Sender;
@@ -121,6 +122,16 @@ pub async fn read_template(appName: String) -> Result<Created<String>, String> {
         }
         Err(s) => { Err(s.to_string()) }
     }
+}
+
+#[get("/getBots/<appName>")]
+pub async fn get_clients_bots(db: MongoDb<'_>, appName: String) -> Result<Accepted<Json<Vec<crate::chat::structs::status::Status>>>, rocket::response::status::BadRequest<String>> {
+
+   match    db.get_status_all(&appName).await {
+       Ok(x) => Ok(  Accepted(Some(Json(x))) ),
+       Err(x) => Err( status::BadRequest(Some(x.to_string())) )
+   }
+
 }
 
 

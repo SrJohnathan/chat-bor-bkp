@@ -39,6 +39,20 @@ impl<'r> MongoDb<'r> {
         }
     }
 
+    pub async fn get_status_all(&self, app: &String) -> Result<Vec<Status>, mongodb::error::Error> {
+        let mut bots = Vec::new();
+        let filter = doc! { "app": app.as_str() };
+        let typed_collection = self.0.collection::<Status>("status");
+        let mut f = typed_collection.find(None, None).await.unwrap();
+
+        while let Some(dob) = f.try_next().await? {
+            bots.push(dob);
+        }
+        Ok(bots)
+
+
+    }
+
     pub async fn get_token_facebook(&self) -> Result<FacebookToken, String> {
         let typed_collection = self.0.collection::<FacebookToken>("token");
         let f = typed_collection.find_one( None,None).await.unwrap();
