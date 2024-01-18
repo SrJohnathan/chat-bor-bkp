@@ -8,5 +8,6 @@ pub struct Status {
     pub id: Option<ObjectId>,
     pub st:String,
     pub number:String,
-    pub app:String
+    pub app:String,
+    pub name: Option<String>,
 }

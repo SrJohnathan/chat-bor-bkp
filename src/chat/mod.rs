@@ -58,6 +58,7 @@ impl ChatWP {
                         st: "1".to_string(),
                         number: self.number.clone(),
                         app: self.app.clone(),
+                        name: Some( self.map.get("nodedouser").unwrap().clone() )
                     };
 
                     let insert = insert_status(&st, con.0).await;
@@ -94,6 +95,8 @@ impl ChatWP {
                         st: format!("{}-{}", st.st, text),
                         number: st.number.clone(),
                         app: st.app.clone(),
+                        name: Some( self.map.get("nodedouser").unwrap().clone() )
+
                     };
 
                     match con.update_status(&new_status).await {
@@ -113,6 +116,8 @@ impl ChatWP {
                         st: "1".to_string(),
                         number: self.number.clone(),
                         app: self.app.clone(),
+                        name: Some( self.map.get("nodedouser").unwrap().clone() )
+
                     };
 
                     let insert = insert_status(&st, con.0).await;
@@ -184,6 +189,8 @@ impl ChatWP {
                             st: newst,
                             number: st.number.clone(),
                             app: st.app.clone(),
+                            name: Some( self.map.get("nodedouser").unwrap().clone() )
+
                         };
                         match con.update_status(&new_status).await {
                             Ok(x) => { println!("atualizou o status") }
@@ -201,8 +208,10 @@ impl ChatWP {
                                     id: new_status.id,
                                     st: "exit".to_string(),
                                     number: new_status.number,
-                                    app: new_status.app
-                                }  ) } else { Ok(new_status) }
+                                    app: new_status.app,
+                                        name: Some( self.map.get("nodedouser").unwrap().clone() )
+
+                                    }  ) } else { Ok(new_status) }
                             }
                             Err(e) => { Err(e) }
                         }
@@ -213,6 +222,8 @@ impl ChatWP {
                         st: "1".to_string(),
                         number: self.number.clone(),
                         app: self.app.clone(),
+                        name: Some( self.map.get("nodedouser").unwrap().clone() )
+
                     };
 
                     let insert = insert_status(&st, con.0).await;
@@ -255,6 +266,8 @@ impl ChatWP {
                         st: newst,
                         number: st.number.clone(),
                         app: st.app.clone(),
+                        name: Some( self.map.get("nodedouser").unwrap().clone() )
+
                     };
 
                     match con.update_status(&new_status).await {
