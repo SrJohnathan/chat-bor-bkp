@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 use std::fmt::format;
+use chrono::{DateTime, Utc};
+use chrono_tz::Europe::Lisbon;
 use mongodb::error::Error;
 use crate::chat::db_mongo::MongoDb;
+use crate::chat::structs::ClientKeyBot;
 use crate::chat::structs::status::Status;
 use crate::model::mongo::{insert_status, select_status, update_status};
 
@@ -34,9 +37,13 @@ impl ChatWP {
 
     pub async fn run(&self, con: &MongoDb<'_>) -> Result<Status, String> {
         let res = select_status(self.number.clone(), self.app.clone(), con.0).await;
+        let utc: DateTime<Utc> = Utc::now();
+        let lisbon_time= utc.with_timezone(&Lisbon);
 
         match res {
             Ok(c) => {
+
+
                 if c.len() > 0 {
 
 
@@ -46,13 +53,28 @@ impl ChatWP {
 
                     match bot::bot(&st, con, &self.map).await {
                         Ok(c) => {
-                            println!("{}",c);
+
+
+                            let key = ClientKeyBot {
+                                id: None,
+                                number: self.app.clone(),
+                                app: self.app.clone(),
+                                data: lisbon_time.to_string() ,
+                                keys: vec![st.st.clone()],
+                                name: Some( self.map.get("nodedouser").unwrap().clone() ),
+                                show: true,
+                            };
+
+                            con.set_key_client(key).await.unwrap();
+
                             Ok(st.clone()) }
                         Err(e) => { Err(e) }
                     }
 
 
                 } else {
+
+
                     let st = Status {
                         id: None,
                         st: "1".to_string(),
@@ -60,6 +82,19 @@ impl ChatWP {
                         app: self.app.clone(),
                         name: Some( self.map.get("nodedouser").unwrap().clone() )
                     };
+
+
+                    let key = ClientKeyBot {
+                        id: None,
+                        number: self.app.clone(),
+                        app: self.app.clone(),
+                        data: lisbon_time.to_string() ,
+                        keys: vec!["1".to_string()],
+                        name: Some( self.map.get("nodedouser").unwrap().clone() ),
+                        show: true,
+                    };
+
+                    con.set_key_client(key).await.unwrap();
 
                     let insert = insert_status(&st, con.0).await;
 

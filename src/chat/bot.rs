@@ -6,7 +6,7 @@ use crate::chat::factory_msg_send_text::TypeMidia;
 use crate::chat::models_instagram::{Attachment, ListButtonIG, Midia, Payload, QuickReply, SendFBIG, Text};
 use crate::chat::send_list_wp;
 use crate::chat::send_list_wp::{ButtonWP, ContentBT, ContentMD, GlobalButton, ImageMidia, Item, Message, MessageText, MidiaType, OptionBT, SendWP};
-use crate::chat::structs::{Chat, ChatDataType};
+use crate::chat::structs::{Chat, ChatDataType, ClientKeyBot};
 use crate::chat::structs::list_mongo::{ButtonMenu, Iten, ListMongo};
 use crate::chat::structs::status::Status;
 use crate::chat::structs::text_buttons::{ContentText, OptionB, TextButtons};
@@ -267,6 +267,8 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
         _ => {
 
             println!("BOT WHATSAPP {} <> {}",&st.st, &st.app);
+
+
 
             let g = match db.get_chat(&st.st, &st.app).await {
                 Ok(c) => {

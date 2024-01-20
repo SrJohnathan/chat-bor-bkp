@@ -4,16 +4,18 @@ use rocket::response::status;
 use rocket::serde::json::Json;
 use crate::chat::db_mongo::MongoDb;
 use rocket::{get, post, put, State};
+
 use rocket::http::Status;
 use rocket::response::status::{Accepted, Created};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::mpsc::Sender;
-use tokio::task;
+
 use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
 use crate::chat::ChatWP;
 use crate::chat::send_list_wp::{ImageMidia, MidiaType, TemplateText};
+use crate::chat::structs::ClientKeyBot;
 use crate::cofg::{api_leads, get_app_app, get_app_id, HOST_API_GUPSHUP, Leads, NewJob};
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
@@ -125,13 +127,19 @@ pub async fn read_template(appName: String) -> Result<Created<String>, String> {
 }
 
 #[get("/getBots/<appName>")]
-pub async fn get_clients_bots(db: MongoDb<'_>, appName: String) -> Result<Accepted<Json<Vec<crate::chat::structs::status::Status>>>, rocket::response::status::BadRequest<String>> {
-
-   match    db.get_status_all(&appName).await {
+pub async fn get_clients_bots(db: MongoDb<'_>, appName: String) -> Result<Accepted<Json<Vec<ClientKeyBot>>>, rocket::response::status::BadRequest<String>> {
+   match    db.get_all_client_key_bots_by_app(&appName).await {
        Ok(x) => Ok(  Accepted(Some(Json(x))) ),
        Err(x) => Err( status::BadRequest(Some(x.to_string())) )
    }
+}
 
+#[put("/updateBots/<number>/<boolean>")]
+pub async fn updateBots(db: MongoDb<'_>, number: String,boolean:bool)  -> Result<rocket::response::status::Accepted<()>, std::string::String>  {
+    match  db.update_show_field(number,boolean).await {
+        Ok(x) =>  Ok(status::Accepted::<()>(None)),
+        Err(x) =>  Err(x.to_string())
+    }
 }
 
 
@@ -585,3 +593,5 @@ pub async fn count(db: MongoDb<'_>, task: Json<ReadWT>) -> Result<Created<String
 
 
 }*/
+
+

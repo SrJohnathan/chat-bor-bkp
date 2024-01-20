@@ -38,3 +38,16 @@ pub enum ChatDataType {
 
 
 }
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct ClientKeyBot {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: std::option::Option<ObjectId>,
+    pub number: String,
+    pub app:String,
+    pub data: String,
+    pub keys: Vec<String>,
+    pub name: Option<String>,
+    pub show: bool
+
+}

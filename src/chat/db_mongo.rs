@@ -1,6 +1,7 @@
 use futures::TryStreamExt;
 use mongodb::{bson, Client, Database};
 use mongodb::bson::doc;
+use mongodb::bson::oid::ObjectId;
 use mongodb::options::{ClientOptions, UpdateOptions};
 use regex::Regex;
 use rocket::{Request, State};
@@ -8,7 +9,7 @@ use rocket::request::{FromRequest, Outcome};
 use serde_json::Value;
 use crate::chat::factory_msg_send_text::{factory_text, TypeMidia};
 
-use crate::chat::structs::{Chat, ChatDataType};
+use crate::chat::structs::{Chat, ChatDataType, ClientKeyBot};
 use crate::chat::structs::list_mongo::ListMongo;
 use crate::chat::structs::status::Status;
 use crate::chat::structs::text_buttons::{ContentMedia, ContentText, TextButtons};
@@ -85,8 +86,6 @@ impl<'r> MongoDb<'r> {
         }
     }
 
-
-
     pub async fn update_status(&self, st: &Status) -> Result<bool, mongodb::error::Error> {
         let filter = doc! { "number": st.number.as_str() , "app": st.app.as_str() };
         let bso = bson::to_bson(st).unwrap();
@@ -99,7 +98,6 @@ impl<'r> MongoDb<'r> {
             Err(err) => Err(err)
         }
     }
-
 
     pub async fn delele_status(&self, st: &Status) -> Result<bool, mongodb::error::Error> {
         let filter = doc! { "number": st.number.as_str() , "app": st.app.as_str() };
@@ -361,5 +359,82 @@ impl<'r> MongoDb<'r> {
               },
               Err(err) => Err("".to_string())
           } */
+    }
+
+
+
+    pub async fn set_key_client(&self, value : ClientKeyBot) -> Result<bool, String> {
+
+        let collection = self.0.collection::<ClientKeyBot>("clienteBotKeys");
+
+
+        let filter = doc! { "number":  value.number.clone() };
+        if let Some(existing_doc) = collection.find_one(filter.clone(), None).await.map_err(|e| e.to_string())? {
+            // Document exists, update the keys array
+            let existing_id: Option<ObjectId> = existing_doc.id;
+            let existing_keys: Vec<String> = existing_doc.keys;
+
+            let mut updated_keys = existing_keys.clone();
+            updated_keys.extend_from_slice(&value.keys);
+
+            let update = doc! {
+                "$set": { "keys": updated_keys  , "show":true },
+            };
+
+            let update_result = collection.update_one(doc! { "_id": existing_id }, update, None).await.map_err(|e| e.to_string())?;
+
+            // Check if the update was successful
+            if update_result.modified_count > 0 {
+                Ok(true)
+            } else {
+                Err("Failed to update the document".to_string())
+            }
+        } else {
+            // Document does not exist, insert a new one
+            let insert_result = collection.insert_one(&value, None).await;
+
+
+                match insert_result {
+                    Ok(x) => {  Ok(true) }
+                    Err(w) =>  Err("Failed to insert the document".to_string())
+                }
+
+        }
+    }
+
+    pub async fn update_show_field(&self,number:String, show_value: bool) -> Result<(), String> {
+        let collection = self.0.collection::<ClientKeyBot>("clienteBotKeys");
+
+        let filter = doc! { "number": number };
+
+        let update = doc! {
+            "$set": { "show": show_value },
+        };
+
+        // Execute a atualização
+        let update_result = collection.update_one(filter, update, None).await.map_err(|e| e.to_string())?;
+
+        if update_result.modified_count > 0 {
+            Ok(())
+        } else {
+            Err("Falha ao atualizar o campo 'show'".to_string())
+        }
+    }
+
+    pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<ClientKeyBot>, String> {
+        let collection = self.0.collection::<ClientKeyBot>("clienteBotKeys");
+
+        let filter = doc! { "app": app_value };
+
+
+        let cursor = collection.find(filter, None).await.map_err(|e| e.to_string())?;
+
+        // Converta o cursor em um vetor de ClientKeyBot
+        let client_key_bots: Vec<ClientKeyBot> = cursor
+            .try_collect()
+            .await
+            .map_err(|e| e.to_string())?;
+
+        Ok(client_key_bots)
     }
 }
