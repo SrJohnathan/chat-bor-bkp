@@ -129,8 +129,6 @@ impl<'r> MongoDb<'r> {
 
             Some(s) => {
 
-
-
                 match s.type_field.as_str() {
                     "text" => {
 

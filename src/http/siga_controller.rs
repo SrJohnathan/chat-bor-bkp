@@ -1,5 +1,4 @@
-use multipart::server::nickel::nickel::hyper::BadRequest;
-use reqwest::{Client, Error, Response, StatusCode};
+use reqwest::{Client, };
 use rocket::response::status;
 use rocket::serde::json::Json;
 use crate::chat::db_mongo::MongoDb;
@@ -15,7 +14,7 @@ use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File,
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
 use crate::chat::ChatWP;
 use crate::chat::send_list_wp::{ImageMidia, MidiaType, TemplateText};
-use crate::chat::structs::ClientKeyBot;
+use crate::chat::structs::{Chat, ChatDataType, ClientKeyBot};
 use crate::cofg::{api_leads, get_app_app, get_app_id, HOST_API_GUPSHUP, Leads, NewJob};
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
@@ -133,6 +132,27 @@ pub async fn get_clients_bots(db: MongoDb<'_>, appName: String) -> Result<Accept
        Err(x) => Err( status::BadRequest(Some(x.to_string())) )
    }
 }
+
+
+#[get("/getChat/<appName>/<state>")]
+pub async fn get_clients_chat(db: MongoDb<'_>, appName: String,state:String) -> Result<Accepted<Json<Value>>, status::BadRequest<String>>{
+
+
+    return  match    db.get_chat(&state,&appName).await {
+        Ok(v) => {
+            match v {
+                ChatDataType::Null => { Err( status::BadRequest(Some("erro na procura".to_string()) )) }
+                ChatDataType::Text(x) => { Ok(  Accepted(Some(Json( serde_json::to_value( x ).unwrap()  ))) )  }
+                ChatDataType::List(x) => { Ok(  Accepted(Some(Json(serde_json::to_value( x ).unwrap()))) )}
+                ChatDataType::ButtonMidia(x) => {Ok(  Accepted(Some(Json(serde_json::to_value( x ).unwrap()))) )}
+                ChatDataType::ButtonText(x) => {Ok(  Accepted(Some(Json(serde_json::to_value( x ).unwrap()))) )}
+            }
+        },
+        Err(x) => Err( status::BadRequest(Some(x.to_string())) )
+    }
+}
+
+
 
 #[put("/updateBots/<number>/<boolean>")]
 pub async fn updateBots(db: MongoDb<'_>, number: String,boolean:bool)  -> Result<rocket::response::status::Accepted<()>, std::string::String>  {
