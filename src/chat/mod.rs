@@ -37,8 +37,7 @@ impl ChatWP {
 
     pub async fn run(&self, con: &MongoDb<'_>) -> Result<Status, String> {
         let res = select_status(self.number.clone(), self.app.clone(), con.0).await;
-        let utc: DateTime<Utc> = Utc::now();
-        let lisbon_time= utc.with_timezone(&Lisbon);
+
 
         match res {
             Ok(c) => {
@@ -55,17 +54,7 @@ impl ChatWP {
                         Ok(c) => {
 
 
-                            let key = ClientKeyBot {
-                                id: None,
-                                number: self.app.clone(),
-                                app: self.app.clone(),
-                                data: lisbon_time.to_string() ,
-                                keys: vec![st.st.clone()],
-                                name: Some( self.map.get("nodedouser").unwrap().clone() ),
-                                show: true,
-                            };
 
-                            con.set_key_client(key).await.unwrap();
 
                             Ok(st.clone()) }
                         Err(e) => { Err(e) }
@@ -84,17 +73,7 @@ impl ChatWP {
                     };
 
 
-                    let key = ClientKeyBot {
-                        id: None,
-                        number: self.app.clone(),
-                        app: self.app.clone(),
-                        data: lisbon_time.to_string() ,
-                        keys: vec!["1".to_string()],
-                        name: Some( self.map.get("nodedouser").unwrap().clone() ),
-                        show: true,
-                    };
 
-                    con.set_key_client(key).await.unwrap();
 
                     let insert = insert_status(&st, con.0).await;
 

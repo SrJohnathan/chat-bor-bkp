@@ -1,3 +1,5 @@
+use chrono::{DateTime, Utc};
+use chrono_tz::Europe::Lisbon;
 use reqwest::{Client, };
 use rocket::response::status;
 use rocket::serde::json::Json;
@@ -10,7 +12,7 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::mpsc::Sender;
 
-use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, Sent, Text, Video};
+use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, SendData, Sent, Text, Video};
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
 use crate::chat::ChatWP;
 use crate::chat::send_list_wp::{ImageMidia, MidiaType, TemplateText};
@@ -126,7 +128,7 @@ pub async fn read_template(appName: String) -> Result<Created<String>, String> {
 }
 
 #[get("/getBots/<appName>")]
-pub async fn get_clients_bots(db: MongoDb<'_>, appName: String) -> Result<Accepted<Json<Vec<ClientKeyBot>>>, rocket::response::status::BadRequest<String>> {
+pub async fn get_clients_bots(db: MongoDb<'_>, appName: String) -> Result<Accepted<Json<Vec<SendData<Value>>>>, rocket::response::status::BadRequest<String>> {
    match    db.get_all_client_key_bots_by_app(&appName).await {
        Ok(x) => Ok(  Accepted(Some(Json(x))) ),
        Err(x) => Err( status::BadRequest(Some(x.to_string())) )
@@ -271,10 +273,12 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
 
 #[post("/agent/receiver", format = "application/json", data = "<task>")]
 pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<serde_json::Value>) -> Result<Created<String>, String> {
-    let message: serde_json::Value = task.0;
+    let message: Value = task.0;
     let d = message.get("type");
     let req: Client = Client::new();
 
+    let utc: DateTime<Utc> = Utc::now();
+    let lisbon_time= utc.with_timezone(&Lisbon);
 
     println!("{}", message);
 
@@ -352,7 +356,8 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                                     .json(&msg)
                                     .send().await;
                                 match response {
-                                    Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                                    Ok(e) => {
+                                        Ok(status::Created::new("".to_string()).body("".to_string())) }
                                     Err(s) => { Err(s.to_string()) }
                                 }
                             });
@@ -361,8 +366,26 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                             let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
                             chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
 
+                            let  data : SendData<Value>  = SendData{
+                                data :message,
+                                position: 0,
+                                show:true,
+                                type_field:1,
+                                sid: format!("+{}",msg.payload.source),
+                                time: lisbon_time.naive_utc().to_string(),
+                                id:None,
+                                id_user:None
+                            };
+                            db.set_key_client(data).await.unwrap();
+
+
                             match chat.run(&db).await {
                                 Ok(c) => {
+
+
+
+
+
                                     let e = NewJob {
                                         number: c.number.clone(),
                                         etapa: c.st.clone(),
@@ -371,7 +394,12 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                                     };
 
                                     match job.send(serde_json::to_string(&e).unwrap()).await {
-                                        Ok(x) => {}
+                                        Ok(x) => {
+
+
+
+
+                                        }
                                         Err(e) => { println!("{}", e.0) }
                                     }
                                 }

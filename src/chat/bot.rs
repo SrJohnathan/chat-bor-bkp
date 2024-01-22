@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use chrono::{DateTime, Utc};
+use chrono_tz::Europe::Lisbon;
 
 use serde_json::Value;
 use crate::chat::db_mongo::MongoDb;
@@ -12,7 +14,7 @@ use crate::chat::structs::status::Status;
 use crate::chat::structs::text_buttons::{ContentText, OptionB, TextButtons};
 use crate::chat::structs::text_mongo::{Body, TextMongo};
 use crate::cofg::{API_DEV, API_PRODU, get_number_app};
-use crate::http::models::SendMessage;
+use crate::http::models::{SendData, SendMessage};
 
 fn description_list_1(i: i32, st: &str) -> Option<String> {
     let e = match st {
@@ -47,6 +49,10 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
     let tmp: Vec<&str> = st.st.split("-").collect();
     let ar: Vec<String> = tmp.iter().map(|c| c.replace("-", "")).filter(|c| c.as_str() != "").collect();
     let key = std::env::var("KEY_API").unwrap();
+
+
+    let utc: DateTime<Utc> = Utc::now();
+    let lisbon_time= utc.with_timezone(&Lisbon);
 
 
     match st.app.as_str() {
@@ -538,6 +544,21 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
             match g {
                 Ok(v) => {
                     let send = SendMessage::new(key);
+
+
+                    for le in v.clone() {
+                        let  data : SendData<serde_json::Value>  = SendData{
+                            data :serde_json::to_value( &le.message ).unwrap(),
+                            position: 0,
+                            show:true,
+                            type_field:0,
+                            sid: format!("+{}",le.source.as_str()),
+                            time: lisbon_time.naive_utc().to_string(),
+                            id:None,
+                            id_user:None
+                        };
+                        db.set_key_client(data).await.unwrap();
+                    }
 
 
                     send.send(v).await;

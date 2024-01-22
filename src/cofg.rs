@@ -107,8 +107,6 @@ pub async  fn api_leads(string: &String) -> Result<Leads, String> {
 
 
 
-
-
              if let Ok(f) =  x.json::<Option<Leads>>().await {
 
 

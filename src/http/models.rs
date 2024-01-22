@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use chrono::{DateTime, Utc};
+use chrono_tz::Europe::Lisbon;
 use serde_derive::{Deserialize, Serialize};
 use rocket_okapi::okapi::schemars::{self, JsonSchema};
 use reqwest::{Client, Response, Error, StatusCode};
@@ -101,6 +103,10 @@ impl SendMessage {
 
         match response {
             Ok(x) => {
+
+
+
+
                 Ok(x.text().await.unwrap())
             }
             Err(e) => { Err(e.to_string()) }
@@ -108,6 +114,11 @@ impl SendMessage {
     }
 
     pub async fn send<T: serde::Serialize + Send + 'static + std::marker::Sync>(&self, vec: Vec<SendWP<T>>) {
+
+
+    
+
+
         let req: Client = Client::new();
 
 
@@ -136,6 +147,16 @@ impl SendMessage {
 
                     match response {
                         Ok(x) => {
+
+
+                          
+
+                           
+
+
+
+
+
 
                             println!("{}",x.text().await.unwrap())
                         }
@@ -446,3 +467,72 @@ pub struct FacebookToken {
 curl -i -X GET \
 "https://graph.facebook.com/v16.0/me/accounts?access_token=EAAHd7pJH78sBAG8oA3ZAkge3xh280oYwVUZCVwEQ18eP323djNMbvHHoecnuywLIF2lVpnN5HoUfHQr7Pxl3ZCXwe7xE6NbmFJhxYzPtLMpBR0ZCUJ7GACzN0rZA1pBK6YhZAQuz2uTzYqMVpTO9kk4AAriATS0AiLIwyd0sHrNzc4Sx3aRG8KmdCA1FLrvYYJy9zd41OnoK5FZB3ipHltDsSlPZBZApZBHs0ZD"
 */
+
+
+
+// BOT
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+enum Emissor {
+    User,
+    System,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum MessageType {
+    Audio,
+    File,
+    Text,
+    #[serde(rename = "quick_reply")]
+    QuickReply,
+    Image,
+}
+
+
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SendData<T> {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    pub data: T,
+    #[serde(rename = "idUser", skip_serializing_if = "Option::is_none")]
+    pub id_user: Option<ObjectId>,
+    pub position: i64,
+    pub sid: String,
+    pub time: String,
+    #[serde(rename = "type")]
+    pub type_field: i64,
+    pub show: bool
+}
+
+
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Data {
+    pub channel: String,
+    pub source: String,
+    pub destination: String,
+    #[serde(rename = "src.name")]
+    pub src_name: String,
+    pub message: Message,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Message {
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub text: String,
+}
+
+
+
+
+
+
+
+
+

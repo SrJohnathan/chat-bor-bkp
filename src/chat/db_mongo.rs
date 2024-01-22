@@ -14,7 +14,7 @@ use crate::chat::structs::list_mongo::ListMongo;
 use crate::chat::structs::status::Status;
 use crate::chat::structs::text_buttons::{ContentMedia, ContentText, TextButtons};
 use crate::chat::structs::text_mongo::{Body, TextMongo};
-use crate::http::models::FacebookToken;
+use crate::http::models::{FacebookToken, SendData};
 
 
 pub struct MongoDb<'r>(pub &'r Database);
@@ -361,12 +361,20 @@ impl<'r> MongoDb<'r> {
 
 
 
-    pub async fn set_key_client(&self, value : ClientKeyBot) -> Result<bool, String> {
+    pub async fn set_key_client(&self, value :SendData<Value> ) -> Result<bool, String> {
 
-        let collection = self.0.collection::<ClientKeyBot>("clienteBotKeys");
+        let collection = self.0.collection::<SendData<Value>>("clienteBotKeys");
 
 
-        let filter = doc! { "number":  value.number.clone() };
+        let insert_result = collection.insert_one(&value, None).await;
+
+
+        match insert_result {
+            Ok(x) => {  Ok(true) }
+            Err(w) =>  Err("Failed to insert the document".to_string())
+        }
+
+       /* let filter = doc! { "number":  value.sid.clone() };
         if let Some(existing_doc) = collection.find_one(filter.clone(), None).await.map_err(|e| e.to_string())? {
             // Document exists, update the keys array
             let existing_id: Option<ObjectId> = existing_doc.id;
@@ -389,19 +397,13 @@ impl<'r> MongoDb<'r> {
             }
         } else {
             // Document does not exist, insert a new one
-            let insert_result = collection.insert_one(&value, None).await;
 
 
-                match insert_result {
-                    Ok(x) => {  Ok(true) }
-                    Err(w) =>  Err("Failed to insert the document".to_string())
-                }
-
-        }
+        }*/
     }
 
     pub async fn update_show_field(&self,number:String, show_value: bool) -> Result<(), String> {
-        let collection = self.0.collection::<ClientKeyBot>("clienteBotKeys");
+        let collection = self.0.collection::<SendData<Value>>("clienteBotKeys");
 
         let filter = doc! { "number": number };
 
@@ -419,8 +421,8 @@ impl<'r> MongoDb<'r> {
         }
     }
 
-    pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<ClientKeyBot>, String> {
-        let collection = self.0.collection::<ClientKeyBot>("clienteBotKeys");
+    pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<SendData<Value>>, String> {
+        let collection = self.0.collection::<SendData<Value>>("clienteBotKeys");
 
         let filter = doc! { "app": app_value };
 
@@ -428,7 +430,7 @@ impl<'r> MongoDb<'r> {
         let cursor = collection.find(filter, None).await.map_err(|e| e.to_string())?;
 
         // Converta o cursor em um vetor de ClientKeyBot
-        let client_key_bots: Vec<ClientKeyBot> = cursor
+        let client_key_bots: Vec<SendData<Value>> = cursor
             .try_collect()
             .await
             .map_err(|e| e.to_string())?;
