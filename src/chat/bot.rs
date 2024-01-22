@@ -552,7 +552,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                             position: 0,
                             show:true,
                             type_field:0,
-                            sid: format!("+{}",le.source.as_str()),
+                            sid: format!("+{}",le.destination.as_str()),
                             time: lisbon_time.naive_utc().to_string(),
                             id:None,
                             id_user:None
