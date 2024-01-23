@@ -456,7 +456,7 @@ impl<'r> MongoDb<'r> {
 
     pub async fn get_all_client_bot(&self, number: &str) -> Result<Vec<SendData<Value>>, String> {
         let collection = self.0.collection::<SendData<Value>>("clienteBotKeys");
-        let filter = doc! { "phone": number };
+        let filter = doc! { "sid": number };
 
         let cursor = collection.find(filter, None).await.map_err(|e| e.to_string())?;
         // Converta o cursor em um vetor de ClientKeyBot
