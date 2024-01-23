@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use chrono_tz::Europe::Lisbon;
 use serde_derive::{Deserialize, Serialize};
 use rocket_okapi::okapi::schemars::{self, JsonSchema};
@@ -522,6 +522,7 @@ pub struct BotClient {
     pub phone:String,
     pub show: bool,
     pub app:Option<String>,
+    pub data: Option<mongodb::bson::DateTime>
 }
 
 

@@ -1,6 +1,8 @@
+use chrono::{DateTime, Utc};
+use chrono_tz::Europe::Lisbon;
 use futures::TryStreamExt;
 use mongodb::{bson, Client, Database};
-use mongodb::bson::doc;
+use mongodb::bson::{Bson, doc};
 use mongodb::bson::oid::ObjectId;
 use mongodb::options::{ClientOptions, UpdateOptions};
 use regex::Regex;
@@ -50,13 +52,11 @@ impl<'r> MongoDb<'r> {
             bots.push(dob);
         }
         Ok(bots)
-
-
     }
 
     pub async fn get_token_facebook(&self) -> Result<FacebookToken, String> {
         let typed_collection = self.0.collection::<FacebookToken>("token");
-        let f = typed_collection.find_one( None,None).await.unwrap();
+        let f = typed_collection.find_one(None, None).await.unwrap();
         match f {
             None => { Err("token facebook Vazio".to_string()) }
             Some(s) => { Ok(s) }
@@ -113,14 +113,13 @@ impl<'r> MongoDb<'r> {
     }
 
     pub async fn get_chat(&self, number: &String, app: &String) -> Result<ChatDataType, String> {
-
         let filter = doc! { "index": number.as_str(),"app": app.as_str()};
 
 
         let typed_collection = self.0.collection::<Chat<Value>>("chat");
 
-        let f =  typed_collection.find_one(filter, None).await.map(|t| { t }).map_err(|e| {
-            println!( "{}",e.to_string())
+        let f = typed_collection.find_one(filter, None).await.map(|t| { t }).map_err(|e| {
+            println!("{}", e.to_string())
         }).unwrap();
 
 
@@ -128,15 +127,11 @@ impl<'r> MongoDb<'r> {
             None => { Err("Status Vazio".to_string()) }
 
             Some(s) => {
-
                 match s.type_field.as_str() {
                     "text" => {
-
-
                         let mut vec = Vec::new();
 
                         let value: TextMongo = serde_json::from_value(s.data).unwrap();
-
 
 
                         let tmp: Vec<&str> = value.body.text.split("{|}").collect();
@@ -150,16 +145,14 @@ impl<'r> MongoDb<'r> {
                                 id: s.id,
                                 index: s.index.clone(),
                                 app: s.app.clone(),
-                                data: TextMongo { body: Body{ type_field: "text".to_string(), text: res.0} },
+                                data: TextMongo { body: Body { type_field: "text".to_string(), text: res.0 } },
                                 type_field: if res.1 { res.2 } else { "text".to_string() },
                                 midia: res.1,
                                 type_midia: res.3,
                             };
 
                             vec.push(c);
-
                         }
-
 
 
                         Ok(ChatDataType::Text(vec))
@@ -167,13 +160,13 @@ impl<'r> MongoDb<'r> {
                     "list" => {
                         let mut vec = Vec::new();
 
-                        let  value: ListMongo = serde_json::from_value(s.data).unwrap();
+                        let value: ListMongo = serde_json::from_value(s.data).unwrap();
 
 
                         let tmp: Vec<&str> = value.body.split("{|}").collect();
 
                         for v in tmp {
-                            let  v1 = v.replace("{|}", "");
+                            let v1 = v.replace("{|}", "");
 
                             let res = factory_text(v1);
 
@@ -212,7 +205,7 @@ impl<'r> MongoDb<'r> {
                             let tmp: Vec<&str> = value.content.text.split("{|}").collect();
 
                             for v in tmp {
-                                let  v1 = v.replace("{|}", "");
+                                let v1 = v.replace("{|}", "");
 
 
                                 let res = factory_text(v1);
@@ -360,9 +353,10 @@ impl<'r> MongoDb<'r> {
     }
 
 
+    pub async fn set_key_client(&self, value: SendData<Value>) -> Result<bool, String> {
+        let utc: DateTime<Utc> = Utc::now();
+        let lisbon_time = utc.with_timezone(&Lisbon);
 
-
-    pub async fn set_key_client(&self, value :SendData<Value> ) -> Result<bool, String> {
 
         let collection = self.0.collection::<SendData<Value>>("clienteBotKeys");
         let collection_bot = self.0.collection::<BotClient>("BotClient");
@@ -371,12 +365,13 @@ impl<'r> MongoDb<'r> {
         let insert_result = collection.insert_one(&value, None).await;
 
 
-        let bot = BotClient{
+        let bot = BotClient {
             id: None,
             name: value.name,
             phone: value.sid,
-            show:true,
-            app:None
+            show: true,
+            app: None,
+            data: Some(mongodb::bson::DateTime::now()),
         };
 
         let filter = doc! {"phone": &bot.phone};
@@ -384,54 +379,54 @@ impl<'r> MongoDb<'r> {
 
         if existing_bot.is_none() {
             collection_bot.insert_one(&bot, None).await.expect("TODO: panic message");
-
-        }else {
-
+        } else {
             let update = doc! {
-                "$set": { "show":true },
+                "$set": { "show":true,
+                "data": Bson::DateTime(  mongodb::bson::DateTime::now() ),},
             };
 
+            let _ = collection_bot.update_one(doc! { "_id": existing_bot.unwrap().id.unwrap() }, update, None).await.map_err(|e| e.to_string())?;
 
 
-            let update_result = collection_bot.update_one(doc! { "_id": existing_bot.unwrap().id.unwrap() }, update, None).await.map_err(|e| e.to_string())?;
-
+            let sort_criteria = doc! { "data": -1 };
+            let _ = collection_bot.update_many(doc! {}, doc! { "$sort": sort_criteria }, None).await.map_err(|e| e.to_string())?;
 
         }
 
         match insert_result {
-            Ok(x) => {  Ok(true) }
-            Err(w) =>  Err("Failed to insert the document".to_string())
+            Ok(x) => { Ok(true) }
+            Err(w) => Err("Failed to insert the document".to_string())
         }
 
-       /* let filter = doc! { "number":  value.sid.clone() };
-        if let Some(existing_doc) = collection.find_one(filter.clone(), None).await.map_err(|e| e.to_string())? {
-            // Document exists, update the keys array
-            let existing_id: Option<ObjectId> = existing_doc.id;
-            let existing_keys: Vec<String> = existing_doc.keys;
+        /* let filter = doc! { "number":  value.sid.clone() };
+         if let Some(existing_doc) = collection.find_one(filter.clone(), None).await.map_err(|e| e.to_string())? {
+             // Document exists, update the keys array
+             let existing_id: Option<ObjectId> = existing_doc.id;
+             let existing_keys: Vec<String> = existing_doc.keys;
 
-            let mut updated_keys = existing_keys.clone();
-            updated_keys.extend_from_slice(&value.keys);
+             let mut updated_keys = existing_keys.clone();
+             updated_keys.extend_from_slice(&value.keys);
 
-            let update = doc! {
-                "$set": { "keys": updated_keys  , "show":true },
-            };
+             let update = doc! {
+                 "$set": { "keys": updated_keys  , "show":true },
+             };
 
-            let update_result = collection.update_one(doc! { "_id": existing_id }, update, None).await.map_err(|e| e.to_string())?;
+             let update_result = collection.update_one(doc! { "_id": existing_id }, update, None).await.map_err(|e| e.to_string())?;
 
-            // Check if the update was successful
-            if update_result.modified_count > 0 {
-                Ok(true)
-            } else {
-                Err("Failed to update the document".to_string())
-            }
-        } else {
-            // Document does not exist, insert a new one
+             // Check if the update was successful
+             if update_result.modified_count > 0 {
+                 Ok(true)
+             } else {
+                 Err("Failed to update the document".to_string())
+             }
+         } else {
+             // Document does not exist, insert a new one
 
 
-        }*/
+         }*/
     }
 
-    pub async fn update_show_field(&self,number:String, show_value: bool) -> Result<(), String> {
+    pub async fn update_show_field(&self, number: String, show_value: bool) -> Result<(), String> {
         let collection = self.0.collection::<BotClient>("BotClient");
 
         let filter = doc! { "phone": number };
@@ -452,7 +447,7 @@ impl<'r> MongoDb<'r> {
 
     pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<BotClient>, String> {
         let collection = self.0.collection::<BotClient>("BotClient");
-      //  let filter = doc! { "phone": app_value };
+        //  let filter = doc! { "phone": app_value };
         let cursor = collection.find(None, None).await.map_err(|e| e.to_string())?;
         // Converta o cursor em um vetor de ClientKeyBot
         let client_key_bots: Vec<BotClient> = cursor
@@ -475,5 +470,4 @@ impl<'r> MongoDb<'r> {
             .map_err(|e| e.to_string())?;
         Ok(client_key_bots)
     }
-
 }
