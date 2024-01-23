@@ -2,9 +2,9 @@ use chrono::{DateTime, Utc};
 use chrono_tz::Europe::Lisbon;
 use futures::TryStreamExt;
 use mongodb::{bson, Client, Database};
-use mongodb::bson::{Bson, doc};
+use mongodb::bson::{Bson, doc,bson};
 use mongodb::bson::oid::ObjectId;
-use mongodb::options::{ClientOptions, UpdateOptions};
+use mongodb::options::{ClientOptions, FindOptions, UpdateOptions};
 use regex::Regex;
 use rocket::{Request, State};
 use rocket::request::{FromRequest, Outcome};
@@ -386,8 +386,6 @@ impl<'r> MongoDb<'r> {
             };
 
             let _ = collection_bot.update_one(doc! { "_id": existing_bot.unwrap().id.unwrap() }, update, None).await.expect("TODO: panic message");
-            let sort_criteria = doc! { "data": -1 };
-            let _ = collection_bot.update_many(doc! {}, doc! { "$sort": sort_criteria }, None).await.expect("TODO: panic message");
 
         }
 
@@ -446,7 +444,11 @@ impl<'r> MongoDb<'r> {
     pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<BotClient>, String> {
         let collection = self.0.collection::<BotClient>("BotClient");
         //  let filter = doc! { "phone": app_value };
-        let cursor = collection.find(None, None).await.map_err(|e| e.to_string())?;
+        let sort_criteria = doc! { "data": -1 };
+         let mut fi = FindOptions::default();
+
+        fi.sort = Some( sort_criteria);
+        let cursor = collection.find(None,fi).await.map_err(|e| e.to_string())?;
         // Converta o cursor em um vetor de ClientKeyBot
         let client_key_bots: Vec<BotClient> = cursor
             .try_collect()
