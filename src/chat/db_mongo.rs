@@ -383,9 +383,18 @@ impl<'r> MongoDb<'r> {
         let existing_bot = collection_bot.find_one(filter, None).await.expect("TODO: panic message");
 
         if existing_bot.is_none() {
-            // Bot does not exist, insert it
-
             collection_bot.insert_one(&bot, None).await.expect("TODO: panic message");
+
+        }else {
+
+            let update = doc! {
+                "$set": { "show":true },
+            };
+
+
+
+            let update_result = collection_bot.update_one(doc! { "_id": existing_bot.unwrap().id.unwrap() }, update, None).await.map_err(|e| e.to_string())?;
+
 
         }
 
