@@ -14,7 +14,7 @@ use crate::chat::structs::list_mongo::ListMongo;
 use crate::chat::structs::status::Status;
 use crate::chat::structs::text_buttons::{ContentMedia, ContentText, TextButtons};
 use crate::chat::structs::text_mongo::{Body, TextMongo};
-use crate::http::models::{FacebookToken, SendData};
+use crate::http::models::{BotClient, FacebookToken, SendData};
 
 
 pub struct MongoDb<'r>(pub &'r Database);
@@ -361,13 +361,33 @@ impl<'r> MongoDb<'r> {
 
 
 
+
     pub async fn set_key_client(&self, value :SendData<Value> ) -> Result<bool, String> {
 
         let collection = self.0.collection::<SendData<Value>>("clienteBotKeys");
+        let collection_bot = self.0.collection::<BotClient>("BotClient");
 
 
         let insert_result = collection.insert_one(&value, None).await;
 
+
+        let bot = BotClient{
+            id: None,
+            name: value.name,
+            phone: value.sid,
+            show:true,
+            app:None
+        };
+
+        let filter = doc! {"phone": &bot.phone};
+        let existing_bot = collection_bot.find_one(filter, None).await.expect("TODO: panic message");
+
+        if existing_bot.is_none() {
+            // Bot does not exist, insert it
+
+            collection_bot.insert_one(&bot, None).await.expect("TODO: panic message");
+
+        }
 
         match insert_result {
             Ok(x) => {  Ok(true) }
@@ -403,9 +423,9 @@ impl<'r> MongoDb<'r> {
     }
 
     pub async fn update_show_field(&self,number:String, show_value: bool) -> Result<(), String> {
-        let collection = self.0.collection::<SendData<Value>>("clienteBotKeys");
+        let collection = self.0.collection::<BotClient>("BotClient");
 
-        let filter = doc! { "number": number };
+        let filter = doc! { "phone": number };
 
         let update = doc! {
             "$set": { "show": show_value },
@@ -421,20 +441,30 @@ impl<'r> MongoDb<'r> {
         }
     }
 
-    pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<SendData<Value>>, String> {
-        let collection = self.0.collection::<SendData<Value>>("clienteBotKeys");
-
-        let filter = doc! { "app": app_value };
-
-
+    pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<BotClient>, String> {
+        let collection = self.0.collection::<BotClient>("BotClient");
+        let filter = doc! { "phone": app_value };
         let cursor = collection.find(filter, None).await.map_err(|e| e.to_string())?;
-
         // Converta o cursor em um vetor de ClientKeyBot
-        let client_key_bots: Vec<SendData<Value>> = cursor
+        let client_key_bots: Vec<BotClient> = cursor
             .try_collect()
             .await
             .map_err(|e| e.to_string())?;
 
         Ok(client_key_bots)
     }
+
+    pub async fn get_all_client_bot(&self, number: &str) -> Result<Vec<SendData<Value>>, String> {
+        let collection = self.0.collection::<SendData<Value>>("clienteBotKeys");
+        let filter = doc! { "phone": number };
+
+        let cursor = collection.find(filter, None).await.map_err(|e| e.to_string())?;
+        // Converta o cursor em um vetor de ClientKeyBot
+        let client_key_bots: Vec<SendData<Value>> = cursor
+            .try_collect()
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(client_key_bots)
+    }
+
 }

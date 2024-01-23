@@ -555,6 +555,7 @@ pub async fn bot(st: &Status, db: &MongoDb<'_>, map: &HashMap<String, String>) -
                             sid: format!("+{}",le.destination.as_str()),
                             time: lisbon_time.naive_utc().to_string(),
                             id:None,
+                            name: map.get("nodedouser").unwrap().clone(),
                             id_user:None
                         };
                         db.set_key_client(data).await.unwrap();

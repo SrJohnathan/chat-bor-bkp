@@ -504,28 +504,24 @@ pub struct SendData<T> {
     pub time: String,
     #[serde(rename = "type")]
     pub type_field: i64,
-    pub show: bool
+    pub show: bool,
+    pub name: String,
 }
+
 
 
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Data {
-    pub channel: String,
-    pub source: String,
-    pub destination: String,
-    #[serde(rename = "src.name")]
-    pub src_name: String,
-    pub message: Message,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Message {
-    #[serde(rename = "type")]
-    pub type_field: String,
-    pub text: String,
+pub struct BotClient {
+  //  #[serde(rename = "type")]
+  //  pub type_field: String,
+  #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    pub name: String,
+    pub phone:String,
+    pub show: bool,
+    pub app:Option<String>,
 }
 
 

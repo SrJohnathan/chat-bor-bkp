@@ -72,9 +72,6 @@ impl ChatWP {
                         name: Some( self.map.get("nodedouser").unwrap().clone() )
                     };
 
-
-
-
                     let insert = insert_status(&st, con.0).await;
 
                     match insert {

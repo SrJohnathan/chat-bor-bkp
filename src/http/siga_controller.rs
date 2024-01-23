@@ -7,12 +7,12 @@ use crate::chat::db_mongo::MongoDb;
 use rocket::{get, post, put, State};
 
 use rocket::http::Status;
-use rocket::response::status::{Accepted, Created};
+use rocket::response::status::{Accepted, BadRequest, Created};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::mpsc::Sender;
 
-use crate::http::models::{Audio, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, SendData, Sent, Text, Video};
+use crate::http::models::{Audio, BotClient, ButtonReply, Delivered, Enqueued, Failed, File, Image, ListReply, Location, MessageEvent, MessageGP, ParentMessage, Read, SendData, Sent, Text, Video};
 use crate::{get_number_app, MessageText, SendMessage, SendWP};
 use crate::chat::ChatWP;
 use crate::chat::send_list_wp::{ImageMidia, MidiaType, TemplateText};
@@ -128,7 +128,7 @@ pub async fn read_template(appName: String) -> Result<Created<String>, String> {
 }
 
 #[get("/getBots/<appName>")]
-pub async fn get_clients_bots(db: MongoDb<'_>, appName: String) -> Result<Accepted<Json<Vec<SendData<Value>>>>, rocket::response::status::BadRequest<String>> {
+pub async fn get_clients_bots(db: MongoDb<'_>, appName: String) -> Result<Accepted<Json<Vec<BotClient>>>, rocket::response::status::BadRequest<String>> {
    match    db.get_all_client_key_bots_by_app(&appName).await {
        Ok(x) => Ok(  Accepted(Some(Json(x))) ),
        Err(x) => Err( status::BadRequest(Some(x.to_string())) )
@@ -137,19 +137,11 @@ pub async fn get_clients_bots(db: MongoDb<'_>, appName: String) -> Result<Accept
 
 
 #[get("/getChat/<appName>/<state>")]
-pub async fn get_clients_chat(db: MongoDb<'_>, appName: String,state:String) -> Result<Accepted<Json<Value>>, status::BadRequest<String>>{
+pub async fn get_clients_chat(db: MongoDb<'_>, appName: String, state:String) -> Result<Accepted<Json<Vec<SendData<Value>>>>, BadRequest<String>> {
 
 
-    return  match    db.get_chat(&state,&appName).await {
-        Ok(v) => {
-            match v {
-                ChatDataType::Null => { Err( status::BadRequest(Some("erro na procura".to_string()) )) }
-                ChatDataType::Text(x) => { Ok(  Accepted(Some(Json( serde_json::to_value( x ).unwrap()  ))) )  }
-                ChatDataType::List(x) => { Ok(  Accepted(Some(Json(serde_json::to_value( x ).unwrap()))) )}
-                ChatDataType::ButtonMidia(x) => {Ok(  Accepted(Some(Json(serde_json::to_value( x ).unwrap()))) )}
-                ChatDataType::ButtonText(x) => {Ok(  Accepted(Some(Json(serde_json::to_value( x ).unwrap()))) )}
-            }
-        },
+    return  match    db.get_all_client_bot(&state).await {
+        Ok(v) => Ok(status::Accepted(Some(Json(v)))),
         Err(x) => Err( status::BadRequest(Some(x.to_string())) )
     }
 }
@@ -364,7 +356,7 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                         }
                         Err(e) => {
                             let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
-                            chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
+                            chat.add_props(String::from("nodedouser"), msg.payload.sender.name.clone());
 
                             let  data : SendData<Value>  = SendData{
                                 data :message,
@@ -374,6 +366,7 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                                 sid: format!("+{}",msg.payload.source),
                                 time: lisbon_time.naive_utc().to_string(),
                                 id:None,
+                                name: msg.payload.sender.name,
                                 id_user:None
                             };
                             db.set_key_client(data).await.unwrap();
@@ -504,7 +497,22 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                         }
                         Err(e) => {
                             let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
-                            chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
+                            chat.add_props(String::from("nodedouser"), msg.payload.sender.name.clone());
+
+
+                            let  data : SendData<Value>  = SendData{
+                                data :message,
+                                position: 0,
+                                show:true,
+                                type_field:1,
+                                sid: format!("+{}",msg.payload.source),
+                                time: lisbon_time.naive_utc().to_string(),
+                                id:None,
+                                name: msg.payload.sender.name,
+                                id_user:None
+                            };
+                            db.set_key_client(data).await.unwrap();
+
 
                             match chat.run_button(&msg.payload.payload.title, &db).await {
                                 Ok(c) => {
@@ -586,7 +594,23 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                         }
                         Err(e) => {
                             let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
-                            chat.add_props(String::from("nodedouser"), msg.payload.sender.name);
+                            chat.add_props(String::from("nodedouser"), msg.payload.sender.name.clone());
+
+
+
+                            let  data : SendData<Value>  = SendData{
+                                data :message,
+                                position: 0,
+                                show:true,
+                                type_field:1,
+                                sid: format!("+{}",msg.payload.source),
+                                time: lisbon_time.naive_utc().to_string(),
+                                id:None,
+                                name: msg.payload.sender.name,
+                                id_user:None
+                            };
+                            db.set_key_client(data).await.unwrap();
+
 
                             let tmpstr = msg.payload.payload.postbackText.replace("n", "");
                             let my_str = tmpstr.trim().parse::<i32>().unwrap();
