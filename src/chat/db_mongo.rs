@@ -385,11 +385,9 @@ impl<'r> MongoDb<'r> {
                 "data": Bson::DateTime(  mongodb::bson::DateTime::now() ),},
             };
 
-            let _ = collection_bot.update_one(doc! { "_id": existing_bot.unwrap().id.unwrap() }, update, None).await.map_err(|e| e.to_string())?;
-
-
+            let _ = collection_bot.update_one(doc! { "_id": existing_bot.unwrap().id.unwrap() }, update, None).await.expect("TODO: panic message");
             let sort_criteria = doc! { "data": -1 };
-            let _ = collection_bot.update_many(doc! {}, doc! { "$sort": sort_criteria }, None).await.map_err(|e| e.to_string())?;
+            let _ = collection_bot.update_many(doc! {}, doc! { "$sort": sort_criteria }, None).await.expect("TODO: panic message");
 
         }
 
