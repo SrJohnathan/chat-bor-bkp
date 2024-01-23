@@ -443,8 +443,8 @@ impl<'r> MongoDb<'r> {
 
     pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<BotClient>, String> {
         let collection = self.0.collection::<BotClient>("BotClient");
-        let filter = doc! { "phone": app_value };
-        let cursor = collection.find(filter, None).await.map_err(|e| e.to_string())?;
+      //  let filter = doc! { "phone": app_value };
+        let cursor = collection.find(None, None).await.map_err(|e| e.to_string())?;
         // Converta o cursor em um vetor de ClientKeyBot
         let client_key_bots: Vec<BotClient> = cursor
             .try_collect()
