@@ -361,22 +361,26 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                             let mut chat = ChatWP::new(msg.payload.source.as_str(), app.as_str().unwrap());
                             chat.add_props(String::from("nodedouser"), msg.payload.sender.name.clone());
 
-                            let  data : SendData<Value>  = SendData{
-                                data :message,
-                                position: 0,
-                                show:true,
-                                type_field:1,
-                                sid: format!("+{}",msg.payload.source),
-                                time: lisbon_time.naive_utc().to_string(),
-                                id:None,
-                                name: msg.payload.sender.name,
-                                id_user:None
-                            };
-                            db.set_key_client(data).await.unwrap();
+
 
 
                             match chat.run(&db).await {
                                 Ok(c) => {
+
+
+
+                                    let  data : SendData<Value>  = SendData{
+                                        data :message,
+                                        position: 0,
+                                        show:true,
+                                        type_field:1,
+                                        sid: format!("+{}",msg.payload.source),
+                                        time: lisbon_time.naive_utc().to_string(),
+                                        id:None,
+                                        name: msg.payload.sender.name,
+                                        id_user:None
+                                    };
+                                    db.set_key_client(data).await.unwrap();
 
 
 
@@ -503,22 +507,27 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                             chat.add_props(String::from("nodedouser"), msg.payload.sender.name.clone());
 
 
-                            let  data : SendData<Value>  = SendData{
-                                data :message,
-                                position: 0,
-                                show:true,
-                                type_field:1,
-                                sid: format!("+{}",msg.payload.source),
-                                time: lisbon_time.naive_utc().to_string(),
-                                id:None,
-                                name: msg.payload.sender.name,
-                                id_user:None
-                            };
-                            db.set_key_client(data).await.unwrap();
+
 
 
                             match chat.run_button(&msg.payload.payload.title, &db).await {
                                 Ok(c) => {
+
+
+                                    let  data : SendData<Value>  = SendData{
+                                        data :message,
+                                        position: 0,
+                                        show:true,
+                                        type_field:1,
+                                        sid: format!("+{}",msg.payload.source),
+                                        time: lisbon_time.naive_utc().to_string(),
+                                        id:None,
+                                        name: msg.payload.sender.name,
+                                        id_user:None
+                                    };
+                                    db.set_key_client(data).await.unwrap();
+
+
 
                                     let e = if c.st.as_str() == "exit" {
                                         NewJob {
@@ -601,18 +610,7 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
 
 
 
-                            let  data : SendData<Value>  = SendData{
-                                data :message,
-                                position: 0,
-                                show:true,
-                                type_field:1,
-                                sid: format!("+{}",msg.payload.source),
-                                time: lisbon_time.naive_utc().to_string(),
-                                id:None,
-                                name: msg.payload.sender.name,
-                                id_user:None
-                            };
-                            db.set_key_client(data).await.unwrap();
+
 
 
                             let tmpstr = msg.payload.payload.postbackText.replace("n", "");
@@ -630,6 +628,26 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                                 &_ => {
                                     match chat.run_list(&(my_str + 1).to_string(), &db).await {
                                         Ok(c) => {
+
+
+                                            let  data : SendData<Value>  = SendData{
+                                                data :message,
+                                                position: 0,
+                                                show:true,
+                                                type_field:1,
+                                                sid: format!("+{}",msg.payload.source),
+                                                time: lisbon_time.naive_utc().to_string(),
+                                                id:None,
+                                                name: msg.payload.sender.name,
+                                                id_user:None
+                                            };
+                                            db.set_key_client(data).await.unwrap();
+
+
+
+
+
+
                                             let e = NewJob {
                                                 number: c.number.clone(),
                                                 etapa: c.st.clone(),

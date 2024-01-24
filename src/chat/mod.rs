@@ -36,7 +36,6 @@ impl ChatWP {
         ChatWP { number: number.to_string(), app: app.to_string(), map: HashMap::new() }
     }
 
-
     pub fn add_props(&mut self, key: String, value: String) {
         self.map.insert(key, value);
     }
