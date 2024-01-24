@@ -458,12 +458,14 @@ impl<'r> MongoDb<'r> {
 
     pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<BotClient>, String> {
         let collection = self.0.collection::<BotClient>("BotClient");
-        //  let filter = doc! { "phone": app_value };
+          let filter = doc! { "show":   true  };
         let sort_criteria = doc! { "data": -1 };
          let mut fi = FindOptions::default();
 
+
         fi.sort = Some( sort_criteria);
-        let cursor = collection.find(None,fi).await.map_err(|e| e.to_string())?;
+
+        let cursor = collection.find(filter,fi).await.map_err(|e| e.to_string())?;
         // Converta o cursor em um vetor de ClientKeyBot
         let client_key_bots: Vec<BotClient> = cursor
             .try_collect()
