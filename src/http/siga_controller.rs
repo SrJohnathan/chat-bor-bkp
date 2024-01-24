@@ -150,6 +150,9 @@ pub async fn get_clients_chat(db: MongoDb<'_>, appName: String, state:String) ->
 
 #[put("/updateBots/<number>/<boolean>")]
 pub async fn updateBots(db: MongoDb<'_>, number: String,boolean:bool)  -> Result<rocket::response::status::Accepted<()>, std::string::String>  {
+
+
+
     match  db.update_show_field(number,boolean).await {
         Ok(x) =>  Ok(status::Accepted::<()>(None)),
         Err(x) =>  Err(x.to_string())

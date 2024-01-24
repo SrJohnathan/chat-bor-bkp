@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use chrono::{DateTime, Utc};
 use chrono_tz::Europe::Lisbon;
 use futures::TryStreamExt;
@@ -381,7 +382,7 @@ impl<'r> MongoDb<'r> {
             collection_bot.insert_one(&bot, None).await.expect("TODO: panic message");
         } else {
             let update = doc! {
-                "$set": { "show":true,
+                "$set": { "show":  Bson::Boolean(true)  ,
                 "data": Bson::DateTime(  mongodb::bson::DateTime::now() ),},
             };
 
@@ -425,20 +426,34 @@ impl<'r> MongoDb<'r> {
     pub async fn update_show_field(&self, number: String, show_value: bool) -> Result<(), String> {
         let collection = self.0.collection::<BotClient>("BotClient");
 
-        let filter = doc! { "phone": number };
+        println!("{}",show_value);
+
+        let ob =  ObjectId::from_str(number.as_str()).expect("TODO: panic message");
+
+        let filter = doc! { "_id": ob };
 
         let update = doc! {
-            "$set": { "show": show_value },
+            "$set": { "show":   Bson::Boolean(show_value)   }
         };
 
         // Execute a atualização
-        let update_result = collection.update_one(filter, update, None).await.map_err(|e| e.to_string())?;
+        let update_result = collection.update_one(filter, update, None).await;
 
-        if update_result.modified_count > 0 {
-            Ok(())
-        } else {
-            Err("Falha ao atualizar o campo 'show'".to_string())
+        match update_result {
+            Ok(x) => {
+
+                if x.modified_count > 0 {
+                    Ok(())
+                } else {
+                    Err("Falha ao atualizar o campo 'show'".to_string())
+                }
+            }
+            Err(e) => {
+                Err(e.to_string())
+            }
         }
+
+
     }
 
     pub async fn get_all_client_key_bots_by_app(&self, app_value: &str) -> Result<Vec<BotClient>, String> {
