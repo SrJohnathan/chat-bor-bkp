@@ -162,7 +162,7 @@ async fn main() {
 
                        ])
 
-                    //.mount("/public", FileServer::from(rocket::fs::relative!("static")))
+                  //  .mount("/public", FileServer::from(rocket::fs::relative!("static")))
                     .launch()
                     .await;
             }
