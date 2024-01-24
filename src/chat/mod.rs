@@ -401,11 +401,8 @@ pub fn status_not_key(status:String) -> Result<bool, &'static str> {
           }
           Err(e) => {
 
-              if status.len() > 1 {
-                  Ok(true)
-              }else {
                   Err("maior que um")
-              }
+
 
           }
       }
