@@ -62,6 +62,7 @@ async fn main() {
         let mut threads_number_speed: HashMap<String, JoinHandle<_>> = HashMap::new();
 
         while let Some(v) = channel.1.recv().await {
+
             let new_job: NewJob = serde_json::from_str(&v).unwrap();
             let new_job_sp: NewJob = serde_json::from_str(&v).unwrap();
 

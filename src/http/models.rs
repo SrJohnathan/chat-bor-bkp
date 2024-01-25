@@ -522,7 +522,8 @@ pub struct BotClient {
     pub phone:String,
     pub show: bool,
     pub app:Option<String>,
-    pub data: Option<mongodb::bson::DateTime>
+    pub data: Option<mongodb::bson::DateTime>,
+    pub session: Option<mongodb::bson::DateTime>
 }
 
 

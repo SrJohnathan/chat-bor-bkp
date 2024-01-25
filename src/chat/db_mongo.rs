@@ -373,10 +373,13 @@ impl<'r> MongoDb<'r> {
             show: true,
             app: None,
             data: Some(mongodb::bson::DateTime::now()),
+            session : Some(mongodb::bson::DateTime::now())
         };
 
         let filter = doc! {"phone": &bot.phone};
         let existing_bot = collection_bot.find_one(filter, None).await.expect("TODO: panic message");
+
+
 
         if existing_bot.is_none() {
             collection_bot.insert_one(&bot, None).await.expect("TODO: panic message");
@@ -421,6 +424,66 @@ impl<'r> MongoDb<'r> {
 
 
          }*/
+    }
+
+    pub async fn update_session(&self, phone: String) -> Result<bool, bool> {
+        let collection = self.0.collection::<BotClient>("BotClient");
+
+        println!(" session {}",phone);
+
+        let filter = doc! {"phone": phone.clone()};
+        let existing_bot = collection.find_one(filter.clone(), None).await.expect("TODO: mensagem de pânico");
+
+        if let Some(mut bot) = existing_bot {
+            let agora = bson:: DateTime::now();
+
+
+            let ultima_sessao = match   bot.session {
+                None => {
+
+                    let update = doc! {"$set": {"session": Bson::DateTime(  mongodb::bson::DateTime::now() )}};
+                    collection
+                        .update_one(filter, update, None)
+                        .await
+                        .expect("TODO: panic message");
+
+                  return Ok(false)
+
+
+                }
+                Some(x) => x
+            };
+
+
+
+            let chrono_now: DateTime<Utc> = agora.into();
+            let chrono_last_session: DateTime<Utc> = ultima_sessao.into();
+
+            if chrono_now - chrono_last_session >= chrono::Duration::hours(24) {
+                // Mais de 24 horas se passaram, atualize a sessão e retorne false
+
+                println!("atualizou a sessao");
+
+
+                let update = doc! {"$set": {"session": agora}};
+                collection
+                    .update_one(filter, update, None)
+                    .await
+                    .expect("TODO: panic message");
+
+
+                Ok(false)
+            } else {
+
+                println!("a a sessao");
+
+
+                Ok(true)
+            }
+        } else {
+
+            Ok(false)
+        }
     }
 
     pub async fn update_show_field(&self, number: String, show_value: bool) -> Result<(), String> {

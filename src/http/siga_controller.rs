@@ -362,12 +362,48 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                             chat.add_props(String::from("nodedouser"), msg.payload.sender.name.clone());
 
 
+                        match db.get_status(&msg.payload.source.to_string(), &app.as_str().unwrap().to_string()).await {
+                            Ok(x) => {
+
+                              if   x.st == "1" {
+                                    match   db.update_session(format!("+{}" ,msg.payload.source.clone()) ).await {
+                                        Ok(x) => {
+
+                                            if x == true {
+                                                chat.add_props("voltar".to_string(), "true".to_string());
+                                            }
+
+                                        }
+                                        Err(e) => {   }
+                                    };
+                                }
+
+
+
+
+                            }
+                            Err(e) => {
+
+                                match   db.update_session( format!("+{}" ,msg.payload.source.clone())  ).await {
+                                    Ok(x) => {
+
+                                        if x == true {
+                                            chat.add_props("voltar".to_string(), "true".to_string());
+                                        }
+
+                                    }
+                                    Err(e) => {   }
+                                };
+
+                            }
+                        };
+
+
+
 
 
                             match chat.run(&db).await {
                                 Ok(c) => {
-
-
 
                                     let  data : SendData<Value>  = SendData{
                                         data :message,
@@ -381,8 +417,6 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
                                         id_user:None
                                     };
                                     db.set_key_client(data).await.unwrap();
-
-
 
 
 

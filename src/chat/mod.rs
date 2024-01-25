@@ -40,7 +40,7 @@ impl ChatWP {
         self.map.insert(key, value);
     }
 
-    pub async fn run(&self, con: &MongoDb<'_>) -> Result<Status, String> {
+    pub async fn run( &mut self, con: &MongoDb<'_>) -> Result<Status, String> {
         let res = select_status(self.number.clone(), self.app.clone(), con.0).await;
         let key = std::env::var("KEY_API").unwrap();
 
@@ -48,11 +48,17 @@ impl ChatWP {
         match res {
             Ok(c) => {
 
-
                 if c.len() > 0 {
 
 
                     let st: &Status = c.get(0).unwrap();
+
+                    if st.st == "1".to_string() {
+                       
+                    }
+
+
+
 
 
                     match   status_not_key(st.st.clone()) {
@@ -135,33 +141,6 @@ impl ChatWP {
                 if c.len() > 0 {
                     let st: &Status = c.get(0).unwrap();
 
-
-                    match   status_not_key(st.st.clone()) {
-                        Ok(x) => {
-
-
-                            let result = serde_json::to_value(
-                                MessageText { type_field: "text".to_string(), text: "Escolha uma opção por favor".to_string()}
-                            ).unwrap();
-
-                            let value: SendWP<Value> = SendWP::new(
-                                st.app.as_str(),
-                                st.number.as_str(), get_number_app(st.app.as_str()),
-                                result);
-
-                            let send = SendMessage::new(key.clone());
-
-                            let respo = send.sendNoTime(&value).await;
-
-                            match respo {
-                                Ok(e) => {}
-                                Err(s) => {  }
-                            }
-
-                          Err(  "".to_string())
-                        }
-                        Err(e) => {
-
                             let new_status = Status {
                                 id: st.id,
                                 st: format!("{}-{}", st.st, text),
@@ -182,8 +161,7 @@ impl ChatWP {
                             };
 
                             v
-                        }
-                    }
+
 
 
 
@@ -223,34 +201,17 @@ impl ChatWP {
         let res = select_status(self.number.clone(), self.app.clone(), con.0).await;
         let key = std::env::var("KEY_API").unwrap();
 
+
+
+
+
         match res {
             Ok(c) => {
                 if c.len() > 0 {
                     let st: &Status = c.get(0).unwrap();
-                    match   crate::chat::status_not_key(st.st.clone()) {
-                        Ok(x) => {
-                            let result = serde_json::to_value(
-                                MessageText { type_field: "text".to_string(), text: "Escolha uma opção por favor".to_string() }
-                            ).unwrap();
 
-                            let value: SendWP<Value> = SendWP::new(
-                                st.app.as_str(),
-                                st.number.as_str(), get_number_app(st.app.as_str()),
-                                result);
 
-                            let send = SendMessage::new(key.clone());
 
-                            let respo = send.sendNoTime(&value).await;
-
-                            match respo {
-                                Ok(e) => {}
-                                Err(s) => {}
-                            }
-
-                            Err("".to_string())
-                        }
-
-                        Err(e) => {
                             let mut is_button_exit = false;
 
 
@@ -314,8 +275,7 @@ impl ChatWP {
                                 }
                                 Err(e) => { Err(e) }
                             }
-                        }
-                    }
+
 
                 } else {
                     let st = Status {
@@ -393,7 +353,7 @@ pub fn status_not_key(status:String) -> Result<bool, &'static str> {
 
       match status.parse::<i32>() {
           Ok(x) => {
-              if  x > 1 {
+              if  x >= 1 {
                   Ok(true)
               }else {
                   Err("maior que um")
