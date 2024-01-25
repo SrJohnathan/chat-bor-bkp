@@ -148,16 +148,6 @@ impl SendMessage {
                     match response {
                         Ok(x) => {
 
-
-                          
-
-                           
-
-
-
-
-
-
                             println!("{}",x.text().await.unwrap())
                         }
                         Err(e) => { println!("{:?}", e.to_string()) }
