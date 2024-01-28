@@ -318,12 +318,13 @@ pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<ser
 
 
                     tokio::spawn(async move {
-                        let response = req.post("https://siga-telecom.herokuapp.com/api/v1/whatsapp/webHookSocket")
+                        let response = req.post("https://apibotstw-ecd4d17d82c8.herokuapp.com/receiver")
                             // .header("Content-Type", "application/json")
                             .json(&msg)
                             .send().await;
                         match response {
-                            Ok(e) => { Ok(status::Created::new("".to_string()).body("".to_string())) }
+                            Ok(e) => {
+                                Ok(status::Created::new("".to_string()).body("".to_string())) }
                             Err(s) => { Err(s.to_string()) }
                         }
                     });
