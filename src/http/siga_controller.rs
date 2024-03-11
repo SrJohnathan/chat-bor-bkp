@@ -266,7 +266,7 @@ pub async fn send_archive(db: MongoDb<'_>, task: Json<ReadWTDoc>) -> Result<Crea
 }
 
 
-#[post("/agent/receive", format = "application/json", data = "<task>")]
+#[post("/agent/receiver", format = "application/json", data = "<task>")]
 pub async fn agente(db: MongoDb<'_>, job: &State<Sender<String>>, task: Json<serde_json::Value>) -> Result<Created<String>, String> {
     let message: Value = task.0;
     let d = message.get("type");
